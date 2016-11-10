@@ -8,41 +8,56 @@
  ds开头的类，不被使用的类
  */
 (function(win,fun){
-    win.ds||fun(win)
-})(window,function(window){
-    var ds =window.ds||{};
-    ds.mains=[];
-    ds.config ={width:800,height:600}
-    ds.ready=function(main, config) {
-        if(ds.stage!= null){
+    win.$s||fun(win,function(key,keyfun){
+        $s[key]=keyfun(win);
+    })
+})(window,function(window,exports){
+    var $s =window.$s||{};
+    window.$s = $s;
+    $s.mains=[];
+    var config = $s.config ={width:800,height:600,baseURI:'',file:'json'};
+    $s.ready=function(main, config) {
+        if($s.stage!= null){
             main();
         }else{
-            ds.mains.push(main);
+            $s.mains.push(main);
         }
         if(typeof config =='string'){
-            ds.config.canvas = parseStr(config);
+            $s.config.canvas = parseStr(config);
         }else{
             for(var s in config){
-                ds.config[s] = config[s];
+                $s.config[s] = config[s];
             }
         }
         window.onload = function () {
-            if(ds.config.canvas==null){
+            if($s.config.canvas==null){
                 var c1 = document.createElement("canvas");
-                c1.width = ds.config.width;
-                c1.height = ds.config.height;
+                c1.width = $s.config.width;
+                c1.height = $s.config.height;
                 document.body.appendChild(c1);
-                ds.stage = new Stage(c1);
+                $s.stage = new dsStage(c1);
             }
             var c2 = document.createElement("canvas");
             c2.style = "display:none";
             document.body.appendChild(c2);
-            ds.fdds = c2;
-            ds.mains.forEach(function(e){e();});
+            $s.fdds = c2;
+            $s.mains.forEach(function(e){e($s);});
         }
         window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,errorObj){
             trace(errorMessage, scriptURI, lineNumber,columnNumber,errorObj)
         }
+    }
+    var exlist = [];
+    $s.export = function(fun){
+        if(typeof fun == 'string'){
+            var f =exlist[fun];
+            if(f==null) throw fun+'not fint in export';
+            return f;
+        }else{
+            exlist[fun.constructor.name] = fun;
+            trace(fun.constructor.name)
+        }
+
     }
     function parseStr(str){
         if(typeof str != 'string')return [];
@@ -55,14 +70,178 @@
             throw 'can not find '+str+' elements';
         }
     }
-    window.trace=ds.trace = console.log;
-    var utils=ds.utils = {
-        uid:0,
-        UUID: function (){return Math.random().toString(36).substr(2)+(this.uid++);},
-        INTERACTIVEEVENT: [dsEvent.ENTER_FRAME,],
-        MOUSE: [dsFocusEvent.FOCUS_IN, dsFocusEvent.FOCUS_OUT, dsFocusEvent.KEY_FOCUS_CHANGE, dsFocusEvent.MOUSE_FOCUS_CHANGE, dsMouseEvent.ROLL_OVER, dsMouseEvent.ROLL_OUT, dsMouseEvent.RIGHT_MOUSE_UP, dsMouseEvent.RIGHT_MOUSE_DOWN, dsMouseEvent.RIGHT_CLICK, dsMouseEvent.RELEASE_OUTSIDE, dsMouseEvent.MOUSE_WHEEL, dsMouseEvent.MOUSE_UP, dsMouseEvent.MOUSE_OVER, dsMouseEvent.CLICK, dsMouseEvent.DOUBLE_CLICK, dsMouseEvent.MIDDLE_CLICK, dsMouseEvent.MIDDLE_MOUSE_DOWN, dsMouseEvent.MIDDLE_MOUSE_UP, dsMouseEvent.MOUSE_DOWN, dsMouseEvent.MOUSE_MOVE, dsMouseEvent.MOUSE_OUT],
-        KEY: [dsKeyboardEvent.KEY_DOWN, dsKeyboardEvent.KEY_UP]
+    window.trace=$s.trace = console.log;
+
+    $s.dsEvent=dsEvent;
+    /*
+     bubbles:
+     捕获阶段 (EventPhase.CAPTURING_PHASE)。
+     目标阶段 (EventPhase.AT_TARGET)。
+     冒泡阶段 (EventPhase.BUBBLING_PHASE)。
+     */
+    function dsEvent(type, bubbles, cancelable) {
+        this.type = type;
+        this._bubbles = bubbles || false;
+        this._cancelable = cancelable || false;
+        this._currentTarget = null;
+        this._target = null;
+        this.eventPhase = 0;
+        this._stopimmediatepropagation = false;
+        this._stoppropagation = false;
     }
+
+    dsEvent.prototype.isDefaultPrevented = function () {
+
+    }
+//cancelable 的值为 true 则可以使用 preventDefault() 来取消事件
+    dsEvent.prototype.preventDefault = function () {
+
+    }
+//防止对事件流中当前节点中和所有后续节点中的事件侦听器进行处理
+    dsEvent.prototype.stopImmediatePropagation = function () {
+        this._stopimmediatepropagation = true
+    }
+//此方法不会影响当前节点 (currentTarget) 中的任何事件侦听器
+    dsEvent.prototype.stopPropagation = function () {
+        this._stoppropagation = true;
+    }
+    dsEvent.initEvent = function (type, bubbles, cancelable) {
+        var eve = new dsEvent(type, bubbles, cancelable);
+        Object.defineProperties(eve, {
+            "cancelable": {
+                set: function (v) {
+                    this._cancelable = v
+                }
+            },
+            "bubbles": {
+                set: function (v) {
+                    this._bubbles = v;
+                }
+            },
+            "currentTarget": {
+                get: function () {
+                    return this._currentTarget;
+                }
+            },
+            "target": {
+                get: function () {
+                    return this._target;
+                }
+            }
+        });
+        return eve;
+    }
+    dsEvent.ENTER_FRAME = "enter_frame";
+    dsEvent.ADDED_TO_STAGE = "addtostage";
+    dsEvent.REMOVE_FROM_STAGE = "removefromstage";
+    dsEvent.ACTIVATE = "activate";
+    dsEvent.BROWSER_ZOOM_CHANGE = "browser_zoom_change";
+    dsEvent.CANCEL = "cancel";
+    dsEvent.CHANGE = "change";
+    dsEvent.CHANNELMESSAGE = "channelMessage"
+    dsEvent.CHANNELSTATE = "channelState"
+    dsEvent.CLEAR = "clear"
+    dsEvent.CLOSE = "close"
+    dsEvent.COMPLETE = "complete"
+    dsEvent.CONNECT = "connect"
+    dsEvent.COPY = "copy"
+    dsEvent.DEACTIVATE = "deactivate"
+    dsEvent.EXITFRAME = "exitFrame"
+    dsEvent.FULLSCREEN = "fullScreen"
+    dsEvent.INIT = "init"
+    dsEvent.MOUSELEAVE = "mouseLeave"
+    dsEvent.OPEN = "open"
+    dsEvent.PASTE = "paste"
+    dsEvent.REMOVED = "removed"
+    dsEvent.RENDER = "render"
+    dsEvent.RESIZE = "resize"
+    dsEvent.SCROLL = "scroll"
+    dsEvent.SELECT = "select"
+    dsEvent.SELECTALL = "selectAll"
+    dsEvent.SOUNDCOMPLETE = "soundComplete"
+    dsEvent.TABCHILDRENCHANGE = "tabChildrenChange";
+    $s.dsMouseEvent=dsMouseEvent;
+    function dsMouseEvent(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount) {
+        this.type = type
+        this.bubbles = bubbles
+        this.cancelable = cancelable
+        this.altKey = altKey
+        this.buttonDown = buttonDown
+        this.ctrlKey = ctrlKey
+        this.delta = delta
+        this.isRelatedObjectInaccessible
+        this.localX = localX
+        this.localY = localY
+        this.movementX = 0;
+        this.relatedObject = relatedObject
+        this.shiftKey = shiftKey
+        this.stageX = 0
+        this.stageY = 0
+        this.clickCount = clickCount;
+        this.commandKey = commandKey
+        this.controlKey = controlKey;
+    }
+    dsMouseEvent.prototype = dsEvent.initEvent();
+    dsMouseEvent.prototype.updateAfterEvent = function () {
+
+    }
+    dsMouseEvent.CLICK = "click";
+    dsMouseEvent.DOUBLE_CLICK = "doubleclick";
+    dsMouseEvent.MIDDLE_CLICK = "middleclick";
+    dsMouseEvent.MIDDLE_MOUSE_DOWN = "middlemousedown";
+    dsMouseEvent.MIDDLE_MOUSE_UP = "middlemouseup";
+    dsMouseEvent.MOUSE_DOWN = "mousedown";
+    dsMouseEvent.MOUSE_MOVE = "mousemove";
+    dsMouseEvent.MOUSE_OUT = "mouseout";
+    dsMouseEvent.MOUSE_OVER = "mouseover";
+    dsMouseEvent.MOUSE_UP = "mouseup";
+    dsMouseEvent.MOUSE_WHEEL = "mousewheel";
+    dsMouseEvent.RELEASE_OUTSIDE = "releaseoutside";
+    dsMouseEvent.RIGHT_CLICK = "rightclick";
+    dsMouseEvent.RIGHT_MOUSE_DOWN = "rightmousedown";
+    dsMouseEvent.RIGHT_MOUSE_UP = "rightmouseup";
+    dsMouseEvent.ROLL_OUT = "rollout";
+    dsMouseEvent.ROLL_OVER = "rollover";
+    $s.dsKeyboardEvent=dsKeyboardEvent;
+    dsKeyboardEvent.prototype = dsEvent.initEvent();
+    function dsKeyboardEvent(type, bubbles, cancelable, charCodeValue, keyCodeValue, keyLocationValue, ctrlKeyValue, altKeyValue, shiftKeyValue, controlKeyValue, commandKeyValue) {
+        this.type = type
+        this.bubbles = bubbles
+        this.cancelable = cancelable
+        this.altKey = altKeyValue
+        this.charCode = charCodeValue
+        this.ctrlKey = ctrlKeyValue
+        this.keyCode = keyCodeValue
+        this.keyLocation = keyLocationValue
+        this.shiftKey = shiftKeyValue
+    }
+
+    dsKeyboardEvent.KEY_DOWN = "keydown";
+    dsKeyboardEvent.KEY_UP = "keyup";
+    $s.dsFocusEvent=dsFocusEvent;
+    dsFocusEvent.prototype = dsEvent.initEvent();
+    function dsFocusEvent(type, bubbles, cancelable, relatedObject, shiftKey, keyCode, direction) {
+        this.type = type;
+        this._bubbles = bubbles || false;
+        this._cancelable = cancelable || false;
+        this._currentTarget = null;
+        this.relatedObject = relatedObject;
+        this.shiftKey = shiftKey;
+        this.keyCode = keyCode;
+        this.direction = direction;
+    }
+    dsFocusEvent.FOCUS_IN = "focusIn"
+    dsFocusEvent.FOCUS_OUT = "focusOut "
+    dsFocusEvent.KEY_FOCUS_CHANGE = "keyFocusChange"
+    dsFocusEvent.MOUSE_FOCUS_CHANGE = "mouseFocusChange"
+
+    var utils= {
+            uid:0,
+            UUID: function (){return Math.random().toString(36).substr(2)+(this.uid++);},
+            INTERACTIVEEVENT: [dsEvent.ENTER_FRAME,],
+            MOUSE: [dsFocusEvent.FOCUS_IN, dsFocusEvent.FOCUS_OUT, dsFocusEvent.KEY_FOCUS_CHANGE, dsFocusEvent.MOUSE_FOCUS_CHANGE, dsMouseEvent.ROLL_OVER, dsMouseEvent.ROLL_OUT, dsMouseEvent.RIGHT_MOUSE_UP, dsMouseEvent.RIGHT_MOUSE_DOWN, dsMouseEvent.RIGHT_CLICK, dsMouseEvent.RELEASE_OUTSIDE, dsMouseEvent.MOUSE_WHEEL, dsMouseEvent.MOUSE_UP, dsMouseEvent.MOUSE_OVER, dsMouseEvent.CLICK, dsMouseEvent.DOUBLE_CLICK, dsMouseEvent.MIDDLE_CLICK, dsMouseEvent.MIDDLE_MOUSE_DOWN, dsMouseEvent.MIDDLE_MOUSE_UP, dsMouseEvent.MOUSE_DOWN, dsMouseEvent.MOUSE_MOVE, dsMouseEvent.MOUSE_OUT],
+            KEY: [dsKeyboardEvent.KEY_DOWN, dsKeyboardEvent.KEY_UP]
+        }
     var CompositeOperation = {
         SOURCE_OVER: "source-over",
         SOURCE_ATOP: "source-atop",
@@ -76,37 +255,22 @@
         COPY: "copy",
         XOR: "xor"
     }
-    var dsChildOf=ds.dsChildOf=function dsChildOf(child,parent){
+    var dsChildOf=$s.dsChildOf=function dsChildOf(child,parent){
         var vb = child.__proto__;
-        while(vb.constructor != EventDispatcher.prototype.constructor){
+        while(vb&&vb.constructor != dsEventDispatcher.prototype.constructor){
             if(vb.constructor ==parent.prototype.constructor)return true;
             vb=vb.__proto__;
         }
         return false;
     }
-    //var dsExtend =ds.dsExtend= function(subclass, pclass, param) {
-    //    var old = Array();
-    //    var oc = subclass.prototype.constructor;
-    //    subclass.prototype = new pclass();
-    //    subclass.prototype.constructor = oc;
-    //    if(Array.isArray(param)){
-    //        subclass.__super = subclass.prototype.constructor.name;
-    //        param.forEach(function (a, b, c) {
-    //            old[a] = subclass.prototype[a];
-    //        })
-    //        subclass.prototype.__oldfun[subclass.prototype.constructor.name] = old;
-    //    }
-    //}
-    var dsExtend =ds.dsExtend= function dsExtend(subclass, pclass,div) {
+    var dsExtend =$s.dsExtend= function dsExtend(subclass, pclass,div) {
         var spro = subclass.prototype;
-        var ppro=pclass.prototype;
+        //var ppro=pclass.prototype;
         var oc = spro.constructor;
-        if(ppro.__init){
-            ppro.constructor=oc;
-        }
         spro.__init.prototype = new pclass(div);
         for(var ss in spro)spro.__init.prototype[ss]=spro[ss]
         spro.__init.prototype.constructor = oc;
+
     }
     function dsColor(color) {
         this.R = (0x00ff0000 & color) >> 16;//red
@@ -164,7 +328,7 @@
         this.length = this.length || 128;
         this.__data = new Uint8Array(this.length);
     }
-    ds.dsByteArray=dsByteArray;
+    $s.dsByteArray=dsByteArray;
     dsByteArray.defaultObjectEncoding = 'AMF3';
     dsByteArray.prototype.atomicCompareAndSwapIntAt = function (byteIndex, expectedValue, newValue) {
         var old = this.position;
@@ -288,7 +452,6 @@
             this.position++;
         }
         this.position++;
-        //console.log(s);
         s = JSON.parse(s);
         if (s instanceof Array) return s;
         var obj = eval("new " + s.class + "()");
@@ -494,7 +657,7 @@
         }
     }
     
-    ds.dsRectangle=dsRectangle;
+    $s.dsRectangle=dsRectangle;
     function dsRectangle(x, y, w, h) {
         this.x = x;
         this.y = y;
@@ -587,61 +750,61 @@
     dsRectangle.prototype.union = function () {
 
     }
-    function AABB(x1,y1,x2,y2){
+    function dsAABB(x1,y1,x2,y2){
         this.x1 = x1==null?Number.MAX_VALUE:x1;
         this.y1 = y1==null?Number.MAX_VALUE:y1;
         this.x2 = x2==null?Number.MIN_VALUE:x2;
         this.y2 = y2==null?Number.MIN_VALUE:y2;
     }
-    AABB.prototype.instersects=function(ab){
+    dsAABB.prototype.instersects=function(ab){
         //(rectangle.x <= this.right && this.x <= rectangle.right && rectangle.y <= this.bottom && this.y <= rectangle.bottom);
         return (ab.x1 <= this.x2 && this.x1 <= ab.x2 && ab.y1 <= this.y2 && this.y1 <= ab.y2);
     }
-    AABB.prototype.setTo=function(x1,y1,x2,y2){
+    dsAABB.prototype.setTo=function(x1,y1,x2,y2){
         this.x1 = x1;
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
         return this;
     }
-    AABB.prototype.add = function(ab){
+    dsAABB.prototype.add = function(ab){
         this.x1 = Math.min(this.x1,ab.x1);
         this.y1 = Math.min(this.y1,ab.y1);
         this.x2 = Math.max(this.x2,ab.x2);
         this.y2 = Math.max(this.y2,ab.y2);
         return this;
     }
-    AABB.prototype.contains = function(x,y){
+    dsAABB.prototype.contains = function(x,y){
         return this.x1<x&&this.x2>x&&this.y1<y&&this.y2>y;
     }
-    AABB.prototype.setXY = function(x,y){
+    dsAABB.prototype.setXY = function(x,y){
         this.x1 = Math.min(this.x1,x);
         this.y1 = Math.min(this.y1,y);
         this.x2 = Math.max(this.x2,x);
         this.y2 = Math.max(this.y2,y);
         return this;
     }
-    AABB.prototype.inflate=function(x,y){
+    dsAABB.prototype.inflate=function(x,y){
         this.x1 +=x;
         this.y1 +=y;
         this.x2 +=x;
         this.y2 +=y;
     }
-    AABB.prototype.clone = function(){
-        var ab = new AABB();
+    dsAABB.prototype.clone = function(){
+        var ab = new dsAABB();
         ab.x1 = this.x1;
         ab.y1 = this.y1;
         ab.x2 = this.x2;
         ab.y2 = this.y2;
         return ab;
     }
-    AABB.prototype.width = function(){
+    dsAABB.prototype.width = function(){
         return Math.abs(this.x2-this.x1);
     }
-    AABB.prototype.height = function(){
+    dsAABB.prototype.height = function(){
         return Math.abs(this.y2-this.y1);
     }
-    ds.dsPoint=dsPoint;
+    $s.dsPoint=dsPoint;
     function dsPoint(x, y) {
         this.x = x | 0;
         this.y = y | 0;
@@ -665,7 +828,7 @@
         return this.x == point.x || this.y == point.y;
     }
 //内插值 待验证
-    dsPoint.interpolate = function (pt1, pt2, f) {
+    dsPoint.prototype.interpolate = function (pt1, pt2, f) {
         var nor = pt1.clone().subtract(pt2);
         nor.normalize(nor.length * f);
         return nor.add(pt1);
@@ -694,7 +857,7 @@
     dsPoint.prototype.toString = function () {
         return "x = " + this.x + " y = " + this.y;
     }
-    ds.dsMatrix=dsMatrix;
+    $s.dsMatrix=dsMatrix;
     function dsMatrix(a, b, c, d, tx, ty) {
         //this.a =1//   水平缩放绘图
         //this.b=0// 	水平倾斜绘图
@@ -873,7 +1036,9 @@
 //    }
     dsEventDispatcher.prototype.__call = function (parent,key,paramArr) {
         paramArr=paramArr||[];
-        return parent.prototype[key].call(this,paramArr);
+        if(parent.prototype[key]==null)
+            trace(1)
+        return parent.prototype[key].apply(this,paramArr);
     }
     dsEventDispatcher.prototype.addEventListener = function (type, listener, useCapture, priority, useWeakReference) {
         if (this.__events[type] == null)this.__events[type] = Array();
@@ -911,7 +1076,7 @@
         return false;
     }
 
-    ds.dsDisplayObject =dsDisplayObject;
+    $s.dsDisplayObject =dsDisplayObject;
     function dsDisplayObject() {
         dsExtend(dsDisplayObject,dsEventDispatcher);
         var obj = new dsDisplayObject.prototype.__init();
@@ -1039,7 +1204,7 @@
         this._graphics = null;
         this.filters = [];
         this._mat = new dsMatrix().identity();
-        this.__aabb = new AABB();
+        this.__aabb = new dsAABB();
     }
     dsDisplayObject.prototype.__init.prototype = new dsEventDispatcher;
 //循环图形渲染函数
@@ -1107,7 +1272,7 @@
         var bool = ab.contains(dx,dy);
         if(shapeFlag&&bool){
             var m= this.__ctxToData();
-            stage.__ctx2d.putImageData(m,0,0);
+            $s.stage.__ctx2d.putImageData(m,0,0);
             dx -=ab.x1,dy-=ab.y1;
             var index= (dy*m.width+dx)*4;
             return m.data[index+3];
@@ -1136,9 +1301,9 @@
 
     dsDisplayObject.prototype.__ctxToData = function () {
         var ab = this.__AABB();
-        window.fbcanvavs.width = ab.x2;
-        window.fbcanvavs.height = ab.y2;
-        var fbc = window.fbcanvavs.getContext("2d");
+        $s.fdds.width = ab.x2;
+        $s.fdds.height = ab.y2;
+        var fbc = $s.fdds.getContext("2d");
         fbc.clearRect(0,0,this.width,this.height);
         this.__render(fbc);
         return fbc.getImageData(ab.x1,ab.y1,ab.width(), ab.height());
@@ -1155,7 +1320,13 @@
         ab.setXY(p4.x, p4.y);
         return ab;
     }
+    $s.dsInteractiveObject=dsInteractiveObject;
     function dsInteractiveObject() {
+        dsExtend(dsInteractiveObject,dsDisplayObject);
+        //鼠标事件目标阶段
+        return new dsInteractiveObject.prototype.__init();
+    }
+    dsInteractiveObject.prototype.__init=function(){
         this.doubleClickEnabled = false;
         this.mouseEnabled = true;
         this._befocus = false;
@@ -1165,14 +1336,7 @@
         this.__activeEvent = new Object();
         this.__mouseEvent = new Object();
         this.__keyEvent = new Object();
-    }
-    ds.dsInteractiveObject=dsInteractiveObject;
-    function dsInteractiveObject() {
-        dsExtend(dsInteractiveObject, dsDisplayObject);
-        //鼠标事件目标阶段
-        return new dsInteractiveObject.prototype.__init();
-    }
-    dsInteractiveObject.prototype.__init=function(){}
+    };
     dsInteractiveObject.prototype.__mouseaction = function (event) {
         var evs = this.__activeEvent[event.type];
         if(evs==null)return
@@ -1181,9 +1345,10 @@
         mev.stageX=event.offsetX;
         mev.stageY=event.offsetY;
         mev._currentTarget = this;
-        var c = his.getObjectsUnderPoint(mev.stageX,mev.stageY);
-        if(c.length)mev.target = c[0];
-        else mev.target = this;
+        if(dsChildOf(this,dsDisplayObjectContainer)){
+            var c = this.getObjectsUnderPoint(mev.stageX, mev.stageY);
+            if (c.length)mev.target = c[0];
+        }else mev.target = this;
         for (var i = 0; i < evs.length; i++) {
             if (mev._stoppropagation) return;//取消自身的行为
             evs[i]["fun"].call(this, mev);
@@ -1237,10 +1402,10 @@
             var fun = null;
             if (self.__mouseType.indexOf(type) != -1) {
                 fun = function (event) {
-                    if(self ==window.stage){
+                    if(self ==$s.stage){
                         return stage.__mouseaction(event);
                     }
-                    var child = window.stage.getObjectsUnderPoint(new dsPoint(event.offsetX, event.offsetY));
+                    var child = $s.stage.getObjectsUnderPoint(new dsPoint(event.offsetX, event.offsetY));
                     if (child.length > 0) {
                         if (self == child[0]) {
                             self.__mouseaction(event);
@@ -1249,7 +1414,7 @@
                 }
             } else if (self.__keyType.indexOf(type) != -1) {
                 fun = function (event) {
-                    if (window.stage.focus == self) {
+                    if ($s.stage.focus == self) {
                         self.__keyaction(event);
                     }
                 }
@@ -1257,8 +1422,8 @@
 
             if (this.__activeEvent[type] == null) {
                 this.__activeEvent[type] = [];
-                window.stage.__canvas.addEventListener(type, fun);
-                window.stage.__mainevent.push({type:type,fun:fun});
+                $s.stage.__canvas.addEventListener(type, fun);
+                $s.stage.__mainevent.push({type:type,fun:fun});
             }
             var obj = {"fun": listener, "param": [useCapture, priority, useWeakReference]}
             this.__activeEvent[type].push(obj);
@@ -1266,7 +1431,7 @@
                 return e1["param"][1] > e2["param"][1]
             })
         } else {
-            this.__call(dsDisplayObject,"addEventListener",[type, listener, useCapture, priority, useWeakReference]);
+            this.__call(dsEventDispatcher,"addEventListener",[type, listener, useCapture, priority, useWeakReference]);
         }
     };
     dsInteractiveObject.prototype.removeEventListener = function (type, listener) {
@@ -1276,10 +1441,10 @@
                 if (ts[i]['fun'] == listener) {
                     ts.splice(i, 1);
                     if (ts.length <= 0) {
-                        var me=window.stage.__mainevent;
+                        var me=$s.stage.__mainevent;
                         for(var i=0;i<me.length;i++){
                             if(me[i].type == type){
-                                window.stage.__canvas.removeEventListener(me[i].type,me[i].fun)
+                                $s.stage.__canvas.removeEventListener(me[i].type,me[i].fun)
                                 me.splice(1,i);
                                 break;
                             }
@@ -1289,7 +1454,7 @@
                 }
             }
         } else {
-            this.__call(dsDisplayObject,"removeEventListener", [type,listener]);
+            this.__call(dsEventDispatcher,"removeEventListener", [type,listener]);
         }
     };
     dsInteractiveObject.prototype.dispatchEvent = function (event) {
@@ -1301,18 +1466,18 @@
                 a[i]["fun"].call(this, event);
             }
         } else {
-            this.__call(dsDisplayObject,"dispatchEvent", [event]);
+            this.__call(dsEventDispatcher,"dispatchEvent", [event]);
         }
     };
     dsInteractiveObject.prototype.hasEventListener = function (type) {
         if (type in this.__activeType)
             return this.__activeEvent[type];
         else {
-            this.__call(dsDisplayObject,"hasEventListener", [type]);
+            this.__call(dsEventDispatcher,"hasEventListener", [type]);
         }
         return false;
     };
-    ds.dsDisplayObjectContainer=dsDisplayObjectContainer
+    $s.dsDisplayObjectContainer=dsDisplayObjectContainer
     function dsDisplayObjectContainer() {
         dsExtend(dsDisplayObjectContainer, dsInteractiveObject);
         return new dsDisplayObjectContainer.prototype.__init();
@@ -1324,14 +1489,14 @@
         this.__namechildren = Array();//放置子对象名称，每个对象的名称是唯一值。
     }
     dsDisplayObjectContainer.prototype.__frame = function(){
-        if(this.__call(dsInteractiveObject,"__frame")){
+        if(this.__call(dsDisplayObject,"__frame")){
             for (var i in this.__children) {
                 this.__children[i].__frame();
             }
         }
     };
     dsDisplayObjectContainer.prototype.__render = function (ctx) {
-        if(this.__call("__render", [ctx], dsDisplayObjectContainer.__super))
+        if(this.__call(dsDisplayObject,"__render", [ctx]))
         {
             for (var i = 0; i < this.__children.length; i++) {
                 ctx.save();
@@ -1347,7 +1512,7 @@
         this.numChildren++;
         this.__namechildren[displayObject.name] = index;
         displayObject.parent = this;
-        displayObject.stage = window.stage;
+        displayObject.stage = $s.stage;
         displayObject.dispatchEvent(new dsEvent(dsEvent.ADDTOSTAGE));
     };
     dsDisplayObjectContainer.prototype.addChildAt = function (displayObject, index) {
@@ -1362,7 +1527,7 @@
         this.__namechildren[displayObject.name] = index;
         this.numChildren++;
         displayObject.parent = this;
-        displayObject.stage = window.stage;
+        displayObject.stage = $s.stage;
         displayObject.dispatchEvent(new dsEvent(dsEvent.REMOVE_FROM_STAGE));
     };
     dsDisplayObjectContainer.prototype.contains = function (displayObject) {
@@ -1434,7 +1599,7 @@
         this.__namechildren[this.__children[index2].name] = index2;
     };
     dsDisplayObjectContainer.prototype.__AABB = function () {
-        var ab  =this.__recall("__AABB", [], dsDisplayObjectContainer.__super);
+        var ab  =this.__call(dsDisplayObject,"__AABB");
         for (var i = 0; i < this.__children.length; i++) {
             var a = this.__children[i].__AABB().clone();
             ab.add(a);
@@ -1442,51 +1607,12 @@
         return ab;
     }
 
-    function dsStage(canvas) {
-        this.__mainevent=[];//监听的事件函数
-        this.name = "Stage";
-        this.__fb = null;
-        this.__canvas = canvas;
-        this.__ctx2d = canvas.getContext("2d");
-        this._color = "#fff";
-        this._focus = null;
-        this._frameRate = 30;
-        this.fullScreenHeight = 0;
-        this.fullScreenWidth = 0;
-        this.fullScreenSourceRect;
-        this.mouseLock = false;
-        this.quality = 1;
-        this.scaleMode = "StageScaleMode.EXACT_FIT";
-        this._stageHeight = canvas.height;
-        this._stageWidth = canvas.width;
-        this.stage = window;
-        this.__et = 0;
-        this.__bt = 0;
-        this.__pt = parseInt(1000 / this._frameRate);
-        var self = this;
-        window.requestAnimationFrame(frame);
-        function frame() {
-            self.__frame();
-            self.__et = new Date().getTime();
-            if (self.__et - self.__bt > self.__pt) {
-                self.__render(self.__ctx2d);
-                self.__bt = self.__et;
-            }
-            window.requestAnimationFrame(frame);
-        }
-
-        window.addEventListener(dsMouseEvent.MOUSE_MOVE, function (e) {
-            self._mouseX = e.clientX;
-            self._mouseY = e.clientY;
-        })
-    };
 //渲染副本内容
-
     function dsStage(canvas) {
         dsExtend(dsStage, dsDisplayObjectContainer);
         // 只能是用户出发全屏事件，鼠标、键盘触发
-        var s = new dsStage.prototype.__init(canvas);
-        Object.defineProperties(s, {
+        var obj = new dsStage.prototype.__init(canvas);
+        Object.defineProperties(obj, {
             "stageHeight": {
                 set: function (v) {
                     this.__canvas.height = v;
@@ -1531,7 +1657,7 @@
                 }
             }
         })
-        return s;
+        return obj;
     };
     dsStage.prototype.__init=function(canvas){
         this.__mainevent=[];//监听的事件函数
@@ -1596,9 +1722,9 @@
         this.__render(this.__ctx2d);
     }
     dsStage.prototype.__renderfb = function (displayobject) {
-        window.fbcanvavs.width = this.stageWidth;
-        window.fbcanvavs.height = this.stageHeight;
-        var fbc = window.fbcanvavs.getContext("2d");
+        $s.fdds.width = this.stageWidth;
+        $s.fdds.height = this.stageHeight;
+        var fbc = $s.fdds.getContext("2d");
         var ma = displayobject.mask;
         var ab = ma.__AABB();
         displayobject.mask = null;
@@ -1608,11 +1734,11 @@
         fbc.globalCompositeOperation = CompositeOperation.DESTINATION_IN;
         ma.__render(fbc);
         var simg = fbc.getImageData(ab.x1,ab.y1,ab.width(),ab.height());
-        window.fbcanvavs.width = ab.width();
-        window.fbcanvavs.height = ab.height();
+        $s.fdds.width = ab.width();
+        $s.fdds.height = ab.height();
         fbc.putImageData(simg,0,0);
         var m = new Image();
-        m.src = window.fbcanvavs.toDataURL();
+        m.src = $s.fdds.toDataURL();
         displayobject.maskdata = m;
         displayobject.mask = ma;
         ma._ismask = true;
@@ -1661,7 +1787,7 @@
         }
     }
 //显示对象
-    ds.dsSprite =dsSprite
+    $s.dsSprite =dsSprite
     function dsSprite() {
         dsExtend(dsSprite,dsDisplayObjectContainer);
         return new dsSprite.prototype.__init();
@@ -1679,7 +1805,7 @@
         this.__drag = null;
     }
     dsSprite.prototype.__frame = function () {
-        if(this.__recall("__frame", [], dsSprite.__super)){
+        if(this.__call(dsDisplayObjectContainer,"__frame")){
             if (this.__drag) {
                 if (this.__drag['lock']) {
                     this.x = this.mouseX - this.width * 0.5;
@@ -1703,7 +1829,7 @@
             }
         }
     }
-    ds.dsBitmap=dsBitmap;
+    $s.dsBitmap=dsBitmap;
     function dsBitmap(bitmapData, pixelSnapping, smoothing) {
         dsExtend(dsBitmap, dsDisplayObject);
         return new dsBitmap.prototype.__init(bitmapData, pixelSnapping, smoothing);
@@ -1721,6 +1847,7 @@
         }
     }
 
+    $s.dsBitmapData = dsBitmapData;
     function BitmapData(w, h, transparent, fillcolor) {
         var obj = new dsBitmapData(w, h, transparent, fillcolor);
         Object.defineProperties(obj, {
@@ -1742,7 +1869,7 @@
         })
         return obj;
     }
-    DS.dsBitmapData = dsBitmapData;
+
 //Int8Array; Uint8Array; Uint8ClampedArray; Int16Array; Uint16Array; Int32Array; Uint32Array; Float32Array; Float64Array;
     function dsBitmapData(w, h, transparent, fillcolor) {
         this._width = w;
@@ -1753,7 +1880,7 @@
         this._transparent = transparent;
         this._color = fillcolor;
         this._floodrect = [];
-        this._imgdata = window.stage.__ctx2d.createImageData(w, h);
+        this._imgdata = $s.stage.__ctx2d.createImageData(w, h);
         this._img = null;
         this.floodFill(0, 0, fillcolor);
     }
@@ -1900,11 +2027,11 @@
     }
 
     dsBitmapData.prototype._trans = function () {
-        window.fbcanvavs.width = this._width;
-        window.fbcanvavs.height = this._height;
-        window.fbcanvavs.getContext("2d").putImageData(this._imgdata, 0, 0);
+        $s.fdds.width = this._width;
+        $s.fdds.height = this._height;
+        $s.fdds.getContext("2d").putImageData(this._imgdata, 0, 0);
         this._img = document.createElement("img");
-        this._img.src = window.fbcanvavs.toDataURL();
+        this._img.src = $s.fdds.toDataURL();
     }
 
 
@@ -1969,7 +2096,7 @@
         return dsColor.toColor(this._imgdata.data[i], this._imgdata.data[i + 1], this._imgdata.data[i + 2], this._imgdata.data[i + 3]);
     }
     dsBitmapData.prototype.getPixels = function (rect) {
-        var md = window.fbcanvavs.getContext("2d").createImageData(0, 0, rect.width, rect.height);
+        var md = $s.fdds.getContext("2d").createImageData(0, 0, rect.width, rect.height);
         var xx = rect.x;
         var yy = rect.y;
         var i = xx * 4 + this._width * 4 * yy
@@ -2296,7 +2423,7 @@
 
     }
 //此函数来源于 createjs.BitmapData;
-    var NoiseGenerator = (function () {
+    var NoiseGenerator = (function(){
         var PERSISTENCE = 0.5;
         var A = 1103515245;
         var B = 12345;
@@ -2422,7 +2549,8 @@
 
         return NoiseGenerator;
     }());
-    ds.dsTextField=dsTextField;
+
+    $s.dsTextField=dsTextField;
     function dsTextField() {
         dsExtend(dsTextField, dsInteractiveObject);
         var text = new dsTextField.prototype.__init();
@@ -2666,7 +2794,7 @@
     dsTextField.prototype.setTextFormat = function (format, beginIndex, endIndex) {
     }
     dsTextField.prototype.__render = function (ctx) {
-        this.__recall('__render',[ctx],dsTextField.__super);
+        this.__call(dsInteractiveObject,'__render',[ctx]);
         if (this.background) {
             ctx.fillStyle = this.backgroundColor;
             ctx.fillRect(0, 0, this.width+4, this.height+4);//左右,上下各2像素的宽度
@@ -2733,7 +2861,7 @@
         this._proxy.value = this.text;
         this._proxy.focus();
     }
-    ds.dsTextFormat=dsTextFormat;
+    $s.dsTextFormat=dsTextFormat;
     function dsTextFormat() {
         this.align = "left";
         //表示段落的对齐方式。
@@ -2805,11 +2933,9 @@
         this.words = this.text.split('');
     }
 
-    ds.dsMovieClip=dsMovieClip;
-    dsMovieClip.baseURI='';
-    dsMovieClip.file='json'
+    $s.dsMovieClip=dsMovieClip;
     function dsMovieClip(source) {
-        dsExtend(dsMovieClip, Sprite, ["__render"]);
+        dsExtend(dsMovieClip, dsSprite, ["__render"]);
         var m = new dsMovieClip.prototype.__init(source);
         Object.defineProperties(m, {
             "totalFrames": {
@@ -2841,7 +2967,7 @@
         this._sheet = null;
         if(source){
             this.name=source?source:this.name;
-            source = dsMovieClip.baseURI+source+"."+dsMovieClip.file;
+            source = config.baseURI+source+"."+config.file;
             this.__load(source);
         }
     }
@@ -2876,17 +3002,20 @@
                 var d = JSON.parse(res.data);
                 if(!d)return
                 var img = new Image();
-                img.src = dsMovieClip.baseURI+d.meta.image;
+                img.src = config.baseURI+d.meta.image;
+                img.onerror = function(e){
+                    throw e;
+                }
                 img.onload = function(e){
-                    window.fbcanvavs.width = d.meta.size.w;
-                    window.fbcanvavs.height = d.meta.size.h;
-                    var xt = window.fbcanvavs.getContext("2d");
+                    $s.fdds.width = d.meta.size.w;
+                    $s.fdds.height = d.meta.size.h;
+                    var xt = $s.fdds.getContext("2d");
                     xt.drawImage(img, 0, 0);
                     self._sheet = new SpriteSheet(d).prase(xt);
                     self.width = self._sheet.width;
                     self.height = self._sheet.height;
                     self._totalFrames = self._sheet.imgs.length;
-                    stage.invalidate();
+                    $s.stage.invalidate();
                     self.dispatchEvent(new dsEvent(dsEvent.COMPLETE));
                 }
             }
@@ -2894,7 +3023,7 @@
         }
     }
     p.__render = function (ctx) {
-        if(this.__recall("__render", [ctx], dsMovieClip.__super)){
+        if(this.__call(dsDisplayObjectContainer,"__render",[ctx])){
             this.__et = new Date().getTime();
             if (this._sheet) {
                 var b = this._sheet.getImg(this.currentFrame);
@@ -2925,12 +3054,12 @@
 
         for(var j = 0;j<arr.length;j++){
             var f  = this.data.frames[j];
-            window.fbcanvavs.width = f.frame.w;
-            window.fbcanvavs.height = f.frame.h;
+            $s.fdds.width = f.frame.w;
+            $s.fdds.height = f.frame.h;
             ctx.clearRect(0,0,f.frame.w,f.frame.h);
             ctx.putImageData(arr[j],0,0);
             var m = new Image();
-            m.src=window.fbcanvavs.toDataURL('image/png');
+            m.src=$s.fdds.toDataURL('image/png');
             this.imgs.push(m);
         }
         return this;
@@ -2942,7 +3071,7 @@
         return o;
     }
 
-    DS.dsURLRequest=dsURLRequest;
+    $s.dsURLRequest=dsURLRequest;
     function dsURLRequest(url){
         this.contentType ='application/x-www-form-urlencoded';// multipart/form-data
         this.data=null;
@@ -2956,7 +3085,7 @@
         //"Mozilla/5.0 (X11; U; Linux i686; en-US) AppleWebKit/526.9+ (KHTML, like Gecko) AdobeAIR/1.5"
     }
 
-    DS.dsURLLoader=dsURLLoader;
+    $s.dsURLLoader=dsURLLoader;
     function dsURLLoader(request){
         dsExtend(dsURLLoader, dsEventDispatcher);
         return new dsURLLoader.prototype.__init(request);
@@ -3027,7 +3156,7 @@
             this.load(url);
         }
     }
-    ds.dsLoader=dsLoader;
+    $s.dsLoader=dsLoader;
     function dsLoader() {
         dsExtend(dsLoader, dsInteractiveObject);
         return new dsLoader.prototype.__init();
@@ -3052,7 +3181,7 @@
         ctx.transform(this._mat.a,this._mat.b,this._mat.c,this._mat.d,this._mat.tx,this._mat.ty);
         ctx.drawImage(this.data, 0, 0, this.width, this.height, 0, 0, this.width, this.height);
     }
-    ds.dsBlurFilter=dsBlurFilter
+    $s.dsBlurFilter=dsBlurFilter
     function dsBlurFilter(blurX, blurY, quality) {
         this.blurX = blurX | 4;
         this.blurY = blurY | 4;
@@ -3068,7 +3197,7 @@
 
     }
 
-    ds.dsDropShadowFilter=dsDropShadowFilter;
+    $s.dsDropShadowFilter=dsDropShadowFilter;
 //投影
     function dsDropShadowFilter(distance, angle, color, alpha, blurX, blurY, strength, quality, inner, knockout, hideObject) {
         this.distance = distance//:Number (default = 4.0) — 阴影的偏移距离，以像素为单位。
@@ -3088,9 +3217,9 @@
         ctx.shadowOffsetX = this.blurX * Math.cos(this.angle);
         ctx.shadowOffsetY = this.blurY * Math.sin(this.angle);
     }
-    ds.dsSound=dsSound;
+    $s.dsSound=dsSound;
     function dsSound(stream, context) {
-        dsExtend(dsSound, EventDispatcher, ["__render"]);
+        dsExtend(dsSound, dsEventDispatcher, ["__render"]);
         return new dsSound.prototype.__init(stream, context);
     }
     /*
@@ -3148,15 +3277,17 @@
     dsSound.prototype.play = function (startTime, loops, sndTransform) {
 
     }
-
-    ds.dsGraphics=dsGraphics;
+    //exports('dsGraphics',function(global){
+    //
+    //})
+    $s.dsGraphics=dsGraphics;
     function dsGraphics() {
-        this.__aabb = new AABB();
+        this.__aabb = new dsAABB();
         this._code = [];
         this._codeindex = 0;
         this.__drawline = false;
         this.__drawfill = false;
-        this._AABB = new AABB();
+        this._AABB = new dsAABB();
         this._to=[];
     }
     dsGraphics.prototype.settarget = function (v) {
@@ -3279,7 +3410,7 @@
      color 只能是8位颜色值
      */
     dsGraphics.prototype.beginFill = function (color, alpha) {
-        if (typeof color == "number")color = Color.toStr(color);
+        if (typeof color == "number")color = dsColor.toStr(color);
         this._addCode("fill", ['style', color, alpha || 1]);
         this.__drawfill = true;
     }
@@ -3290,7 +3421,7 @@
     }
 
     dsGraphics.prototype.lineStyle = function (thickness, color, alpha, pixelHinting, scaleMode, caps, joints, miterLimit) {
-        if (typeof color == 'number')color = Color.toStr(color);
+        if (typeof color == 'number')color = dsColor.toStr(color);
         this._addCode("line", ['style', thickness, color, alpha, pixelHinting, scaleMode, caps, joints, miterLimit]);
         this.__drawline = true;
     }
@@ -3403,7 +3534,7 @@
 
     };
     dsGraphics.prototype.drawCircle = function (x, y, r) {
-        this.__aabb.add(new AABB(x-r,y-r,x+r,y+r));
+        this.__aabb.add(new dsAABB(x-r,y-r,x+r,y+r));
         //this._target.width = Math.max(this._AABB.width(), this._target.width);
         //this._target.height = Math.max(this._AABB.height(), this._target.height);
         this._addCode("draw", ['circle', [x, y, r, 0, 2 * Math.PI]]);
@@ -3420,7 +3551,7 @@
         this._codeindex++;
     };
     dsGraphics.prototype.drawRect = function (x, y, w, h) {
-        this.__aabb.add(new AABB(x,y,x+w,y+h));
+        this.__aabb.add(new dsAABB(x,y,x+w,y+h));
         //this._target.width = Math.max(this._AABB.width(), this._target.width);
         //this._target.height = Math.max(this._AABB.height(), this._target.height);
         this._addCode('draw', ['rect', [x, y, w, h]]);
@@ -3466,169 +3597,5 @@
         }
         return this;
     };
-
-    DS.dsEvent=dsEvent;
-    /*
-     bubbles:
-     捕获阶段 (EventPhase.CAPTURING_PHASE)。
-     目标阶段 (EventPhase.AT_TARGET)。
-     冒泡阶段 (EventPhase.BUBBLING_PHASE)。
-     */
-    function dsEvent(type, bubbles, cancelable) {
-        this.type = type;
-        this._bubbles = bubbles || false;
-        this._cancelable = cancelable || false;
-        this._currentTarget = null;
-        this._target = null;
-        this.eventPhase = 0;
-        this._stopimmediatepropagation = false;
-        this._stoppropagation = false;
-    }
-
-    dsEvent.prototype.isDefaultPrevented = function () {
-
-    }
-//cancelable 的值为 true 则可以使用 preventDefault() 来取消事件
-    dsEvent.prototype.preventDefault = function () {
-
-    }
-//防止对事件流中当前节点中和所有后续节点中的事件侦听器进行处理
-    dsEvent.prototype.stopImmediatePropagation = function () {
-        this._stopimmediatepropagation = true
-    }
-//此方法不会影响当前节点 (currentTarget) 中的任何事件侦听器
-    dsEvent.prototype.stopPropagation = function () {
-        this._stoppropagation = true;
-    }
-    dsEvent.initEvent = function (type, bubbles, cancelable) {
-        var eve = new dsEvent(type, bubbles, cancelable);
-        Object.defineProperties(eve, {
-            "cancelable": {
-                set: function (v) {
-                    this._cancelable = v
-                }
-            },
-            "bubbles": {
-                set: function (v) {
-                    this._bubbles = v;
-                }
-            },
-            "currentTarget": {
-                get: function () {
-                    return this._currentTarget;
-                }
-            },
-            "target": {
-                get: function () {
-                    return this._target;
-                }
-            }
-        });
-        return eve;
-    }
-    dsEvent.ENTER_FRAME = "enter_frame";
-    dsEvent.ADDED_TO_STAGE = "addtostage";
-    dsEvent.REMOVE_FROM_STAGE = "removefromstage";
-    dsEvent.ACTIVATE = "activate";
-    dsEvent.BROWSER_ZOOM_CHANGE = "browser_zoom_change";
-    dsEvent.CANCEL = "cancel";
-    dsEvent.CHANGE = "change";
-    dsEvent.CHANNELMESSAGE = "channelMessage"
-    dsEvent.CHANNELSTATE = "channelState"
-    dsEvent.CLEAR = "clear"
-    dsEvent.CLOSE = "close"
-    dsEvent.COMPLETE = "complete"
-    dsEvent.CONNECT = "connect"
-    dsEvent.COPY = "copy"
-    dsEvent.DEACTIVATE = "deactivate"
-    dsEvent.EXITFRAME = "exitFrame"
-    dsEvent.FULLSCREEN = "fullScreen"
-    dsEvent.INIT = "init"
-    dsEvent.MOUSELEAVE = "mouseLeave"
-    dsEvent.OPEN = "open"
-    dsEvent.PASTE = "paste"
-    dsEvent.REMOVED = "removed"
-    dsEvent.RENDER = "render"
-    dsEvent.RESIZE = "resize"
-    dsEvent.SCROLL = "scroll"
-    dsEvent.SELECT = "select"
-    dsEvent.SELECTALL = "selectAll"
-    dsEvent.SOUNDCOMPLETE = "soundComplete"
-    dsEvent.TABCHILDRENCHANGE = "tabChildrenChange";
-    ds.dsMouseEvent=dsMouseEvent;
-    function dsMouseEvent(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount) {
-        this.type = type
-        this.bubbles = bubbles
-        this.cancelable = cancelable
-        this.altKey = altKey
-        this.buttonDown = buttonDown
-        this.ctrlKey = ctrlKey
-        this.delta = delta
-        this.isRelatedObjectInaccessible
-        this.localX = localX
-        this.localY = localY
-        this.movementX = 0;
-        this.relatedObject = relatedObject
-        this.shiftKey = shiftKey
-        this.stageX = 0
-        this.stageY = 0
-        this.clickCount = clickCount;
-        this.commandKey = commandKey
-        this.controlKey = controlKey;
-    }
-    dsMouseEvent.prototype = dsEvent.initEvent();
-    dsMouseEvent.prototype.updateAfterEvent = function () {
-
-    }
-    dsMouseEvent.CLICK = "click";
-    dsMouseEvent.DOUBLE_CLICK = "doubleclick";
-    dsMouseEvent.MIDDLE_CLICK = "middleclick";
-    dsMouseEvent.MIDDLE_MOUSE_DOWN = "middlemousedown";
-    dsMouseEvent.MIDDLE_MOUSE_UP = "middlemouseup";
-    dsMouseEvent.MOUSE_DOWN = "mousedown";
-    dsMouseEvent.MOUSE_MOVE = "mousemove";
-    dsMouseEvent.MOUSE_OUT = "mouseout";
-    dsMouseEvent.MOUSE_OVER = "mouseover";
-    dsMouseEvent.MOUSE_UP = "mouseup";
-    dsMouseEvent.MOUSE_WHEEL = "mousewheel";
-    dsMouseEvent.RELEASE_OUTSIDE = "releaseoutside";
-    dsMouseEvent.RIGHT_CLICK = "rightclick";
-    dsMouseEvent.RIGHT_MOUSE_DOWN = "rightmousedown";
-    dsMouseEvent.RIGHT_MOUSE_UP = "rightmouseup";
-    dsMouseEvent.ROLL_OUT = "rollout";
-    dsMouseEvent.ROLL_OVER = "rollover";
-    ds.dsKeyboardEvent=dsKeyboardEvent;
-    dsKeyboardEvent.prototype = dsEvent.initEvent();
-    function dsKeyboardEvent(type, bubbles, cancelable, charCodeValue, keyCodeValue, keyLocationValue, ctrlKeyValue, altKeyValue, shiftKeyValue, controlKeyValue, commandKeyValue) {
-        this.type = type
-        this.bubbles = bubbles
-        this.cancelable = cancelable
-        this.altKey = altKeyValue
-        this.charCode = charCodeValue
-        this.ctrlKey = ctrlKeyValue
-        this.keyCode = keyCodeValue
-        this.keyLocation = keyLocationValue
-        this.shiftKey = shiftKeyValue
-    }
-
-    dsKeyboardEvent.KEY_DOWN = "keydown";
-    dsKeyboardEvent.KEY_UP = "keyup";
-    ds.dsFocusEvent=dsFocusEvent;
-    dsFocusEvent.prototype = dsEvent.initEvent();
-    function dsFocusEvent(type, bubbles, cancelable, relatedObject, shiftKey, keyCode, direction) {
-        this.type = type;
-        this._bubbles = bubbles || false;
-        this._cancelable = cancelable || false;
-        this._currentTarget = null;
-        this.relatedObject = relatedObject;
-        this.shiftKey = shiftKey;
-        this.keyCode = keyCode;
-        this.direction = direction;
-    }
-    dsFocusEvent.FOCUS_IN = "focusIn"
-    dsFocusEvent.FOCUS_OUT = "focusOut "
-    dsFocusEvent.KEY_FOCUS_CHANGE = "keyFocusChange"
-    dsFocusEvent.MOUSE_FOCUS_CHANGE = "mouseFocusChange"
-
 
 })

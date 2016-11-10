@@ -19,7 +19,7 @@
 "meta": {
 	"app": "Adobe Flash Professional",
 	"version": "15.0.0.173",
-	"image": "movie/zuoyi.png",
+	"image": "zuoyi.png",
 	"format": "RGBA8888",
 	"size": {"w":175,"h":188},
 	"scale": "1"

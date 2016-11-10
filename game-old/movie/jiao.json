@@ -27,7 +27,7 @@
 "meta": {
 	"app": "Adobe Flash Professional",
 	"version": "15.0.0.173",
-	"image": "movie/jiao.png",
+	"image": "jiao.png",
 	"format": "RGBA8888",
 	"size": {"w":204,"h":69},
 	"scale": "1"

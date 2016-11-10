@@ -11,7 +11,7 @@
 "meta": {
 	"app": "Adobe Flash Professional",
 	"version": "15.0.0.173",
-	"image": "movie/btn.png",
+	"image": "btn.png",
 	"format": "RGBA8888",
 	"size": {"w":121,"h":60},
 	"scale": "1"

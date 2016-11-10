@@ -1,35 +1,35 @@
 /**
  * Created by Administrator on 2016/11/4.
  */
-(function(){
-    DS(function(){
-        MovieClip.baseURI = "movie/";
+(function($s){
+    $s.ready(function(){
         changeScene('login')
-    });
+    },{baseURI:'movie/'});
 
-})();
+})(window.$s);
 
 function changeScene(sec){
     switch(sec){
         case "road":
-            stage.reset();
+            $s.stage.reset();
             road();
             break;
         case "room":
-            stage.reset();
+            $s.stage.reset();
             room();
             break;
         case 'login':
-            login();
+            try{login();}catch(e){throw e}
             break;
     }
 }
-function g_Event(type,data){
+
+function gEvent(type, data){
+    $s.dsExtend(gEvent,$s.dsEvent);
+    return new gEvent.prototype.__init(type,data);
+}
+gEvent.prototype.__init=function(type,data){
     this.type = type;
     this.data = data;
-}
-function gEvent(type, data){
-    tc_extends(g_Event,tcEvent);
-    return new g_Event(type,data);
 }
 

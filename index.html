@@ -3,8 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title></title>
+    <script src="dscanvas.js"></script>
 </head>
 <body>
 
 </body>
+<script>
+    $s.ready(function($s){
+        var s = new $s.dsSprite();
+        s.graphics.beginFill(0xff0000);
+        s.graphics.drawRect(0,0,100,100);
+        s.addEventListener($s.dsMouseEvent.CLICK,function(){
+            trace(1)
+        })
+        s.x = 100;
+        $s.stage.addChild(s);
+        trace(s.__AABB())
+    })
+</script>
 </html>

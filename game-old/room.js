@@ -2,61 +2,61 @@
  * created by administrator on 2016/11/2.
  */
 function room() {
-    var bg = new $s.dsLoader();
-    bg.load('img/shinei.png');
+    var bg = new Loader();
+    bg.load('/ds/img/shinei.png');
     bg.name = 'bg';
-    $s.stage.addChild(bg);
-    var bgclick = new $s.dsLoader().load("img/bgclick.png");
+    stage.addChild(bg);
+    var bgclick = new Loader().load("/ds/img/bgclick.png");
     bgclick.y = 318;
     bgclick.x = 10
     bgclick.name = 'bgclick';
-    $s.stage.addChild(bgclick)
+    stage.addChild(bgclick)
 
-    var men = new $s.dsLoader().load('img/men.png');
+    var men = new Loader().load('/ds/img/men.png');
     men.y = 335;
     men.x = 10;
     men.name = "men"
-    $s.stage.addChild(men);
-    men.addEventListener($s.dsMouseEvent.CLICK, function () {
+    stage.addChild(men);
+    men.addEventListener(tcMouseEvent.CLICK, function () {
         addCode('chumen', 50,546)
     })
 
-    var zhouzi = new $s.dsLoader().load('img/zhuozi.png');
+    var zhouzi = new Loader().load('/ds/img/zhuozi.png');
     zhouzi.x = 513;
     zhouzi.y = 220;
     zhouzi.name = "zhouzi";
-    $s.stage.addChild(zhouzi);
+    stage.addChild(zhouzi);
 
-    var biji = new $s.dsLoader().load('img/bijiben.png');
+    var biji = new Loader().load('/ds/img/bijiben.png');
     biji.x = 500;
     biji.y = 180;
     biji.name = 'biji';
-    $s.stage.addChild(biji);
-    biji.addEventListener($s.dsMouseEvent.CLICK, function () {
+    stage.addChild(biji);
+    biji.addEventListener(tcMouseEvent.CLICK, function () {
         addCode('kandianying', 621, 378)
     })
 
-    var taiji = new $s.dsLoader().load('img/taishiji.png');
+    var taiji = new Loader().load('/ds/img/taishiji.png');
     taiji.x = 600;
     taiji.y = 120;
     taiji.name = 'taiji';
-    $s.stage.addChild(taiji);
-    taiji.addEventListener($s.dsMouseEvent.CLICK, function () {
+    stage.addChild(taiji);
+    taiji.addEventListener(tcMouseEvent.CLICK, function () {
         addCode('wanyouxi', 621, 378);
     });
 
-    var zuoyi = new $s.dsMovieClip('zuoyi');
+    var zuoyi = new MovieClip('zuoyi');
     zuoyi.gotoAndStop(0);
     zuoyi.x = 580;
     zuoyi.y = 230;
-    $s.stage.addChild(zuoyi);
+    stage.addChild(zuoyi);
 
-    var cesuo = new $s.dsLoader().load('img/cesuo.png');
+    var cesuo = new Loader().load('/ds/img/cesuo.png');
     cesuo.x = 89;
     cesuo.y = 145;
     cesuo.name = 'cesuo'
-    $s.stage.addChild(cesuo);
-    cesuo.addEventListener($s.dsMouseEvent.CLICK, function () {
+    stage.addChild(cesuo);
+    cesuo.addEventListener(tcMouseEvent.CLICK, function () {
         addCode('shangcesou', 199, 441);
     })
 
@@ -64,20 +64,20 @@ function room() {
     person.y = 550;
     person.x = 300;
     person.name = "person";
-    $s.stage.addChild(person);
+    stage.addChild(person);
     person.addEventListener('walkover',function(e){
         doCode(person.action);
     })
-    var beizi = new $s.dsMovieClip('beizi');
+    var beizi = new MovieClip('beizi');
     beizi.gotoAndStop(1)
     beizi.x = 393;
     beizi.y = 460;
-    $s.stage.addChild(beizi);
-    beizi.addEventListener($s.dsMouseEvent.CLICK, function () {
+    stage.addChild(beizi);
+    beizi.addEventListener(tcMouseEvent.CLICK, function () {
         addCode('diebeizi', 580, 453);
     })
 
-    bgclick.addEventListener($s.dsMouseEvent.CLICK, goto);
+    bgclick.addEventListener(tcMouseEvent.CLICK, goto);
     function goto(event) {
         if (event.currentTarget.name == 'bgclick') {
             trace(event.stageX, event.stageY)
@@ -108,7 +108,7 @@ function room() {
     //}
 
     function addCode(type, dx, dy) {
-        var p = $s.stage.getChildByName('person');
+        var p = stage.getChildByName('person');
         p.alpha = 1;
         if (p.action != type) {
             reset(p.action);
@@ -120,7 +120,7 @@ function room() {
     function doCode(type) {
         switch (type) {
             case 'diebeizi':
-                var mc = $s.stage.getChildByName('beizi');
+                var mc = stage.getChildByName('beizi');
                 mc.gotoAndStop(0);
                 break;
             case "shangcesou":
@@ -128,9 +128,9 @@ function room() {
             case "wanyouxi":
             case "kandianying":
             case "shangwang":
-                var p = $s.stage.getChildByName('person');
+                var p = stage.getChildByName('person');
                 p.visible = false;
-                var mc = $s.stage.getChildByName('zuoyi');
+                var mc = stage.getChildByName('zuoyi');
                 mc.gotoAndStop(1);
                 break;
             case "chumen":
@@ -150,9 +150,9 @@ function room() {
             case "wanyouxi":
             case "kandianying":
             case "shangwang":
-                var p = $s.stage.getChildByName('person');
+                var p = stage.getChildByName('person');
                 p.visible = true;
-                var mc = $s.stage.getChildByName('zuoyi');
+                var mc = stage.getChildByName('zuoyi');
                 mc.gotoAndStop(0);
                 break;
             case "chumen":
