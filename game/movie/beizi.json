@@ -1,0 +1,27 @@
+﻿{"frames": [
+
+{
+	"filename": "被子0000",
+	"frame": {"x":0,"y":0,"w":396,"h":121},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":396,"h":121},
+	"sourceSize": {"w":396,"h":121}
+}
+,{
+	"filename": "被子0001",
+	"frame": {"x":396,"y":0,"w":396,"h":121},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":396,"h":121},
+	"sourceSize": {"w":396,"h":121}
+}],
+"meta": {
+	"app": "Adobe Flash Professional",
+	"version": "15.0.0.173",
+	"image": "beizi.png",
+	"format": "RGBA8888",
+	"size": {"w":800,"h":123},
+	"scale": "1"
+}
+}

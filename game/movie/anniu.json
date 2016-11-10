@@ -1,0 +1,19 @@
+﻿{"frames": [
+
+{
+	"filename": "位图 1",
+	"frame": {"x":0,"y":0,"w":121,"h":60},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":121,"h":60},
+	"sourceSize": {"w":121,"h":60}
+}],
+"meta": {
+	"app": "Adobe Flash Professional",
+	"version": "15.0.0.173",
+	"image": "anniu.png",
+	"format": "RGBA8888",
+	"size": {"w":121,"h":60},
+	"scale": "1"
+}
+}

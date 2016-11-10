@@ -1,0 +1,27 @@
+﻿{"frames": [
+
+{
+	"filename": "坐下0000",
+	"frame": {"x":0,"y":0,"w":86,"h":187},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":86,"h":187},
+	"sourceSize": {"w":86,"h":187}
+}
+,{
+	"filename": "坐下0001",
+	"frame": {"x":86,"y":0,"w":86,"h":187},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":86,"h":187},
+	"sourceSize": {"w":86,"h":187}
+}],
+"meta": {
+	"app": "Adobe Flash Professional",
+	"version": "15.0.0.173",
+	"image": "zuoyi.png",
+	"format": "RGBA8888",
+	"size": {"w":175,"h":188},
+	"scale": "1"
+}
+}
