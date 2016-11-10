@@ -17,14 +17,14 @@ function login(){
     var btn = new Loader().load('img/btn.png');
     btn.x = 600;
     btn.y = 200;
-    btn.addEventListener(tcMouseEvent.MOUSE_DOWN,function(){
+    btn.addEventListener('mousedown',function(){
         changeScene('room');
     })
     stage.addChild(btn);
     var btn1 = new Loader().load('img/shuoming.png');
     btn1.x = 600;
     btn1.y = 300;
-    btn1.addEventListener(tcMouseEvent.MOUSE_DOWN,function(){
+    btn1.addEventListener('mousedown',function(){
 
     })
     stage.addChild(btn1);
