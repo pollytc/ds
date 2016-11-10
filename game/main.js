@@ -3,7 +3,7 @@
  */
 (function(){
     DS(function(){
-        MovieClip.baseURI = "/ds/movie/";
+        MovieClip.baseURI = "movie/";
         changeScene('login')
     });
 

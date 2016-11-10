@@ -1,50 +1,82 @@
-"use strict";
-(function(){
-    var mains = [];
-    window.DS=function(main, width, height) {
-        if(window.stage!= null){
+/**
+ * Created by Administrator on 2016/11/10.
+ * //´úÂëÔ­Ôò
+
+ ÏÂ»®ÏßÊôĞÔ£¬º¯Êı£¬¶¼²»±»Ê¹ÓÃ
+ _µ¥ÏÂ»®Ïß£¬ÊÇÀàÊôĞÔ,º¯ÊıÃ»ÓĞµ¥ÏÂ»¬Ïß
+ __Ë«ÏÂ»®Ïß£¬ÊÇÔ­ĞÍÊôĞÔ£¬º¯Êı
+ ds¿ªÍ·µÄÀà£¬²»±»Ê¹ÓÃµÄÀà
+ */
+(function(win,fun){
+    win.ds||fun(win)
+})(window,function(window){
+    var ds =window.ds||{};
+    ds.mains=[];
+    ds.config ={width:800,height:600}
+    ds.ready=function(main, config) {
+        if(ds.stage!= null){
             main();
         }else{
-            mains.push(main);
+            ds.mains.push(main);
+        }
+        if(typeof config =='string'){
+            ds.config.canvas = parseStr(config);
+        }else{
+            for(var s in config){
+                ds.config[s] = config[s];
+            }
         }
         window.onload = function () {
-            var c1 = document.createElement("canvas");
-            c1.width = width | 800;
-            c1.height = height | 600;
-            document.body.appendChild(c1);
+            if(ds.config.canvas==null){
+                var c1 = document.createElement("canvas");
+                c1.width = ds.config.width;
+                c1.height = ds.config.height;
+                document.body.appendChild(c1);
+                ds.stage = new Stage(c1);
+            }
             var c2 = document.createElement("canvas");
             c2.style = "display:none";
             document.body.appendChild(c2);
-            window.stage = new Stage(c1);
-            window.fbcanvavs = c2;
-            mains.forEach(function(e){e();})
+            ds.fdds = c2;
+            ds.mains.forEach(function(e){e();});
         }
         window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,errorObj){
             trace(errorMessage, scriptURI, lineNumber,columnNumber,errorObj)
         }
     }
-    var DS = window;
-    DS.trace = console.log;
-//äº‹ä»¶åˆ†å‘å™¨
-    var utils=DS.utils = {
-        UUID: function () {
-            return Math.random().toString(36).substr(2);
-        },
-        INTERACTIVEEVENT: [tcEvent.ENTER_FRAME,],
-        MOUSE: [FocusEvent.FOCUS_IN, FocusEvent.FOCUS_OUT, FocusEvent.KEY_FOCUS_CHANGE, FocusEvent.MOUSE_FOCUS_CHANGE, tcMouseEvent.ROLL_OVER, tcMouseEvent.ROLL_OUT, tcMouseEvent.RIGHT_MOUSE_UP, tcMouseEvent.RIGHT_MOUSE_DOWN, tcMouseEvent.RIGHT_CLICK, tcMouseEvent.RELEASE_OUTSIDE, tcMouseEvent.MOUSE_WHEEL, tcMouseEvent.MOUSE_UP, tcMouseEvent.MOUSE_OVER, tcMouseEvent.CLICK, tcMouseEvent.DOUBLE_CLICK, tcMouseEvent.MIDDLE_CLICK, tcMouseEvent.MIDDLE_MOUSE_DOWN, tcMouseEvent.MIDDLE_MOUSE_UP, tcMouseEvent.MOUSE_DOWN, tcMouseEvent.MOUSE_MOVE, tcMouseEvent.MOUSE_OUT],
-        KEY: [tcKeyboardEvent.KEY_DOWN, tcKeyboardEvent.KEY_UP]
+    function parseStr(str){
+        if(typeof str != 'string')return [];
+        try{
+            var pre =str.substr(0,1);
+            if(pre=="#")return [document.getElementById(str.substr(1))];
+            if(pre==".")return document.getElementsByClassName(str.substr(1));
+            return document.getElementsByTagName(str);
+        }catch(e){
+            throw 'can not find '+str+' elements';
+        }
     }
-
-//ä»£ç åŸåˆ™
-    /*
-     ä¸‹åˆ’çº¿å±æ€§ï¼Œå‡½æ•°ï¼Œéƒ½ä¸è¢«ä½¿ç”¨
-     _å•ä¸‹åˆ’çº¿ï¼Œæ˜¯ç±»å±æ€§,å‡½æ•°æ²¡æœ‰å•ä¸‹æ»‘çº¿
-     __åŒä¸‹åˆ’çº¿ï¼Œæ˜¯åŸå‹å±æ€§ï¼Œå‡½æ•°
-     tcå¼€å¤´çš„ç±»ï¼Œä¸è¢«ä½¿ç”¨çš„ç±»
-
-     */
-
-    var dsChildOf=DS.dsChildOf=function dsChildOf(child,parent){
+    window.trace=ds.trace = console.log;
+    var utils=ds.utils = {
+        uid:0,
+        UUID: function (){return Math.random().toString(36).substr(2)+(this.uid++);},
+        INTERACTIVEEVENT: [dsEvent.ENTER_FRAME,],
+        MOUSE: [dsFocusEvent.FOCUS_IN, dsFocusEvent.FOCUS_OUT, dsFocusEvent.KEY_FOCUS_CHANGE, dsFocusEvent.MOUSE_FOCUS_CHANGE, dsMouseEvent.ROLL_OVER, dsMouseEvent.ROLL_OUT, dsMouseEvent.RIGHT_MOUSE_UP, dsMouseEvent.RIGHT_MOUSE_DOWN, dsMouseEvent.RIGHT_CLICK, dsMouseEvent.RELEASE_OUTSIDE, dsMouseEvent.MOUSE_WHEEL, dsMouseEvent.MOUSE_UP, dsMouseEvent.MOUSE_OVER, dsMouseEvent.CLICK, dsMouseEvent.DOUBLE_CLICK, dsMouseEvent.MIDDLE_CLICK, dsMouseEvent.MIDDLE_MOUSE_DOWN, dsMouseEvent.MIDDLE_MOUSE_UP, dsMouseEvent.MOUSE_DOWN, dsMouseEvent.MOUSE_MOVE, dsMouseEvent.MOUSE_OUT],
+        KEY: [dsKeyboardEvent.KEY_DOWN, dsKeyboardEvent.KEY_UP]
+    }
+    var CompositeOperation = {
+        SOURCE_OVER: "source-over",
+        SOURCE_ATOP: "source-atop",
+        SOURCE_IN: "source-in",
+        SOURCE_OUT: "source-out",
+        DESTINATION_OVER: "destination-over",
+        DESTINATION_ATOP: "destination-atop",
+        DESTINATION_IN: "destination-in",
+        DESTINATION_OUT: "destination-out",
+        LIGHTER: "lighter",
+        COPY: "copy",
+        XOR: "xor"
+    }
+    var dsChildOf=ds.dsChildOf=function dsChildOf(child,parent){
         var vb = child.__proto__;
         while(vb.constructor != EventDispatcher.prototype.constructor){
             if(vb.constructor ==parent.prototype.constructor)return true;
@@ -52,43 +84,804 @@
         }
         return false;
     }
-//ç»§æ‰¿å‡½æ•°
-    var dsExtend =DS.dsExtend= function dsExtend(subclass, pclass, param) {
-        var old = Array();
-        var oc = subclass.prototype.constructor;
-        subclass.prototype = new pclass();
-        subclass.prototype.constructor = oc;
-        if(Array.isArray(param)){
-            subclass.__super = subclass.prototype.constructor.name;
-            param.forEach(function (a, b, c) {
-                old[a] = subclass.prototype[a];
-            })
-            subclass.prototype.__oldfun[subclass.prototype.constructor.name] = old;
+    //var dsExtend =ds.dsExtend= function(subclass, pclass, param) {
+    //    var old = Array();
+    //    var oc = subclass.prototype.constructor;
+    //    subclass.prototype = new pclass();
+    //    subclass.prototype.constructor = oc;
+    //    if(Array.isArray(param)){
+    //        subclass.__super = subclass.prototype.constructor.name;
+    //        param.forEach(function (a, b, c) {
+    //            old[a] = subclass.prototype[a];
+    //        })
+    //        subclass.prototype.__oldfun[subclass.prototype.constructor.name] = old;
+    //    }
+    //}
+    var dsExtend =ds.dsExtend= function dsExtend(subclass, pclass,div) {
+        var spro = subclass.prototype;
+        var ppro=pclass.prototype;
+        var oc = spro.constructor;
+        if(ppro.__init){
+            ppro.constructor=oc;
+        }
+        spro.__init.prototype = new pclass(div);
+        for(var ss in spro)spro.__init.prototype[ss]=spro[ss]
+        spro.__init.prototype.constructor = oc;
+    }
+    function dsColor(color) {
+        this.R = (0x00ff0000 & color) >> 16;//red
+        this.G = (0x0000ff00 & color) >> 8;//green;
+        this.B = 0x000000ff & color;//blue
+        if (color > 0xffffff) {
+            this.A = (0xff000000 && color) >> 24;
+            if (this.A < 0)this.A += 256;
+        }//alpha
+        else this.A = 255;
+    }
+    /*
+     Éú³É16Î»ÑÕÉ«Öµ
+     */
+    dsColor.toColor = function (r, g, b, a) {
+        var c = 0;
+        c += r << 16;
+        c += g << 8;
+        c += b;
+        if (a != null)c += a << 24;
+        return c;
+    }
+    /*
+     16Î»ÑÕÉ«Öµ×ª»»Îª16Î»ÑÕÉ«×Ö·û´®
+     */
+    dsColor.toStr = function (v, radio) {
+        radio = radio || 16;
+        var c = new dsColor(v);
+        var s = "#";
+        if (radio == 32) {
+            c.A < 10 ? s += "0" : 0;
+            s += c.A.toString(16);
+        }
+        c.R < 10 ? s += "0" : 0;
+        s += c.R.toString(16);
+        c.G < 10 ? s += "0" : 0;
+        s += c.G.toString(16);
+        c.B < 10 ? s += "0" : 0;
+        s += c.B.toString(16);
+        return s;
+    }
+    dsColor.prototype.toArray = function () {
+        return [this.R, this.G, this.B, this.A];
+    }
+    dsColor.prototype.toString = function () {
+        console.log("r=" + this.R + " g=" + this.G + " b=" + this.B + " a=" + this.A);
+    }
+    function dsByteArray(len) {
+        this.bytesAvailable = 0;
+        this.endian = 'big_endian';//little_endian;
+        this.length = len;
+        this.objectEncoding = 'AMF3';
+        this.position = 0;
+        this.shareable = false;
+        this.length = this.length || 128;
+        this.__data = new Uint8Array(this.length);
+    }
+    ds.dsByteArray=dsByteArray;
+    dsByteArray.defaultObjectEncoding = 'AMF3';
+    dsByteArray.prototype.atomicCompareAndSwapIntAt = function (byteIndex, expectedValue, newValue) {
+        var old = this.position;
+        this.position = byteIndex;
+        if (this.readInt() == expectedValue) {
+            this.position = byteIndex;
+            this.writeInt(newValue);
+            this.position = old;
+            return expectedValue;
+        } else {
+            this.position = old;
+            return newValue;
         }
     }
-    function EventDispatcher() {
+//ÔÚµ¥Ò»µÄÔ­×Ó²Ù×÷ÖĞ£¬½«´Ë×Ö½ÚÊı×éÖĞµÄÒ»¸öÕûÊıÖµÓëÁíÒ»¸öÕûÊıÖµ½øĞĞ±È½Ï£¬Èç¹ûËüÃÇÆ¥Åä£¬Ôò½«ÕâĞ©×Ö½ÚÓëÁíÒ»¸öÖµ½øĞĞ½»»»¡£
+    dsByteArray.prototype.atomicCompareAndSwapLength = function (expectedLength, newLength) {
+        if (this.length == expectedLength) {
+            this.length = newLength;
+        }
+        return this.length;
+    }
+//ÔÚµ¥Ò»µÄÔ­×Ó²Ù×÷ÖĞ£¬½«´Ë×Ö½ÚÊı×éµÄ³¤¶ÈÓëËùÌá¹©µÄÒ»¸öÖµ½øĞĞ±È½Ï£¬Èç¹ûËüÃÇÆ¥Åä£¬Ôò¸ü¸Ä´Ë×Ö½ÚÊı×éµÄ³¤¶È¡£
+    dsByteArray.prototype.clear = function () {
+        this.__data = new Uint8Array(1);
+        this.length = 0;
+    };
+//Çå³ı×Ö½ÚÊı×éµÄÄÚÈİ£¬²¢½« length ºÍ position ÊôĞÔÖØÖÃÎª 0¡£
+    dsByteArray.prototype.compress = function (algorithm) {
+
+    }
+//	Ñ¹Ëõ×Ö½ÚÊı×é¡£
+    dsByteArray.prototype.deflate = function () {
+
+    }
+//Ê¹ÓÃ deflate Ñ¹ËõËã·¨Ñ¹Ëõ×Ö½ÚÊı×é¡£
+    dsByteArray.prototype.inflate = function () {
+
+    }
+//Ê¹ÓÃ deflate Ñ¹ËõËã·¨½«×Ö½ÚÊı×é½âÑ¹Ëõ¡£
+    dsByteArray.prototype.readBoolean = function () {
+        return Boolean(this.__data[this.position++]);
+    }
+//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡²¼¶ûÖµ¡£
+    dsByteArray.prototype.readByte = function () {
+        return this.__data[this.position++] - 128;
+    }
+//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡´ø·ûºÅµÄ×Ö½Ú¡£
+    dsByteArray.prototype.readBytes = function (bytes, offset, length) {
+        var l = this.__data.subarray(offset, offset + length);
+        bytes.__data.set(l);
+        bytes.length = length;
+    }
+
+//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡ length ²ÎÊıÖ¸¶¨µÄÊı¾İ×Ö½ÚÊı¡£
+//Ö¸Êı²¿·ÖExponent £¨E£©     : 11bit      £¨b62-b52£©//
+//Î²Êı²¿·ÖMantissa   £¨M£©   : 52bit      £¨b51-b0£©
+    dsByteArray.prototype.readDouble = function () {
+        var z = this.__data[this.position];
+        var kk = this.__data[this.position + 1];
+        z = z << 3 | kk >> 5;
+        var f = kk & 15 | 16;
+        f = f.toString(2);
+        f += (this.__data[this.position + 2] | 256).toString(2).substr(1);
+        f += (this.__data[this.position + 3] | 256).toString(2).substr(1);
+        f += (this.__data[this.position + 4] | 256).toString(2).substr(1);
+        f += (this.__data[this.position + 5] | 256).toString(2).substr(1);
+        f += (this.__data[this.position + 6] | 256).toString(2).substr(1);
+        f += this.__data[this.position + 7].toString(2);
+        f = f.substr(1);
+        var v = 0;
+        for (var i = 0; i < f.length; i++) {
+            v += Math.pow(0.5, i + 1) * parseInt(f[i]);
+        }
+        return v + z;
+    }
+
+//Ö¸Êı²¿·ÖExponent £¨E£©      : 8bit       £¨b30-b23£©
+//Î²Êı²¿·ÖMantissa   £¨M£©    : 23bit     £¨b22-b0£©
+//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸ö IEEE 754 Ë«¾«¶È£¨64 Î»£©¸¡µãÊı¡£
+    dsByteArray.prototype.readFloat = function () {
+        var z = this.__data[this.position];
+        var f = this.__data[this.position + 1];
+        if (f & 127 == f)z *= -1;
+        f = f.toString(2);
+        f += (this.__data[this.position + 2] | 256).toString(2).substr(1);
+        f += (this.__data[this.position + 3] | 256).toString(2).substr(1);
+        f = f.substr(1);
+        var v = 0;
+        for (var i = 0; i < f.length; i++) {
+            v += Math.pow(0.5, i + 1) * parseInt(f[i]);
+        }
+        this.position += 4;
+        return z + v;
+    }
+//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸ö IEEE 754 µ¥¾«¶È£¨32 Î»£©¸¡µãÊı¡£
+    dsByteArray.prototype.readInt = function () {
+        var s = this.__data[this.position];
+        s = this.__data[this.position + 1] << 8 | s;
+        s = this.__data[this.position + 2] << 16 | s;
+        var b = this.__data[this.position + 3] & 127;
+        s = b << 24 | s;
+        if (b == this.__data[this.position + 3]) {
+            s *= -1;
+        }
+        return s;
+    }
+//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸ö´ø·ûºÅµÄ 32 Î»ÕûÊı¡£
+    dsByteArray.prototype.readMultiByte = function (length, charSet) {
+        var str = '';
+        for (var i = 0; i<length; i++) {
+            str += String.fromCharCode(this.__data[this.position]);
+            this.position++
+        }
+        return unescape(str);
+    }
+//Ê¹ÓÃÖ¸¶¨µÄ×Ö·û¼¯´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ö¸¶¨³¤¶ÈµÄ¶à×Ö½Ú×Ö·û´®¡£
+    dsByteArray.prototype.readObject = function () {
+        var s = '';
+        while (this.__data[this.position] != 0) {
+            s += String.fromCharCode(this.__data[this.position]);
+            this.position++;
+        }
+        this.position++;
+        //console.log(s);
+        s = JSON.parse(s);
+        if (s instanceof Array) return s;
+        var obj = eval("new " + s.class + "()");
+        for (var k in s) {
+            obj[k] = s[k];
+        }
+        return obj;
+    }
+
+    dsByteArray.prototype.readShort = function () {
+        return this.__data[this.position] | this.__data[this.position + 1] << 8
+    }
+//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸ö´ø·ûºÅµÄ 16 Î»ÕûÊı¡£
+    dsByteArray.prototype.readUnsignedByte = function () {
+
+    }
+//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡ÎŞ·ûºÅµÄ×Ö½Ú¡£
+    dsByteArray.prototype.readUnsignedInt = function () {
+        var s = this.__data[this.position];
+        s = this.__data[this.position + 1] << 8 | s;
+        s = this.__data[this.position + 2] << 16 | s;
+        s = this.__data[this.position + 3] << 24 | s;
+        return s;
+    }
+//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸öÎŞ·ûºÅµÄ 32 Î»ÕûÊı¡£
+    dsByteArray.prototype.readUnsignedShort = function () {
+        var s = this.__data[this.position];
+        s = this.__data[this.position + 1] << 8 | s;
+        s = this.__data[this.position + 2] << 16 | s;
+        s = this.__data[this.position + 3] << 24 | s;
+        return s;
+    }
+//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸öÎŞ·ûºÅµÄ 16 Î»ÕûÊı¡£
+    dsByteArray.prototype.readUTF = function () {
+        var str = '';
+        for (var i = 0; i < 16; i++) {
+            str += String.fromCharCode(this.__data[this.position]);
+            this.position++;
+        }
+        return unescape(str);
+    }
+//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸ö UTF-8 ×Ö·û´®¡£
+    dsByteArray.prototype.readUTFBytes = function (length) {
+        var str = '';
+        for (var i = 0; i < length; i++) {
+            str += String.fromCharCode(this.__data[i]);
+        }
+        return unescape(str);
+    }
+//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸öÓÉ length ²ÎÊıÖ¸¶¨µÄ UTF-8 ×Ö½ÚĞòÁĞ£¬²¢·µ»ØÒ»¸ö×Ö·û´®¡£
+    dsByteArray.prototype.toJSON = function (k) {
+
+    }
+//Ìá¹©Ò»ÖÖ¿É¸²¸ÇµÄ·½·¨£¬ÓÃÓÚÔÚ dsByteArray ¶ÔÏóÖĞ×Ô¶¨ÒåÖµµÄ JSON ±àÂë¡£
+    dsByteArray.prototype.toString = function () {
+
+    }
+//½«×Ö½ÚÊı×é×ª»»Îª×Ö·û´®¡£
+    dsByteArray.prototype.uncompress = function (algorithm) {
+
+    }
+//½âÑ¹Ëõ×Ö½ÚÊı×é¡£
+    dsByteArray.prototype.writeBoolean = function (value) {
+        this.__data.fill(value, this.position, this.position + 1);
+        this.position++;
+    }
+//Ğ´Èë²¼¶ûÖµ¡£
+    dsByteArray.prototype.writeByte = function (value) {
+        if (value >= -128 && value < 127) {
+            value += 128
+            this.__data.fill(value, this.position, this.position + 1);
+            this.position++;
+        } else {
+            throw 'wrong writeByte'
+        }
+
+    }
+//ÔÚ×Ö½ÚÁ÷ÖĞĞ´ÈëÒ»¸ö×Ö½Ú¡£
+//½«À´×ÔÖ¸¶¨×Ö½ÚÊı×é¡¢×Ö½ÚÊı¡¢ÆğÊ¼Æ«ÒÆ£¨»ùÓÚÁãµÄË÷Òı£©×Ö½ÚµÄ³¤¶È×Ö½ÚÊıĞòÁĞĞ´Èë×Ö½ÚÁ÷¡£
+    dsByteArray.prototype.writeBytes = function (bytes, offset, length) {
+        var l = bytes.__data.subarray(offset, offset + length);
+        this.__data.set(l);
+        this.length += length;
+    }
+
+//ÔÚ×Ö½ÚÁ÷ÖĞĞ´ÈëÒ»¸ö IEEE 754 Ë«¾«¶È£¨64 Î»£©¸¡µãÊı¡£
+//Ö¸Êı²¿·ÖExponent £¨E£©     : 11bit      £¨b62-b52£©//
+//Î²Êı²¿·ÖMantissa   £¨M£©   : 52bit      £¨b51-b0£©
+    dsByteArray.prototype.writeDouble = function (value) {
+        var z = parseInt(value);
+        var f = value - z;
+        var n = f.toString().length
+        f = f * Math.pow(10, n);
+        var a = [];
+        z = z >> 2;
+
+        if (value > Math.pow(2, 11))throw 'writeDouble ,value too long';
+        var z = parseInt(value);
+        var f = (value - z).toString(2).substr(2);
+        var arr = [0, 0, 0, 0, 0, 0, 0, 0];
+        arr[7] = parseInt(f.substr(44, 8), 2);
+        arr[6] = parseInt(f.substr(36, 8), 2);
+        arr[5] = parseInt(f.substr(28, 8), 2);
+        arr[4] = parseInt(f.substr(20, 8), 2);
+        arr[3] = parseInt(f.substr(12, 8), 2);
+        arr[2] = parseInt(f.substr(4, 8), 2);
+        var b1 = parseInt(f.substr(0, 4), 2);
+        arr[0] = z >> 3;
+        var b2 = z - (arr[0] << 3);
+        arr[1] = b2 << 5 | b1;
+        if (value > 0)arr[1] = arr[1] | 16;
+        this.__data.set(arr, this.position, this.position + 8);
+        this.position += 8;
+    }
+
+//Ö¸Êı²¿·ÖExponent £¨E£©      : 8bit       £¨b30-b23£©
+//Î²Êı²¿·ÖMantissa   £¨M£©    : 23bit     £¨b22-b0£©
+//ÔÚ×Ö½ÚÁ÷ÖĞĞ´ÈëÒ»¸ö IEEE 754 µ¥¾«¶È£¨32 Î»£©¸¡µãÊı¡£
+    dsByteArray.prototype.writeFloat = function (value) {
+        if (value > Math.pow(2, 8))throw 'wrong writeFloat';
+        var arr = [0, 0, 0, 0];
+        arr[0] = parseInt(value);
+        var f = value - arr[0];
+        var ff = f.toString(2).substr(2);
+        arr[1] = parseInt(ff.substr(0, 7), 2);
+        if (value > 0)arr[1] = arr[1] | 128;
+        arr[2] = parseInt(ff.substr(7, 8), 2);
+        arr[3] = parseInt(ff.substr(15, 8), 2);
+        this.__data.set(arr, this.position);
+        this.position += 4;
+    }
+//ÔÚ×Ö½ÚÁ÷ÖĞĞ´ÈëÒ»¸ö´ø·ûºÅµÄ 32 Î»ÕûÊı¡£
+    dsByteArray.prototype.writeInt = function (value) {
+        if (value > Math.pow(2, 31))throw 'wrong writeInt';
+        var val = Math.abs(parseInt(value));
+        var arr = [0, 0, 0, 0];
+        arr[0] = val & 255;
+        arr[1] = (val & 65280) >> 8;
+        arr[2] = (val & 16711680) >> 16;
+        arr[3] = (val & 4278190080) >> 24;
+        if (value > 0)arr[3] = arr[3] | 128;
+
+        this.__data.set(arr, this.position)
+        this.position += 4;
+    }
+//Ê¹ÓÃÖ¸¶¨µÄ×Ö·û¼¯½«¶à×Ö½Ú×Ö·û´®Ğ´Èë×Ö½ÚÁ÷¡£
+    dsByteArray.prototype.writeMultiByte = function (value, charSet) {
+        var e = escape(value);
+        for (var i = 0; i<e.length;i++) {
+            this.__data[this.position] = e[i].charCodeAt();
+            this.position++;
+        }
+        return e.length;
+    }
+//½«¶ÔÏóÒÔ AMF ĞòÁĞ»¯¸ñÊ½Ğ´Èë×Ö½ÚÊı×é¡£
+    dsByteArray.prototype.writeObject = function (object) {
+        if (object instanceof Array) {
+
+        } else {
+            object['class'] = object.constructor.name;
+        }
+        var json = JSON.stringify(object);
+        var arr = [];
+        for (var k = 0; k < json.length; k++) {
+            arr.push(json[k].charCodeAt());
+        }
+        arr.push(0);
+        this.__data.set(arr, this.position);
+        this.position += arr.length;
+    }
+//ÔÚ×Ö½ÚÁ÷ÖĞĞ´ÈëÒ»¸ö 16 Î»ÕûÊı¡£
+    dsByteArray.prototype.writeShort = function (value) {
+        if (value > 65280)throw 'wrong writeShort';
+        this.__data[this.position] = value & 255;
+        if (value > 255)this.__data[this.position + 1] = (value & 65280) >> 8;
+        else this.__data[this.position + 1] = 0;
+        this.position += 2;
+    }
+//ÔÚ×Ö½ÚÁ÷ÖĞĞ´ÈëÒ»¸öÎŞ·ûºÅµÄ 32 Î»ÕûÊı¡£
+    dsByteArray.prototype.writeUnsignedInt = function (value) {
+        if (value > Math.pow(2, 32))throw 'wrong writeUnsignedInt'
+        var arr = [0, 0, 0, 0];
+        arr[0] = value & 255;
+        arr[1] = (value & 65280) >> 8;
+        arr[2] = (value & 16711680) >> 16;
+        arr[3] = (value & 4278190080) >> 24;
+        this.__data.set(arr, this.position);
+        this.position += 4;
+    }
+    dsByteArray.prototype.writeUTF = function (value) {
+        var e = escape(value);
+        for (var i = 0; i < 16; i++) {
+            this.__data[this.position] = e[i].charCodeAt();
+            this.position++;
+        }
+    }
+//½« UTF-8 ×Ö·û´®Ğ´Èë×Ö½ÚÁ÷¡£
+    dsByteArray.prototype.writeUTFBytes = function (value) {
+        var e = escape(value);
+        for (var i = 0; i < e.length; i++) {
+            this.__data[i] = e[i].charCodeAt();
+            this.position++;
+        }
+    }
+    
+    ds.dsRectangle=dsRectangle;
+    function dsRectangle(x, y, w, h) {
+        this.x = x;
+        this.y = y;
+        this.width = w;
+        this.height = h;
+        this.left = this.x;
+        this.right = this.x + this.width;
+        this.size = new dsPoint(this.width, this.height);
+        this.top = this.y;
+        this.topLeft = new dsPoint(this.x, this.y);
+        this.bottom = this.y + this.height;
+        this.bottomRight = new dsPoint(this.x, this.bottom);
+    }
+    dsRectangle.prototype.clone = function () {
+        return new dsRectangle(this.x, this.y, this.width, this.height);
+    };
+    dsRectangle.prototype.contains = function (x, y) {
+        return this.left < x && x < this.right && this.top < y && y < this.bottom;
+    };
+    dsRectangle.prototype.containsPoint = function (point) {
+        return this.contains(point.x, point.y);
+    };
+    dsRectangle.prototype.containsRect = function (rectangle) {
+
+    };
+    dsRectangle.prototype.copyFrom = function (rectangle) {
+        this.x = rectangle.x;
+        this.y = rectangle.y;
+        this.left = rectangle.left;
+        this.top = rectangle.top;
+        this.right = rectangle.right;
+        this.bottom = rectangle.bottom;
+        this.topLeft = rectangle.topLeft.copy();
+        this.bottomRight = rectangle.bottomRight.copy();
+
+    };
+    dsRectangle.prototype.equals = function (rectangle) {
+
+    };
+    dsRectangle.prototype.inflate = function (dx, dy) {
+        this.width += dx;
+        this.height += dy;
+        this.copyFrom(new dsRectangle(this.x, this.y, this.width, this.height));
+    };
+    dsRectangle.prototype.inflatePoint = function (point) {
+        this.inflate(point.x, point.y);
+    };
+    /*
+     ·µ»ØÏà½»µÄ¾ØĞÎ
+     */
+    dsRectangle.prototype.intersection = function (rectangle) {
+        var x1 = rectangle.x, y1 = rectangle.y, x2 = rectangle.right, y2 = rectangle.bottom;
+        if (this.x > x1) {
+            x1 = this.x;
+        }
+        if (this.y > y1) {
+            y1 = this.y;
+        }
+        if (this.right < x2) {
+            x2 = this.right;
+        }
+        if (this.bottom < y2) {
+            y2 = this.bottom;
+        }
+        return (x2 <= x1 || y2 <= y1) ? null : new dsRectangle(x1, y1, x2 - x1, y2 - y1);
+    };
+    /*
+     ÅĞ¶ÏÊÇ·ñÏà½»
+     */
+    dsRectangle.prototype.instersects = function (rectangle) {
+        return (rectangle.x <= this.right && this.x <= rectangle.right && rectangle.y <= this.bottom && this.y <= rectangle.bottom);
+    };
+    dsRectangle.prototype.isEmpty = function () {
+        return this.width | this.height;
+    };
+    dsRectangle.prototype.offset = function (dx, dy) {
+        this.x += dx;
+        this.y += dy;
+        this.copyFrom(new dsRectangle(this.x, this.y, this.width, this.height));
+    };
+    dsRectangle.prototype.offsetPoint = function (point) {
+        this.offset(point.x, point.y);
+    };
+    dsRectangle.prototype.setEmpty = function () {
+        this.copyFrom(new dsRectangle(0, 0, 0, 0));
+    };
+    dsRectangle.prototype.setTo = function (xa, ya, wa, ha) {
+        this.copyFrom(new dsRectangle(xa, ya, wa, ha));
+    };
+    dsRectangle.prototype.union = function () {
+
+    }
+    function AABB(x1,y1,x2,y2){
+        this.x1 = x1==null?Number.MAX_VALUE:x1;
+        this.y1 = y1==null?Number.MAX_VALUE:y1;
+        this.x2 = x2==null?Number.MIN_VALUE:x2;
+        this.y2 = y2==null?Number.MIN_VALUE:y2;
+    }
+    AABB.prototype.instersects=function(ab){
+        //(rectangle.x <= this.right && this.x <= rectangle.right && rectangle.y <= this.bottom && this.y <= rectangle.bottom);
+        return (ab.x1 <= this.x2 && this.x1 <= ab.x2 && ab.y1 <= this.y2 && this.y1 <= ab.y2);
+    }
+    AABB.prototype.setTo=function(x1,y1,x2,y2){
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+        return this;
+    }
+    AABB.prototype.add = function(ab){
+        this.x1 = Math.min(this.x1,ab.x1);
+        this.y1 = Math.min(this.y1,ab.y1);
+        this.x2 = Math.max(this.x2,ab.x2);
+        this.y2 = Math.max(this.y2,ab.y2);
+        return this;
+    }
+    AABB.prototype.contains = function(x,y){
+        return this.x1<x&&this.x2>x&&this.y1<y&&this.y2>y;
+    }
+    AABB.prototype.setXY = function(x,y){
+        this.x1 = Math.min(this.x1,x);
+        this.y1 = Math.min(this.y1,y);
+        this.x2 = Math.max(this.x2,x);
+        this.y2 = Math.max(this.y2,y);
+        return this;
+    }
+    AABB.prototype.inflate=function(x,y){
+        this.x1 +=x;
+        this.y1 +=y;
+        this.x2 +=x;
+        this.y2 +=y;
+    }
+    AABB.prototype.clone = function(){
+        var ab = new AABB();
+        ab.x1 = this.x1;
+        ab.y1 = this.y1;
+        ab.x2 = this.x2;
+        ab.y2 = this.y2;
+        return ab;
+    }
+    AABB.prototype.width = function(){
+        return Math.abs(this.x2-this.x1);
+    }
+    AABB.prototype.height = function(){
+        return Math.abs(this.y2-this.y1);
+    }
+    ds.dsPoint=dsPoint;
+    function dsPoint(x, y) {
+        this.x = x | 0;
+        this.y = y | 0;
+        this.length = Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+    dsPoint.prototype.add = function (point) {
+        return new dsPoint(this.x + point.x, this.y + point.y);
+    };
+    dsPoint.prototype.clone = function () {
+        return new dsPoint(this.x, this.y);
+    };
+    dsPoint.prototype.copyFrom = function (point) {
+        this.x = point.x;
+        this.y = point.y;
+        this.length = point.length;
+    };
+    dsPoint.distance = function (point1, point2) {
+        return new dsPoint(point1.x - point2.x, point1.y - point2.y).length;
+    }
+    dsPoint.prototype.equals = function (point) {
+        return this.x == point.x || this.y == point.y;
+    }
+//ÄÚ²åÖµ ´ıÑéÖ¤
+    dsPoint.interpolate = function (pt1, pt2, f) {
+        var nor = pt1.clone().subtract(pt2);
+        nor.normalize(nor.length * f);
+        return nor.add(pt1);
+    }
+//
+    dsPoint.prototype.normalize = function (len) {
+        var Q = Math.tan(this.y / this.x);
+        this.setTo(Math.cos(Q) * len, Math.sin(Q) * len);
+    };
+    dsPoint.prototype.offset = function (dx, dy) {
+        this.x += dx;
+        this.y += dy;
+        this.length = Math.sqrt(this.x * this.x + this.y * this.y);
+    };
+    dsPoint.polar = function (len, angle) {
+        return new dsPoint(Math.cos(angle) * len, Math.sin(angle) * len);
+    };
+    dsPoint.prototype.subtract = function (point) {
+        return new dsPoint(this.x - point.x, this.y - point.y);
+    };
+    dsPoint.prototype.setTo = function (xa, ya) {
+        this.x = xa || 0;
+        this.y = ya || 0;
+        this.length = Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+    dsPoint.prototype.toString = function () {
+        return "x = " + this.x + " y = " + this.y;
+    }
+    ds.dsMatrix=dsMatrix;
+    function dsMatrix(a, b, c, d, tx, ty) {
+        //this.a =1//   Ë®Æ½Ëõ·Å»æÍ¼
+        //this.b=0// 	Ë®Æ½ÇãĞ±»æÍ¼
+        //this.c=1// 	´¹Ö±ÇãĞ±»æÍ¼
+        //this.d =1// 	´¹Ö±Ëõ·Å»æÍ¼
+        //this.tx=0// 	Ë®Æ½ÒÆ¶¯»æÍ¼
+        //this.ty=0// 	´¹Ö±ÒÆ¶¯»æÍ¼
+        this.setTo(a, b, c, d, tx, ty);
+    }
+
+    dsMatrix.prototype.clone = function () {
+        return new dsMatrix(this.a,this.b,this.c,this.d,this.tx,this.ty);
+    }
+//¾ØÕóºó¼Ó
+//½«Ä³¸ö¾ØÕóÓëµ±Ç°¾ØÕóÁ¬½Ó£¬´Ó¶ø½«ÕâÁ½¸ö¾ØÕóµÄ¼¸ºÎĞ§¹ûÓĞĞ§µØ½áºÏÔÚÒ»Æğ¡£
+    dsMatrix.prototype.concat = function (matrix) {
+        this.append(matrix.a,matrix.b,matrix.c,matrix.d,matrix.tx,matrix.ty);
+        return this;
+
+    }
+//½«Ô´ dsPoint ¶ÔÏóÖĞµÄËùÓĞ¾ØÕóÊı¾İ¸´ÖÆµ½µ÷ÓÃ·½ dsMatrix ¶ÔÏóÖĞ¡£
+    dsMatrix.prototype.copyFrom = function (matrix) {
+        this.setTo(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
+    }
+//°üÀ¨ÓÃÓÚËõ·Å¡¢Ğı×ªºÍ×ª»»µÄ²ÎÊı¡£
+    dsMatrix.prototype.createBox = function (scaleX, scaleY, rotation, tx, ty) {
+        rotation = rotation*Math.PI/180;
+        var mat1=new dsMatrix();
+        mat1.identity();
+        mat1.rotate(rotation);
+        mat1.scale(scaleX,scaleY);
+        mat1.translate(tx,ty);
+        return mat1;
+    }
+    dsMatrix.prototype.createGradientBox=function(width, height, rotation, tx, ty){
+        var mat = new dsMatrix();
+
+    }
+
+    dsMatrix.prototype.identity = function () {
+        this.a = this.d = 1;
+        this.b = this.c = this.tx = this.ty = 0;
+        return this;
+    }
+
+    dsMatrix.prototype.invert = function () {
+        var a1 = this.a;
+        var b1 = this.b;
+        var c1 = this.c;
+        var d1 = this.d;
+        var tx1 = this.tx;
+        var n = a1*d1-b1*c1;
+
+        this.a = d1/n;
+        this.b = -b1/n;
+        this.c = -c1/n;
+        this.d = a1/n;
+        this.tx = (c1*this.ty-d1*tx1)/n;
+        this.ty = -(a1*this.ty-b1*tx1)/n;
+        return this;
+    }
+    dsMatrix.prototype.rotateX = function(angle){
+        angle = angle*Math.PI/180;
+        var cos = Math.cos(angle);
+        var sin = 1;//Math.sin(angle);
+
+        var a1 = this.a;
+        var b1 = this.b;
+
+        this.a = a1*cos+this.c*sin;
+        this.b = b1*cos+this.d*sin;
+        this.c = -a1*sin+this.c*cos;
+        this.d = -b1*sin+this.d*cos;
+        return this;
+    }
+    dsMatrix.prototype.rotateY = function(angle){
+        angle = angle*Math.PI/180;
+        var cos = 1;//Math.cos(angle);
+        var sin = Math.sin(angle);
+
+        var a1 = this.a;
+        var b1 = this.b;
+
+        this.a = a1*cos+this.c*sin;
+        this.b = b1*cos+this.d*sin;
+        this.c = -a1*sin+this.c*cos;
+        this.d = -b1*sin+this.d*cos;
+        return this;
+    }
+    dsMatrix.prototype.rotate = function (angle) {
+        angle = angle*Math.PI/180;
+        var cos = Math.cos(angle);
+        var sin = Math.sin(angle);
+
+        var a1 = this.a;
+        var b1 = this.b;
+
+        this.a = a1*cos+this.c*sin;
+        this.b = b1*cos+this.d*sin;
+        this.c = -a1*sin+this.c*cos;
+        this.d = -b1*sin+this.d*cos;
+        return this;
+    }
+    dsMatrix.prototype.scale = function (sx, sy) {
+        this.a *= sx;
+        this.b *= sx;
+        this.c *= sy;
+        this.d *= sy;
+        //this.tx/=sx;
+        //this.ty/=sy;
+        return this;
+    }
+
+    dsMatrix.prototype.setTo = function (aa, bb, ca, da, txa, tya) {
+        this.a = aa || 1;
+        this.b = bb || 0;
+        this.c = ca || 0;
+        this.d = da || 1;
+        this.tx = txa || 0;
+        this.ty = tya || 0;
+    }
+    dsMatrix.PERRAD = Math.PI/180;
+    dsMatrix.prototype.skew = function(sx,sy){
+        sx = sx*dsMatrix.PERRAD;
+        sy = sy*dsMatrix.PERRAD;
+        this.append(Math.cos(sx), Math.sin(sy), -Math.sin(sx), Math.cos(sy), 0, 0);
+    }
+    dsMatrix.prototype.append = function(a, b, c, d, tx, ty) {
+        var a1 = this.a;
+        var b1 = this.b;
+        var c1 = this.c;
+        var d1 = this.d;
+        if (a != 1 || b != 0 || c != 0 || d != 1) {
+            this.a  = a1*a+c1*b;
+            this.b  = b1*a+d1*b;
+            this.c  = a1*c+c1*d;
+            this.d  = b1*c+d1*d;
+        }
+        this.tx = a1*tx+c1*ty+this.tx;
+        this.ty = b1*tx+d1*ty+this.ty;
+        return this;
+    };
+    dsMatrix.prototype.translate = function (dx, dy) {
+        this.tx =dx;//+= this.a*dx + this.c*dy;
+        this.ty =dy;//+= this.b*dx + this.d*dy;
+        return this;
+    }
+    dsMatrix.prototype.deltaTransformPoint = function(point){
+        var pt = new dsPoint();
+        pt.x = point.x*this.a+point.y*this.c;
+        pt.y = point.x*this.b+point.y*this.d;
+        return pt;
+    }
+
+    dsMatrix.prototype.transformPoint = function (point) {
+        var pt = new dsPoint();
+        pt.x = point.x*this.a+point.y*this.c+this.tx;
+        pt.y = point.x*this.b+point.y*this.d+this.ty;
+        return pt;
+    }
+    function dsEventDispatcher() {
         this.__events = [];
         this.__oldfun = [];
         this.__uuid = this.constructor.name + utils.UUID();
     }
-//å‘ä¸Šæ‰§è¡Œè¢«é‡å†™çš„å‡½æ•°,paramArr
-    EventDispatcher.prototype.__recall = function (key, paramArr, parent) {
-        var pn = parent;
-        if (this.__oldfun[pn][key]) {
-            if (paramArr instanceof Array) {
-                return this.__oldfun[pn][key].apply(this, paramArr);
-            } else {
-                return this.__oldfun[pn][key].call(this, paramArr);
-            }
-        }
+//ÏòÉÏÖ´ĞĞ±»ÖØĞ´µÄº¯Êı,paramArr
+//    dsEventDispatcher.prototype.__recall = function (key, paramArr, parent) {
+//        var pn = parent;
+//        if (this.__oldfun[pn][key]) {
+//            if (paramArr instanceof Array) {
+//                return this.__oldfun[pn][key].apply(this, paramArr);
+//            } else {
+//                return this.__oldfun[pn][key].call(this, paramArr);
+//            }
+//        }
+//    }
+    dsEventDispatcher.prototype.__call = function (parent,key,paramArr) {
+        paramArr=paramArr||[];
+        return parent.prototype[key].call(this,paramArr);
     }
-    EventDispatcher.prototype.addEventListener = function (type, listener, useCapture, priority, useWeakReference) {
+    dsEventDispatcher.prototype.addEventListener = function (type, listener, useCapture, priority, useWeakReference) {
         if (this.__events[type] == null)this.__events[type] = Array();
         this.__events[type].push(listener);
     }
 
-    EventDispatcher.prototype.dispatchEvent = function (event) {
-        if (dsChildOf(event,tcEvent)) {
+    dsEventDispatcher.prototype.dispatchEvent = function (event) {
+        if (dsChildOf(event,dsEvent)) {
             event.currentTarget = this;
             var a = this.__events[event.type];
             for (var i in a) {
@@ -96,7 +889,7 @@
             }
         }
     }
-    EventDispatcher.prototype.removeEventListener = function (type, listener, useCapture) {
+    dsEventDispatcher.prototype.removeEventListener = function (type, listener, useCapture) {
         var ts = this.__events[type];
         var i = ts.indexOf(listener);
         if (i != -1) {
@@ -106,10 +899,10 @@
             }
         }
     }
-    EventDispatcher.prototype.hasEventListener = function (type) {
+    dsEventDispatcher.prototype.hasEventListener = function (type) {
         return this.__events[type].length | this.__events[type];
     }
-    EventDispatcher.prototype.willTrigger = function (type) {
+    dsEventDispatcher.prototype.willTrigger = function (type) {
         var o = this;
         while (o) {
             if (o.hasEventListener(type)) { return true; }
@@ -118,150 +911,10 @@
         return false;
     }
 
-    function tc_DisplayObject() {
-        this.__events = [];
-        this._x = 0;
-        this._y = 0;
-        this._height = 0;
-        this._width = 0;
-        this.alpha = 1;
-        this._mask = null;
-        this._ismask = false;
-        this.mouseX = 0;
-        this.mouseY = 0;
-        this.name = this.constructor.name + "_" + utils.UUID();
-        this._scaleX = 1;
-        this._scaleY = 1;
-        this._rotation = 0;
-        this.parent = null;
-        this.transform = null;
-        this.visible = true;
-        this.blendMode = "source-over";//source-in,source-out,source-atop,lighter,xor,destination-over,destination-in,destination-,destination-atop,darker
-        this.cacheAsBitmap = false;//ç¼“å­˜æ˜¾ç¤ºå¯¹è±¡çš„å†…éƒ¨ä½å›¾è¡¨ç¤ºå½¢å¼ã€‚
-        this.stage = null;
-        this._graphics = null;
-        this.filters = [];
-        this._mat = new Matrix().identity();
-        this.__aabb = new AABB();
-    }
-
-    tc_DisplayObject.prototype = new EventDispatcher();
-//å¾ªç¯å›¾å½¢æ¸²æŸ“å‡½æ•°
-    tc_DisplayObject.prototype.__render = function (ctx) {
-        if (!this.visible || this._ismask)return false;
-        if(this.cacheAsBitmap){
-            //ä½å›¾ç¼“å­˜
-            if(this.maskdata){
-                var ab = this._mask.__AABB();
-                ctx.drawImage(this.maskdata,ab.x1,ab.y1);
-            }else{
-                this.stage.__renderfb(this);
-            }
-            return false;
-        }
-        ctx.transform(this._mat.a,this._mat.b,this._mat.c,this._mat.d,this._mat.tx,this._mat.ty);
-        ctx.globalAlpha = this.alpha;
-        if (this._mask) {
-            if(this.maskdata){
-                var ab = this._mask.__AABB();
-                ctx.drawImage(this.maskdata,ab.x1,ab.y1);
-                if(!this.cacheAsBitmap)this.stage.__renderfb(this);
-            }else{
-                this.stage.__renderfb(this);
-            }
-            return false;
-        } else {
-            for (var i = 0; i < this.filters.length; i++) {
-                this.filters[i].__render(ctx);
-            }
-            if (this._graphics) {
-                this._graphics.__render(ctx);
-            }
-        }
-        return true;
-    }
-//å¾ªç¯å¤„ç†ä¸šåŠ¡é€»è¾‘çš„å‡½æ•°
-    tc_DisplayObject.prototype.__frame = function () {
-        if(!this.visible) return false;
-        this.dispatchEvent(new tcEvent(tcEvent.ENTER_FRAME, false, false));
-        return true;
-    }
-
-    tc_DisplayObject.prototype.getBounds = function (displayObject) {
-        //æœªè€ƒè™‘æ—‹è½¬
-        var lw = this._graphics ? this._graphics["lineWidth"] : 0;
-        var rect=this.getRect(displayObject)
-        return new Rectangle(rect.x, rect.y, rect.width + lw, rect.height + lw);
-    }
-
-    tc_DisplayObject.prototype.getRect = function (displayObject) {
-        //æ¯”è¾ƒä¸getBounds ,æ­¤æ–¹æ³•ä¸åŒ…å«linestyleçš„
-        var p=displayObject._mat.transformPoint(new Point(this.x,this.y))
-        return new Rectangle(p.x, p.y, this.width, this.height);
-    }
-    tc_DisplayObject.prototype.hitTestObject = function (displayObject) {
-        var r1 = this.__AABB();
-        var r2 = displayObject.__AABB();
-        return r1.instersects(r2);
-    }
-//point å…¨å±€åæ ‡
-    tc_DisplayObject.prototype.hitTestPoint = function (dx,dy,shapeFlag) {
-        shapeFlag =shapeFlag||false;
-        var ab = this.__AABB();
-        var bool = ab.contains(dx,dy);
-        if(shapeFlag&&bool){
-            var m= this.__ctxToData();
-            stage.__ctx2d.putImageData(m,0,0);
-            dx -=ab.x1,dy-=ab.y1;
-            var index= (dy*m.width+dx)*4;
-            return m.data[index+3];
-        }
-        return bool
-    }
-    tc_DisplayObject.prototype.localToGlobal = function (point) {
-        var p = this.parent;
-        var po= this._mat.transformPoint(point);
-        while (p) {
-            po=p._mat.transformPoint(po);
-            p = p.parent;
-        }
-        return po;
-    }
-    tc_DisplayObject.prototype.globalToLocal = function (point) {
-        var p = this.parent;
-        var m = this._mat.clone().invert();
-        while (p) {
-            m.concat(p._mat.clone().invert());
-            p = p.parent;
-        }
-        return m.transformPoint(point);
-
-    }
-
-    tc_DisplayObject.prototype.__ctxToData = function () {
-        var ab = this.__AABB();
-        window.fbcanvavs.width = ab.x2;
-        window.fbcanvavs.height = ab.y2;
-        var fbc = window.fbcanvavs.getContext("2d");
-        fbc.clearRect(0,0,this.width,this.height);
-        this.__render(fbc);
-        return fbc.getImageData(ab.x1,ab.y1,ab.width(), ab.height());
-    }
-    tc_DisplayObject.prototype.__AABB = function () {
-        var p1 = this.localToGlobal(new Point(0,0));
-        var p2=this.localToGlobal(new Point(this.width,0));
-        var p3=this.localToGlobal(new Point(this.width,this.height));
-        var p4=this.localToGlobal(new Point(0,this.height));
-        var ab = this.__aabb.clone();
-        ab.setXY(p1.x, p1.y);
-        ab.setXY(p2.x, p2.y);
-        ab.setXY(p3.x, p3.y);
-        ab.setXY(p4.x, p4.y);
-        return ab;
-    }
-
-    function DisplayObject() {
-        var obj = new tc_DisplayObject();
+    ds.dsDisplayObject =dsDisplayObject;
+    function dsDisplayObject() {
+        dsExtend(dsDisplayObject,dsEventDispatcher);
+        var obj = new dsDisplayObject.prototype.__init();
         Object.defineProperties(obj, {
             "x":{
                 set:function(v){
@@ -311,7 +964,7 @@
                 },
                 get: function () {
                     if (this._graphics == null) {
-                        this._graphics = new Graphics();
+                        this._graphics = new dsGraphics();
                     }
                     return this._graphics;
                 }
@@ -362,10 +1015,147 @@
         })
         return obj;
     }
-//æ˜¾ç¤ºå¯¹è±¡
-    DS.DisplayObject =DisplayObject;
+    dsDisplayObject.prototype.__init=function (){
+        this.__events = [];
+        this._x = 0;
+        this._y = 0;
+        this._height = 0;
+        this._width = 0;
+        this.alpha = 1;
+        this._mask = null;
+        this._ismask = false;
+        this.mouseX = 0;
+        this.mouseY = 0;
+        this.name = this.constructor.name + "_" + utils.UUID();
+        this._scaleX = 1;
+        this._scaleY = 1;
+        this._rotation = 0;
+        this.parent = null;
+        this.transform = null;
+        this.visible = true;
+        this.blendMode = "source-over";//source-in,source-out,source-atop,lighter,xor,destination-over,destination-in,destination-,destination-atop,darker
+        this.cacheAsBitmap = false;//»º´æÏÔÊ¾¶ÔÏóµÄÄÚ²¿Î»Í¼±íÊ¾ĞÎÊ½¡£
+        this.stage = null;
+        this._graphics = null;
+        this.filters = [];
+        this._mat = new dsMatrix().identity();
+        this.__aabb = new AABB();
+    }
+    dsDisplayObject.prototype.__init.prototype = new dsEventDispatcher;
+//Ñ­»·Í¼ĞÎäÖÈ¾º¯Êı
+    dsDisplayObject.prototype.__render = function (ctx) {
+        if (!this.visible || this._ismask)return false;
+        if(this.cacheAsBitmap){
+            //Î»Í¼»º´æ
+            if(this.maskdata){
+                var ab = this._mask.__AABB();
+                ctx.drawImage(this.maskdata,ab.x1,ab.y1);
+            }else{
+                this.stage.__renderfb(this);
+            }
+            return false;
+        }
+        ctx.transform(this._mat.a,this._mat.b,this._mat.c,this._mat.d,this._mat.tx,this._mat.ty);
+        ctx.globalAlpha = this.alpha;
+        if (this._mask) {
+            if(this.maskdata){
+                var ab = this._mask.__AABB();
+                ctx.drawImage(this.maskdata,ab.x1,ab.y1);
+                if(!this.cacheAsBitmap)this.stage.__renderfb(this);
+            }else{
+                this.stage.__renderfb(this);
+            }
+            return false;
+        } else {
+            for (var i = 0; i < this.filters.length; i++) {
+                this.filters[i].__render(ctx);
+            }
+            if (this._graphics) {
+                this._graphics.__render(ctx);
+            }
+        }
+        return true;
+    }
+//Ñ­»·´¦ÀíÒµÎñÂß¼­µÄº¯Êı
+    dsDisplayObject.prototype.__frame = function () {
+        if(!this.visible) return false;
+        this.dispatchEvent(new dsEvent(dsEvent.ENTER_FRAME, false, false));
+        return true;
+    }
 
-    function tc_InteractiveObject() {
+    dsDisplayObject.prototype.getBounds = function (displayObject) {
+        //Î´¿¼ÂÇĞı×ª
+        var lw = this._graphics ? this._graphics["lineWidth"] : 0;
+        var rect=this.getRect(displayObject)
+        return new dsRectangle(rect.x, rect.y, rect.width + lw, rect.height + lw);
+    }
+
+    dsDisplayObject.prototype.getRect = function (displayObject) {
+        //±È½ÏÓëgetBounds ,´Ë·½·¨²»°üº¬linestyleµÄ
+        var p=displayObject._mat.transformPoint(new dsPoint(this.x,this.y))
+        return new dsRectangle(p.x, p.y, this.width, this.height);
+    }
+    dsDisplayObject.prototype.hitTestObject = function (displayObject) {
+        var r1 = this.__AABB();
+        var r2 = displayObject.__AABB();
+        return r1.instersects(r2);
+    }
+//point È«¾Ö×ø±ê
+    dsDisplayObject.prototype.hitTestPoint = function (dx,dy,shapeFlag) {
+        shapeFlag =shapeFlag||false;
+        var ab = this.__AABB();
+        var bool = ab.contains(dx,dy);
+        if(shapeFlag&&bool){
+            var m= this.__ctxToData();
+            stage.__ctx2d.putImageData(m,0,0);
+            dx -=ab.x1,dy-=ab.y1;
+            var index= (dy*m.width+dx)*4;
+            return m.data[index+3];
+        }
+        return bool
+    }
+    dsDisplayObject.prototype.localToGlobal = function (point) {
+        var p = this.parent;
+        var po= this._mat.transformPoint(point);
+        while (p) {
+            po=p._mat.transformPoint(po);
+            p = p.parent;
+        }
+        return po;
+    }
+    dsDisplayObject.prototype.globalToLocal = function (point) {
+        var p = this.parent;
+        var m = this._mat.clone().invert();
+        while (p) {
+            m.concat(p._mat.clone().invert());
+            p = p.parent;
+        }
+        return m.transformPoint(point);
+
+    }
+
+    dsDisplayObject.prototype.__ctxToData = function () {
+        var ab = this.__AABB();
+        window.fbcanvavs.width = ab.x2;
+        window.fbcanvavs.height = ab.y2;
+        var fbc = window.fbcanvavs.getContext("2d");
+        fbc.clearRect(0,0,this.width,this.height);
+        this.__render(fbc);
+        return fbc.getImageData(ab.x1,ab.y1,ab.width(), ab.height());
+    }
+    dsDisplayObject.prototype.__AABB = function () {
+        var p1 = this.localToGlobal(new dsPoint(0,0));
+        var p2=this.localToGlobal(new dsPoint(this.width,0));
+        var p3=this.localToGlobal(new dsPoint(this.width,this.height));
+        var p4=this.localToGlobal(new dsPoint(0,this.height));
+        var ab = this.__aabb.clone();
+        ab.setXY(p1.x, p1.y);
+        ab.setXY(p2.x, p2.y);
+        ab.setXY(p3.x, p3.y);
+        ab.setXY(p4.x, p4.y);
+        return ab;
+    }
+    function dsInteractiveObject() {
         this.doubleClickEnabled = false;
         this.mouseEnabled = true;
         this._befocus = false;
@@ -376,288 +1166,284 @@
         this.__mouseEvent = new Object();
         this.__keyEvent = new Object();
     }
-
-    function InteractiveObject() {
-        dsExtend(tc_InteractiveObject, DisplayObject, ["addEventListener", "removeEventListener", "dispatchEvent", "hasEventListener"]);
-        //é¼ æ ‡äº‹ä»¶ç›®æ ‡é˜¶æ®µ
-        var preevent;
-        tc_InteractiveObject.prototype.__mouseaction = function (event) {
-            var evs = this.__activeEvent[event.type];
-            if(evs==null)return
-            var p = this.globalToLocal(new Point(event.offsetX,event.offsetY));
-            var mev = new tcMouseEvent(event.type, 1, event.cancelable, p.x, p.y, this, event.ctrlKey, event.altKey, event.shiftKey, event.button, event.detail, false, false,1);
-            mev.stageX=event.offsetX;
-            mev.stageY=event.offsetY;
-            mev._currentTarget = this;
-            var c = his.getObjectsUnderPoint(mev.stageX,mev.stageY);
-            if(c.length)mev.target = c[0];
-            else mev.target = this;
-            for (var i = 0; i < evs.length; i++) {
-                if (mev._stoppropagation) return;//å–æ¶ˆè‡ªèº«çš„è¡Œä¸º
-                evs[i]["fun"].call(this, mev);
-                this.__eventaction(evs[i]["param"][0], mev);
-            }
-        };
-        //é”®ç›˜äº‹ä»¶
-        tc_InteractiveObject.prototype.__keyaction = function (event) {
-            var evs = this.__activeEvent[event.type];
-            var mev = new tcKeyboardEvent(event.type, event.bubbles);
-            mev._currentTarget = this;
-            for (var i = 0; i < evs.length; i++) {
-                if (mev._stoppropagation) return;//å–æ¶ˆè‡ªèº«çš„è¡Œä¸º
-                evs[i]["fun"].call(this, mev);
-                this.__eventaction(evs[i]["param"][0], mev);
-            }
-        };
-        //äº‹ä»¶çš„å†’æ³¡ï¼Œæ•æŠ“
-        tc_InteractiveObject.prototype.__eventaction = function (useCapture, event) {
-            if (event._stopimmediatepropagation)return;
-            var pare =this.parent;
-            var arr = [];
-            while (pare) {
-                arr.push(pare);
-                pare=pare.parent;
-            }
-
-            if (useCapture) {
-                //å†’æ³¡
-                for (var i = 0; i < arr.length; i++) {
-                    event._target = arr[i]
-                    arr[i].dispatchEvent(event);
-                }
-            } else {
-                //æ•æŠ“
-                for (var i = arr.length-1; i >0; i--) {
-                    event._target = arr[i];
-                    arr[i].dispatchEvent(event);
-                }
-            }
-        };
-        /*
-         useCapture == true å†’æ³¡ false æ•æŠ“ é»˜è®¤ false
-         priority ä¼˜é€‰çº§
-         */
-        tc_InteractiveObject.prototype.addEventListener = function (type, listener, useCapture, priority, useWeakReference) {
-            //ä¸»åŠ¨è§¦å‘äº‹ä»¶çš„ç›‘å¬å¤„ç†
-            if (this.__activeType.indexOf(type) != -1) {
-                ////é¼ æ ‡äº‹ä»¶çš„ç›‘å¬å¤„ç†
-                var self = this;
-                var fun = null;
-                if (self.__mouseType.indexOf(type) != -1) {
-                    fun = function (event) {
-                        if(self ==window.stage){
-                            return stage.__mouseaction(event);
-                        }
-                        var child = window.stage.getObjectsUnderPoint(new Point(event.offsetX, event.offsetY));
-                        if (child.length > 0) {
-                            if (self == child[0]) {
-                                self.__mouseaction(event);
-                            }
-                        }
-                    }
-                } else if (self.__keyType.indexOf(type) != -1) {
-                    fun = function (event) {
-                        if (window.stage.focus == self) {
-                            self.__keyaction(event);
-                        }
-                    }
-                }
-
-                if (this.__activeEvent[type] == null) {
-                    this.__activeEvent[type] = [];
-                    window.stage.__canvas.addEventListener(type, fun);
-                    window.stage.__mainevent.push({type:type,fun:fun});
-                }
-                var obj = {"fun": listener, "param": [useCapture, priority, useWeakReference]}
-                this.__activeEvent[type].push(obj);
-                this.__activeEvent[type].sort(function (e1, e2) {
-                    return e1["param"][1] > e2["param"][1]
-                })
-            } else {
-                this.__recall("addEventListener", [type, listener, useCapture, priority, useWeakReference], tc_InteractiveObject.__super);
-            }
-        };
-        tc_InteractiveObject.prototype.removeEventListener = function (type, listener) {
-            if (this.__activeType.indexOf(type) != -1) {
-                var ts = this.__activeEvent[type];
-                for (var i in ts) {
-                    if (ts[i]['fun'] == listener) {
-                        ts.splice(i, 1);
-                        if (ts.length <= 0) {
-                            var me=window.stage.__mainevent;
-                            for(var i=0;i<me.length;i++){
-                                if(me[i].type == type){
-                                    window.stage.__canvas.removeEventListener(me[i].type,me[i].fun)
-                                    me.splice(1,i);
-                                    break;
-                                }
-                            }
-
-                            delete  this.__activeEvent[type];
-                        }
-                    }
-                }
-            } else {
-                this.__recall("removeEventListener", [type], tc_InteractiveObject.__super);
-            }
-        };
-        tc_InteractiveObject.prototype.dispatchEvent = function (event) {
-            if (this.__activeType.indexOf(event.type) != -1) {
-                var a = this.__activeEvent[event.type];
-                if (a == null)return
-                event.currentTarget = this;
-                for (var i in a) {
-                    a[i]["fun"].call(this, event);
-                }
-            } else {
-                this.__recall("dispatchEvent", [event], tc_InteractiveObject.__super);
-            }
-        };
-        tc_InteractiveObject.prototype.hasEventListener = function (type) {
-            if (type in this.__activeType)
-                return this.__activeEvent[type];
-            else {
-                this.__recall("hasEventListener", [type], tc_InteractiveObject.__super);
-            }
-            return false;
-        };
-
-        return new tc_InteractiveObject();
+    ds.dsInteractiveObject=dsInteractiveObject;
+    function dsInteractiveObject() {
+        dsExtend(dsInteractiveObject, dsDisplayObject);
+        //Êó±êÊÂ¼şÄ¿±ê½×¶Î
+        return new dsInteractiveObject.prototype.__init();
     }
+    dsInteractiveObject.prototype.__init=function(){}
+    dsInteractiveObject.prototype.__mouseaction = function (event) {
+        var evs = this.__activeEvent[event.type];
+        if(evs==null)return
+        var p = this.globalToLocal(new dsPoint(event.offsetX,event.offsetY));
+        var mev = new dsMouseEvent(event.type, 1, event.cancelable, p.x, p.y, this, event.ctrlKey, event.altKey, event.shiftKey, event.button, event.detail, false, false,1);
+        mev.stageX=event.offsetX;
+        mev.stageY=event.offsetY;
+        mev._currentTarget = this;
+        var c = his.getObjectsUnderPoint(mev.stageX,mev.stageY);
+        if(c.length)mev.target = c[0];
+        else mev.target = this;
+        for (var i = 0; i < evs.length; i++) {
+            if (mev._stoppropagation) return;//È¡Ïû×ÔÉíµÄĞĞÎª
+            evs[i]["fun"].call(this, mev);
+            this.__eventaction(evs[i]["param"][0], mev);
+        }
+    };
+    //¼üÅÌÊÂ¼ş
+    dsInteractiveObject.prototype.__keyaction = function (event) {
+        var evs = this.__activeEvent[event.type];
+        var mev = new dsKeyboardEvent(event.type, event.bubbles);
+        mev._currentTarget = this;
+        for (var i = 0; i < evs.length; i++) {
+            if (mev._stoppropagation) return;//È¡Ïû×ÔÉíµÄĞĞÎª
+            evs[i]["fun"].call(this, mev);
+            this.__eventaction(evs[i]["param"][0], mev);
+        }
+    };
+    //ÊÂ¼şµÄÃ°Åİ£¬²¶×¥
+    dsInteractiveObject.prototype.__eventaction = function (useCapture, event) {
+        if (event._stopimmediatepropagation)return;
+        var pare =this.parent;
+        var arr = [];
+        while (pare) {
+            arr.push(pare);
+            pare=pare.parent;
+        }
 
-    function tc_DisplayObjectContainer() {
+        if (useCapture) {
+            //Ã°Åİ
+            for (var i = 0; i < arr.length; i++) {
+                event._target = arr[i]
+                arr[i].dispatchEvent(event);
+            }
+        } else {
+            //²¶×¥
+            for (var i = arr.length-1; i >0; i--) {
+                event._target = arr[i];
+                arr[i].dispatchEvent(event);
+            }
+        }
+    };
+    /*
+     useCapture == true Ã°Åİ false ²¶×¥ Ä¬ÈÏ false
+     priority ÓÅÑ¡¼¶
+     */
+    dsInteractiveObject.prototype.addEventListener = function (type, listener, useCapture, priority, useWeakReference) {
+        //Ö÷¶¯´¥·¢ÊÂ¼şµÄ¼àÌı´¦Àí
+        if (this.__activeType.indexOf(type) != -1) {
+            ////Êó±êÊÂ¼şµÄ¼àÌı´¦Àí
+            var self = this;
+            var fun = null;
+            if (self.__mouseType.indexOf(type) != -1) {
+                fun = function (event) {
+                    if(self ==window.stage){
+                        return stage.__mouseaction(event);
+                    }
+                    var child = window.stage.getObjectsUnderPoint(new dsPoint(event.offsetX, event.offsetY));
+                    if (child.length > 0) {
+                        if (self == child[0]) {
+                            self.__mouseaction(event);
+                        }
+                    }
+                }
+            } else if (self.__keyType.indexOf(type) != -1) {
+                fun = function (event) {
+                    if (window.stage.focus == self) {
+                        self.__keyaction(event);
+                    }
+                }
+            }
+
+            if (this.__activeEvent[type] == null) {
+                this.__activeEvent[type] = [];
+                window.stage.__canvas.addEventListener(type, fun);
+                window.stage.__mainevent.push({type:type,fun:fun});
+            }
+            var obj = {"fun": listener, "param": [useCapture, priority, useWeakReference]}
+            this.__activeEvent[type].push(obj);
+            this.__activeEvent[type].sort(function (e1, e2) {
+                return e1["param"][1] > e2["param"][1]
+            })
+        } else {
+            this.__call(dsDisplayObject,"addEventListener",[type, listener, useCapture, priority, useWeakReference]);
+        }
+    };
+    dsInteractiveObject.prototype.removeEventListener = function (type, listener) {
+        if (this.__activeType.indexOf(type) != -1) {
+            var ts = this.__activeEvent[type];
+            for (var i in ts) {
+                if (ts[i]['fun'] == listener) {
+                    ts.splice(i, 1);
+                    if (ts.length <= 0) {
+                        var me=window.stage.__mainevent;
+                        for(var i=0;i<me.length;i++){
+                            if(me[i].type == type){
+                                window.stage.__canvas.removeEventListener(me[i].type,me[i].fun)
+                                me.splice(1,i);
+                                break;
+                            }
+                        }
+                        delete  this.__activeEvent[type];
+                    }
+                }
+            }
+        } else {
+            this.__call(dsDisplayObject,"removeEventListener", [type,listener]);
+        }
+    };
+    dsInteractiveObject.prototype.dispatchEvent = function (event) {
+        if (this.__activeType.indexOf(event.type) != -1) {
+            var a = this.__activeEvent[event.type];
+            if (a == null)return
+            event.currentTarget = this;
+            for (var i in a) {
+                a[i]["fun"].call(this, event);
+            }
+        } else {
+            this.__call(dsDisplayObject,"dispatchEvent", [event]);
+        }
+    };
+    dsInteractiveObject.prototype.hasEventListener = function (type) {
+        if (type in this.__activeType)
+            return this.__activeEvent[type];
+        else {
+            this.__call(dsDisplayObject,"hasEventListener", [type]);
+        }
+        return false;
+    };
+    ds.dsDisplayObjectContainer=dsDisplayObjectContainer
+    function dsDisplayObjectContainer() {
+        dsExtend(dsDisplayObjectContainer, dsInteractiveObject);
+        return new dsDisplayObjectContainer.prototype.__init();
+    }
+    dsDisplayObjectContainer.prototype.__init= function(){
         this.mouseChildren = true;
         this.numChildren = 0;
-        this.__children = Array();//æ”¾ç½®å­å¯¹è±¡
-        this.__namechildren = Array();//æ”¾ç½®å­å¯¹è±¡åç§°ï¼Œæ¯ä¸ªå¯¹è±¡çš„åç§°æ˜¯å”¯ä¸€å€¼ã€‚
+        this.__children = Array();//·ÅÖÃ×Ó¶ÔÏó
+        this.__namechildren = Array();//·ÅÖÃ×Ó¶ÔÏóÃû³Æ£¬Ã¿¸ö¶ÔÏóµÄÃû³ÆÊÇÎ¨Ò»Öµ¡£
     }
-
-    function DisplayObjectContainer() {
-        dsExtend(tc_DisplayObjectContainer, InteractiveObject, ["__frame", "__render",'__AABB']);
-        tc_DisplayObjectContainer.prototype.__frame = function(){
-            if(this.__recall("__frame", [], tc_DisplayObjectContainer.__super)){
-                for (var i in this.__children) {
-                    this.__children[i].__frame();
-                }
+    dsDisplayObjectContainer.prototype.__frame = function(){
+        if(this.__call(dsInteractiveObject,"__frame")){
+            for (var i in this.__children) {
+                this.__children[i].__frame();
             }
-        };
-        tc_DisplayObjectContainer.prototype.__render = function (ctx) {
-            if(this.__recall("__render", [ctx], tc_DisplayObjectContainer.__super))
-            {
-                for (var i = 0; i < this.__children.length; i++) {
-                    ctx.save();
-                    this.__children[i].__render(ctx);
-                    ctx.restore();
-                }
-                return true;
-            }
-            return false;
         }
-        tc_DisplayObjectContainer.prototype.addChild = function (displayObject) {
-            var index = this.__children.push(displayObject);
-            this.numChildren++;
-            this.__namechildren[displayObject.name] = index;
-            displayObject.parent = this;
-            displayObject.stage = window.stage;
-            displayObject.dispatchEvent(new tcEvent(tcEvent.ADDTOSTAGE));
-        };
-        tc_DisplayObjectContainer.prototype.addChildAt = function (displayObject, index) {
-            if (this.__children[index] == null) {
-                this.__children[index] = displayObject;
-            } else {
-                var s1 = this.__children.slice(0, index);
-                var s2 = this.__children.slice(index, this.__children.length);
-                s1.push(displayObject);
-                this.__children = s1.concat(s2);
-            }
-            this.__namechildren[displayObject.name] = index;
-            this.numChildren++;
-            displayObject.parent = this;
-            displayObject.stage = window.stage;
-            displayObject.dispatchEvent(new tcEvent(tcEvent.REMOVE_FROM_STAGE));
-        };
-        tc_DisplayObjectContainer.prototype.contains = function (displayObject) {
-            return this.__children[this.__namechildren[displayObject.name]-1];
-        };
-        tc_DisplayObjectContainer.prototype.getChildAt = function (index) {
-            return this.__children[index];
-        };
-        tc_DisplayObjectContainer.prototype.getChildByName = function (name) {
-            return this.__children[this.__namechildren[name]-1];
-        };
-        tc_DisplayObjectContainer.prototype.getChildIndex = function (displayobject) {
-            return this.__namechildren[displayobject.name]-1;
-        };
-        /*
-         è¯¥æ–¹æ³•åªè¿”å› displayobject å¯¹è±¡
-         */
-        tc_DisplayObjectContainer.prototype.getObjectsUnderPoint = function (point) {
-            var arr = [];
-            for (var i = this.__children.length - 1; i >= 0; i--) {
-                if (this.__children[i].hitTestPoint(point.x,point.y,true)) {
-                    if (dsChildOf(this.__children[i], tc_DisplayObjectContainer)) {
-                        arr = arr.concat(this.__children[i].getObjectsUnderPoint(point));
-                    }
-                    arr.push(this.__children[i]);
-                }
-            }
-            return arr;
-        };
-        tc_DisplayObjectContainer.prototype.removeChild = function (displayobject) {
-            var index = this.__namechildren[displayobject.name];
-            delete this.__namechildren[displayobject.name];
-            delete this.__children[index];
-            this.numChildren--;
-            displayObject.parent = null;
-            displayObject.stage = null;
-            //displayObject.dispatchEvent(new tcEvent(tcEvent.ADDTOSTAGE));
-            return displayobject;
-        };
-        tc_DisplayObjectContainer.prototype.removeChildAt = function (index) {
-            var displayObject = this.__children[index];
-            delete this.__children[index];
-            delete this.__namechildren[dis.name];
-            this.numChildren--;
-            displayObject.parent = null;
-            displayObject.stage = null;
-            //displayObject.dispatchEvent(tcEvent.ADDTOSTAGE);
-            return displayObject;
-        };
-
-        tc_DisplayObjectContainer.prototype.setChildIndex = function (displayobject, index) {
-            if (displayobject.parent)
-                displayobject.parent.removeChild(displayobject);
-            this.addChildAt(displayobject, index);
-        };
-
-        tc_DisplayObjectContainer.prototype.swapChildren = function (displayobject1, displayobject2) {
-            var t = this.__namechildren[displayobject1.name];
-            this.__namechildren[displayobject1.name] = this.__namechildren[displayobject2.name];
-            this.__namechildren[displayobject2.name] = t;
-            this.__children[this.__namechildren[displayobject1.name]] = displayobject1;
-            this.__children[this.__namechildren[displayobject2.name]] = displayobject2;
-        }
-        tc_DisplayObjectContainer.prototype.swapChildrenAt = function (index1, index2) {
-            var dis = this.__children[index1];
-            this.__children[index1] = this.__children[index2];
-            this.__children[index2] = dis;
-            this.__namechildren[this.__children[index1].name] = index1;
-            this.__namechildren[this.__children[index2].name] = index2;
-        };
-        tc_DisplayObjectContainer.prototype.__AABB = function () {
-            var ab  =this.__recall("__AABB", [], tc_DisplayObjectContainer.__super);
+    };
+    dsDisplayObjectContainer.prototype.__render = function (ctx) {
+        if(this.__call("__render", [ctx], dsDisplayObjectContainer.__super))
+        {
             for (var i = 0; i < this.__children.length; i++) {
-                var a = this.__children[i].__AABB().clone();
-                ab.add(a);
+                ctx.save();
+                this.__children[i].__render(ctx);
+                ctx.restore();
             }
-            return ab;
+            return true;
         }
-        return new tc_DisplayObjectContainer();
+        return false;
     }
-    DS.DisplayObjectContainer =DisplayObjectContainer;
+    dsDisplayObjectContainer.prototype.addChild = function (displayObject) {
+        var index = this.__children.push(displayObject);
+        this.numChildren++;
+        this.__namechildren[displayObject.name] = index;
+        displayObject.parent = this;
+        displayObject.stage = window.stage;
+        displayObject.dispatchEvent(new dsEvent(dsEvent.ADDTOSTAGE));
+    };
+    dsDisplayObjectContainer.prototype.addChildAt = function (displayObject, index) {
+        if (this.__children[index] == null) {
+            this.__children[index] = displayObject;
+        } else {
+            var s1 = this.__children.slice(0, index);
+            var s2 = this.__children.slice(index, this.__children.length);
+            s1.push(displayObject);
+            this.__children = s1.concat(s2);
+        }
+        this.__namechildren[displayObject.name] = index;
+        this.numChildren++;
+        displayObject.parent = this;
+        displayObject.stage = window.stage;
+        displayObject.dispatchEvent(new dsEvent(dsEvent.REMOVE_FROM_STAGE));
+    };
+    dsDisplayObjectContainer.prototype.contains = function (displayObject) {
+        return this.__children[this.__namechildren[displayObject.name]-1];
+    };
+    dsDisplayObjectContainer.prototype.getChildAt = function (index) {
+        return this.__children[index];
+    };
+    dsDisplayObjectContainer.prototype.getChildByName = function (name) {
+        return this.__children[this.__namechildren[name]-1];
+    };
+    dsDisplayObjectContainer.prototype.getChildIndex = function (displayobject) {
+        return this.__namechildren[displayobject.name]-1;
+    };
+    /*
+     ¸Ã·½·¨Ö»·µ»Ø displayobject ¶ÔÏó
+     */
+    dsDisplayObjectContainer.prototype.getObjectsUnderPoint = function (point) {
+        var arr = [];
+        for (var i = this.__children.length - 1; i >= 0; i--) {
+            if (this.__children[i].hitTestPoint(point.x,point.y,true)) {
+                if (dsChildOf(this.__children[i], dsDisplayObjectContainer)) {
+                    arr = arr.concat(this.__children[i].getObjectsUnderPoint(point));
+                }
+                arr.push(this.__children[i]);
+            }
+        }
+        return arr;
+    };
+    dsDisplayObjectContainer.prototype.removeChild = function (displayobject) {
+        var index = this.__namechildren[displayobject.name];
+        delete this.__namechildren[displayobject.name];
+        delete this.__children[index];
+        this.numChildren--;
+        displayObject.parent = null;
+        displayObject.stage = null;
+        //displayObject.dispatchEvent(new dsEvent(dsEvent.ADDTOSTAGE));
+        return displayobject;
+    };
+    dsDisplayObjectContainer.prototype.removeChildAt = function (index) {
+        var displayObject = this.__children[index];
+        delete this.__children[index];
+        delete this.__namechildren[dis.name];
+        this.numChildren--;
+        displayObject.parent = null;
+        displayObject.stage = null;
+        //displayObject.dispatchEvent(dsEvent.ADDTOSTAGE);
+        return displayObject;
+    };
 
-    function tc_Stage(canvas) {
-        this.__mainevent=[];//ç›‘å¬çš„äº‹ä»¶å‡½æ•°
+    dsDisplayObjectContainer.prototype.setChildIndex = function (displayobject, index) {
+        if (displayobject.parent)
+            displayobject.parent.removeChild(displayobject);
+        this.addChildAt(displayobject, index);
+    };
+
+    dsDisplayObjectContainer.prototype.swapChildren = function (displayobject1, displayobject2) {
+        var t = this.__namechildren[displayobject1.name];
+        this.__namechildren[displayobject1.name] = this.__namechildren[displayobject2.name];
+        this.__namechildren[displayobject2.name] = t;
+        this.__children[this.__namechildren[displayobject1.name]] = displayobject1;
+        this.__children[this.__namechildren[displayobject2.name]] = displayobject2;
+    }
+    dsDisplayObjectContainer.prototype.swapChildrenAt = function (index1, index2) {
+        var dis = this.__children[index1];
+        this.__children[index1] = this.__children[index2];
+        this.__children[index2] = dis;
+        this.__namechildren[this.__children[index1].name] = index1;
+        this.__namechildren[this.__children[index2].name] = index2;
+    };
+    dsDisplayObjectContainer.prototype.__AABB = function () {
+        var ab  =this.__recall("__AABB", [], dsDisplayObjectContainer.__super);
+        for (var i = 0; i < this.__children.length; i++) {
+            var a = this.__children[i].__AABB().clone();
+            ab.add(a);
+        }
+        return ab;
+    }
+
+    function dsStage(canvas) {
+        this.__mainevent=[];//¼àÌıµÄÊÂ¼şº¯Êı
         this.name = "Stage";
         this.__fb = null;
         this.__canvas = canvas;
@@ -689,106 +1475,17 @@
             window.requestAnimationFrame(frame);
         }
 
-        window.addEventListener(tcMouseEvent.MOUSE_MOVE, function (e) {
+        window.addEventListener(dsMouseEvent.MOUSE_MOVE, function (e) {
             self._mouseX = e.clientX;
             self._mouseY = e.clientY;
         })
     };
-//æ¸²æŸ“å‰¯æœ¬å†…å®¹
+//äÖÈ¾¸±±¾ÄÚÈİ
 
-    function Stage(canvas) {
-        dsExtend(tc_Stage, DisplayObjectContainer, []);
-        // åªèƒ½æ˜¯ç”¨æˆ·å‡ºå‘å…¨å±äº‹ä»¶ï¼Œé¼ æ ‡ã€é”®ç›˜è§¦å‘
-        tc_Stage.prototype.displayState = function (state) {
-            if (state == "full_screen" || state == "full_screen_interactive") {
-                var de = this.__canvas;
-                if (de.requestFullscreen) {
-                    de.requestFullscreen();
-                } else if (de.mozRequestFullScreen) {
-                    de.mozRequestFullScreen();
-                } else if (de.webkitRequestFullScreen) {
-                    de.webkitRequestFullScreen();
-                }
-            } else if (state == "NORMAL") {
-                var de = this.__canvas;
-                if (de.exitFullscreen) {
-                    de.exitFullscreen();
-                } else if (de.mozCancelFullScreen) {
-                    de.mozCancelFullScreen();
-                } else if (de.webkitCancelFullScreen) {
-                    de.webkitCancelFullScreen();
-                }
-            }
-        }
-        tc_Stage.prototype.invalidate = function () {
-            this.__render(this.__ctx2d);
-        }
-        tc_Stage.prototype.__renderfb = function (displayobject) {
-            window.fbcanvavs.width = this.stageWidth;
-            window.fbcanvavs.height = this.stageHeight;
-            var fbc = window.fbcanvavs.getContext("2d");
-            var ma = displayobject.mask;
-            var ab = ma.__AABB();
-            displayobject.mask = null;
-            ma._ismask = false;
-            fbc.globalAlpha =0;
-            displayobject.__render(fbc);
-            fbc.globalCompositeOperation = CompositeOperation.DESTINATION_IN;
-            ma.__render(fbc);
-            var simg = fbc.getImageData(ab.x1,ab.y1,ab.width(),ab.height());
-            window.fbcanvavs.width = ab.width();
-            window.fbcanvavs.height = ab.height();
-            fbc.putImageData(simg,0,0);
-            var m = new Image();
-            m.src = window.fbcanvavs.toDataURL();
-            displayobject.maskdata = m;
-            displayobject.mask = ma;
-            ma._ismask = true;
-            //return m;
-        }
-        //é‡ç½®èˆå°ï¼Œå½’ç½®ä¸ºç©º
-        tc_Stage.prototype.reset = function(){
-            this.name = "Stage";
-            //this.__fb = null;
-            //this.__canvas = canvas;
-            //this.__ctx2d = canvas.getContext("2d");
-            this._color = "#fff";
-            this._focus = null;
-            this._frameRate = 30;
-            this.fullScreenHeight = 0;
-            this.fullScreenWidth = 0;
-            this.fullScreenSourceRect;
-            this.mouseLock = false;
-            this.quality = 1;
-            this.scaleMode = "StageScaleMode.EXACT_FIT";
-            //this._stageHeight = canvas.height;
-            //this._stageWidth = canvas.width;
-            this.stage = window;
-            this.__et = 0;
-            this.__bt = 0;
-            //this.__pt = parseInt(1000 / this._frameRate);
-            this.__namechildren =[];
-            this.__children =[];
-            this.numChildren =0;
-            this.__events=[];
-            for(var i =0;i<this.__mainevent.length;i++){
-                var op=this.__mainevent[i];
-                this.__canvas.removeEventListener(op.type,op.fun);
-            }
-            this.__mainevent=[]
-        }
-        tc_Stage.prototype.__render = function (ctx) {
-            this.__ctx2d.clearRect(0, 0, this.stageWidth, this.stageHeight);
-            this.__ctx2d.fillStyle = this.color;
-            this.__ctx2d.fillRect(0, 0, this.stageWidth, this.stageHeight);
-            //this.__recall("__render", [ctx], tc_Stage.__super);
-            for (var i = 0; i < this.__children.length; i++) {
-                ctx.save();
-                this.__children[i].__render(ctx);
-                ctx.restore();
-            }
-        }
-        var s = new tc_Stage(canvas);
+    function dsStage(canvas) {
+        dsExtend(dsStage, dsDisplayObjectContainer);
+        // Ö»ÄÜÊÇÓÃ»§³ö·¢È«ÆÁÊÂ¼ş£¬Êó±ê¡¢¼üÅÌ´¥·¢
+        var s = new dsStage.prototype.__init(canvas);
         Object.defineProperties(s, {
             "stageHeight": {
                 set: function (v) {
@@ -816,18 +1513,18 @@
                 set: function (v) {
                     if (this._focus && this._focus == v)return;
                     if (this._focus != null) {
-                        this._focus.dispatchEvent(new FocusEvent(FocusEvent.FOCUS_OUT));
+                        this._focus.dispatchEvent(new dsFocusEvent(dsFocusEvent.FOCUS_OUT));
                         this._focus.__befocus = false;
                     }
                     this._focus = v;
                     this._focus.__befocus = true;
-                    this._focus.dispatchEvent(new FocusEvent(FocusEvent.FOCUS_IN))
+                    this._focus.dispatchEvent(new dsFocusEvent(dsFocusEvent.FOCUS_IN))
                 }, get: function () {
                     return this._focus;
                 }
             }, 'color': {
                 set: function (v) {
-                    if (typeof v == 'number') this._color = Color.toStr(v);
+                    if (typeof v == 'number') this._color = dsColor.toStr(v);
                     else this._color = v;
                 }, get: function () {
                     return this._color;
@@ -835,71 +1532,197 @@
             }
         })
         return s;
+    };
+    dsStage.prototype.__init=function(canvas){
+        this.__mainevent=[];//¼àÌıµÄÊÂ¼şº¯Êı
+        this.name = "Stage";
+        this.__fb = null;
+        this.__canvas = canvas;
+        this.__ctx2d = canvas.getContext("2d");
+        this._color = "#fff";
+        this._focus = null;
+        this._frameRate = 30;
+        this.fullScreenHeight = 0;
+        this.fullScreenWidth = 0;
+        this.fullScreenSourceRect;
+        this.mouseLock = false;
+        this.quality = 1;
+        this.scaleMode = "StageScaleMode.EXACT_FIT";
+        this._stageHeight = canvas.height;
+        this._stageWidth = canvas.width;
+        this.stage = window;
+        this.__et = 0;
+        this.__bt = 0;
+        this.__pt = parseInt(1000 / this._frameRate);
+        var self = this;
+        window.requestAnimationFrame(frame);
+        function frame() {
+            self.__frame();
+            self.__et = new Date().getTime();
+            if (self.__et - self.__bt > self.__pt) {
+                self.__render(self.__ctx2d);
+                self.__bt = self.__et;
+            }
+            window.requestAnimationFrame(frame);
+        }
+
+        window.addEventListener(dsMouseEvent.MOUSE_MOVE, function (e) {
+            self._mouseX = e.clientX;
+            self._mouseY = e.clientY;
+        })
+    };
+    dsStage.prototype.displayState = function (state) {
+        if (state == "full_screen" || state == "full_screen_interactive") {
+            var de = this.__canvas;
+            if (de.requestFullscreen) {
+                de.requestFullscreen();
+            } else if (de.mozRequestFullScreen) {
+                de.mozRequestFullScreen();
+            } else if (de.webkitRequestFullScreen) {
+                de.webkitRequestFullScreen();
+            }
+        } else if (state == "NORMAL") {
+            var de = this.__canvas;
+            if (de.exitFullscreen) {
+                de.exitFullscreen();
+            } else if (de.mozCancelFullScreen) {
+                de.mozCancelFullScreen();
+            } else if (de.webkitCancelFullScreen) {
+                de.webkitCancelFullScreen();
+            }
+        }
     }
-    function tc_Sprite() {
+    dsStage.prototype.invalidate = function () {
+        this.__render(this.__ctx2d);
+    }
+    dsStage.prototype.__renderfb = function (displayobject) {
+        window.fbcanvavs.width = this.stageWidth;
+        window.fbcanvavs.height = this.stageHeight;
+        var fbc = window.fbcanvavs.getContext("2d");
+        var ma = displayobject.mask;
+        var ab = ma.__AABB();
+        displayobject.mask = null;
+        ma._ismask = false;
+        fbc.globalAlpha =0;
+        displayobject.__render(fbc);
+        fbc.globalCompositeOperation = CompositeOperation.DESTINATION_IN;
+        ma.__render(fbc);
+        var simg = fbc.getImageData(ab.x1,ab.y1,ab.width(),ab.height());
+        window.fbcanvavs.width = ab.width();
+        window.fbcanvavs.height = ab.height();
+        fbc.putImageData(simg,0,0);
+        var m = new Image();
+        m.src = window.fbcanvavs.toDataURL();
+        displayobject.maskdata = m;
+        displayobject.mask = ma;
+        ma._ismask = true;
+        //return m;
+    }
+    //ÖØÖÃÎèÌ¨£¬¹éÖÃÎª¿Õ
+    dsStage.prototype.reset = function(){
+        this.name = "Stage";
+        //this.__fb = null;
+        //this.__canvas = canvas;
+        //this.__ctx2d = canvas.getContext("2d");
+        this._color = "#fff";
+        this._focus = null;
+        this._frameRate = 30;
+        this.fullScreenHeight = 0;
+        this.fullScreenWidth = 0;
+        this.fullScreenSourceRect;
+        this.mouseLock = false;
+        this.quality = 1;
+        this.scaleMode = "StageScaleMode.EXACT_FIT";
+        //this._stageHeight = canvas.height;
+        //this._stageWidth = canvas.width;
+        this.stage = window;
+        this.__et = 0;
+        this.__bt = 0;
+        //this.__pt = parseInt(1000 / this._frameRate);
+        this.__namechildren =[];
+        this.__children =[];
+        this.numChildren =0;
+        this.__events=[];
+        for(var i =0;i<this.__mainevent.length;i++){
+            var op=this.__mainevent[i];
+            this.__canvas.removeEventListener(op.type,op.fun);
+        }
+        this.__mainevent=[]
+    }
+    dsStage.prototype.__render = function (ctx) {
+        this.__ctx2d.clearRect(0, 0, this.stageWidth, this.stageHeight);
+        this.__ctx2d.fillStyle = this.color;
+        this.__ctx2d.fillRect(0, 0, this.stageWidth, this.stageHeight);
+        //this.__recall("__render", [ctx], dsStage.__super);
+        for (var i = 0; i < this.__children.length; i++) {
+            ctx.save();
+            this.__children[i].__render(ctx);
+            ctx.restore();
+        }
+    }
+//ÏÔÊ¾¶ÔÏó
+    ds.dsSprite =dsSprite
+    function dsSprite() {
+        dsExtend(dsSprite,dsDisplayObjectContainer);
+        return new dsSprite.prototype.__init();
+    }
+    dsSprite.prototype.__init=function() {
         this.soundTransform = null;
         this.useHandCursor = false;
         this.dropTarget = null;
         this.__drag = null;
     }
-
-    function Sprite() {
-        dsExtend(tc_Sprite, DisplayObjectContainer, ['__frame']);
-        tc_Sprite.prototype.startDrag = function (lockCenter, rectangle) {
-            this.__drag = {"lock": lockCenter, 'rect': rectangle.clone()};
-        }
-        tc_Sprite.prototype.stopDrag = function () {
-            this.__drag = null;
-        }
-        tc_Sprite.prototype.__frame = function () {
-            if(this.__recall("__frame", [], tc_Sprite.__super)){
-                if (this.__drag) {
-                    if (this.__drag['lock']) {
-                        this.x = this.mouseX - this.width * 0.5;
-                        this.y = this.mouseY - this.height * 0.5;
-                    } else {
-                        this.x = this.mouseX;
-                        this.y = this.mouseY;
-                    }
-                    if (this.__drag['rect']) {
-                        var r = this.__drag['rect'];
-                        if (this.x < r.x)this.x = r.x;
-                        if (this.x > r.topLeft.x)this.x = r.topLeft.x;
-                        if (this.y < r.y)this.y = r.y;
-                        if (this.y > r.bottomRight.y) this.y = r.buttonDown.y;
-                    }
-                    if (this.dropTarget) {
-                        if (this.hitTestObject(this.dropTarget)) {
-                            this.dropTarget.addChild(this);
-                        }
+    dsSprite.prototype.startDrag = function (lockCenter, rectangle) {
+        this.__drag = {"lock": lockCenter, 'rect': rectangle.clone()};
+    }
+    dsSprite.prototype.stopDrag = function () {
+        this.__drag = null;
+    }
+    dsSprite.prototype.__frame = function () {
+        if(this.__recall("__frame", [], dsSprite.__super)){
+            if (this.__drag) {
+                if (this.__drag['lock']) {
+                    this.x = this.mouseX - this.width * 0.5;
+                    this.y = this.mouseY - this.height * 0.5;
+                } else {
+                    this.x = this.mouseX;
+                    this.y = this.mouseY;
+                }
+                if (this.__drag['rect']) {
+                    var r = this.__drag['rect'];
+                    if (this.x < r.x)this.x = r.x;
+                    if (this.x > r.topLeft.x)this.x = r.topLeft.x;
+                    if (this.y < r.y)this.y = r.y;
+                    if (this.y > r.bottomRight.y) this.y = r.buttonDown.y;
+                }
+                if (this.dropTarget) {
+                    if (this.hitTestObject(this.dropTarget)) {
+                        this.dropTarget.addChild(this);
                     }
                 }
             }
         }
-        return new tc_Sprite();
     }
-    DS.Sprite = Sprite;
-
-    function tc_Bitmap(bitmapData, pixelSnapping, smoothing) {
+    ds.dsBitmap=dsBitmap;
+    function dsBitmap(bitmapData, pixelSnapping, smoothing) {
+        dsExtend(dsBitmap, dsDisplayObject);
+        return new dsBitmap.prototype.__init(bitmapData, pixelSnapping, smoothing);
+    }
+    dsBitmap.prototype.__init=function dsBitmap(bitmapData, pixelSnapping, smoothing) {
         this.bitmapData = bitmapData;
         this.pixelSnapping = pixelSnapping;
         this.smoothing = smoothing;
     }
-
-    function Bitmap(bitmapData, pixelSnapping, smoothing) {
-        dsExtend(tc_Bitmap, DisplayObject, []);
-        tc_Bitmap.prototype.__render = function (ctx) {
-            if (this.bitmapData._transparent && this.bitmapData._img) {
-                ctx.drawImage(this.bitmapData._img, this.x, this.y, this.bitmapData.width, this.bitmapData.height);
-            } else {
-                ctx.putImageData(this.bitmapData._imgdata, this.x, this.y);
-            }
+    dsBitmap.prototype.__render = function (ctx) {
+        if (this.bitmapData._transparent && this.bitmapData._img) {
+            ctx.drawImage(this.bitmapData._img, this.x, this.y, this.bitmapData.width, this.bitmapData.height);
+        } else {
+            ctx.putImageData(this.bitmapData._imgdata, this.x, this.y);
         }
-        return new tc_Bitmap(bitmapData, pixelSnapping, smoothing);
     }
-    DS.Bitmap =Bitmap;
+
     function BitmapData(w, h, transparent, fillcolor) {
-        var obj = new tc_BitmapData(w, h, transparent, fillcolor);
+        var obj = new dsBitmapData(w, h, transparent, fillcolor);
         Object.defineProperties(obj, {
             width: {
                 get: function () {
@@ -919,14 +1742,14 @@
         })
         return obj;
     }
-    DS.BitmapData = BitmapData;
+    DS.dsBitmapData = dsBitmapData;
 //Int8Array; Uint8Array; Uint8ClampedArray; Int16Array; Uint16Array; Int32Array; Uint32Array; Float32Array; Float64Array;
-    function tc_BitmapData(w, h, transparent, fillcolor) {
+    function dsBitmapData(w, h, transparent, fillcolor) {
         this._width = w;
         this._height = h;
         this.__x = 0;
         this.__y = 0;
-        this._rect = new Rectangle(0, 0, w, h);
+        this._rect = new dsRectangle(0, 0, w, h);
         this._transparent = transparent;
         this._color = fillcolor;
         this._floodrect = [];
@@ -934,18 +1757,18 @@
         this._img = null;
         this.floodFill(0, 0, fillcolor);
     }
-    tc_BitmapData.prototype.applyFilter = function (sourceBitmapData, sourceRect, destPoint, filter) {
+    dsBitmapData.prototype.applyFilter = function (sourceBitmapData, sourceRect, destPoint, filter) {
 
     }
-    tc_BitmapData.prototype.clone = function () {
-        var clone = Object.create(tc_BitmapData.prototype);
+    dsBitmapData.prototype.clone = function () {
+        var clone = Object.create(dsBitmapData.prototype);
         fbcanvavs.width = this.width;
         fbcanvavs.height = this.height;
         fbcanvavs.putImageData(this._imgdata);
         clone._imgdata = fbcanvavs.getImageData(0, 0, this.width, this.height);
         return clone;
     }
-    tc_BitmapData.prototype.colorTransform = function (rect, colorTransform) {
+    dsBitmapData.prototype.colorTransform = function (rect, colorTransform) {
         var i = rect.x * 4 + this._width * 4 * rect.y;
         var len = rect.width * rect.height;
         var data = this._imgdata[i];
@@ -956,7 +1779,7 @@
             data[i + 3] = data[i + 3] * colorTransform.alphaMultiplier + colorTransform.alphaOffset;
         }
     }
-    tc_BitmapData.prototype.compare = function (otherBitmapData) {
+    dsBitmapData.prototype.compare = function (otherBitmapData) {
         if (this.width != otherBitmapData.width) return -3;
         if (this.height != otherBitmapData.height) return -4;
 
@@ -979,7 +1802,7 @@
             }
         }
     }
-    tc_BitmapData.prototype.copyChannel = function (sourceBitmapData, sourceRect, destPoint, sourceChannel, destChannel) {
+    dsBitmapData.prototype.copyChannel = function (sourceBitmapData, sourceRect, destPoint, sourceChannel, destChannel) {
         var len = sourceRect.width * sourceRect.height;
         var i = (destPoint.x + this.width * destPoint.y) * 4;
         var d = this._imgdata.data;
@@ -988,8 +1811,8 @@
             d[i + destChannel] = s[j + sourceChannel];
         }
     }
-//alphaBitmapData, alphaPoint, mergeAlpha è¿™ä¸ªæ˜¯å“ªä¸ªå‚æ•°æš‚æ—¶ä¸å®ç°
-    tc_BitmapData.prototype.copyPixels = function (sourceBitmapData, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha) {
+//alphaBitmapData, alphaPoint, mergeAlpha Õâ¸öÊÇÄÄ¸ö²ÎÊıÔİÊ±²»ÊµÏÖ
+    dsBitmapData.prototype.copyPixels = function (sourceBitmapData, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha) {
         fbcanvavs.width = sourceBitmapData.width;
         fbcanvavs.height = sourceBitmapData.height;
         var ctx = fbcanvavs.getContext("2d");
@@ -1002,7 +1825,7 @@
         this._imgdata = ctx.getImageData(0, 0, this.width, this.height);
 
     }
-    tc_BitmapData.prototype.copyPixelsToByteArray = function (rect, data) {
+    dsBitmapData.prototype.copyPixelsToByteArray = function (rect, data) {
         var i = (rect.x + this.width * rect.y) * 4;
         var len = rect.width * rect.height;
         if (len != data.length)throw "copyPixelsToByteArray error";
@@ -1010,13 +1833,13 @@
             this._imgdata.data[i] = data[i];
         }
     }
-    tc_BitmapData.prototype.dispose = function () {
+    dsBitmapData.prototype.dispose = function () {
         this._imgdata = null;
         this._img = null;
         this.width = 0;
         this.height = 0;
     }
-    tc_BitmapData.prototype.draw = function (displayobject, matrix, colorTransform, blendMode, clipRect, smoothing) {
+    dsBitmapData.prototype.draw = function (displayobject, matrix, colorTransform, blendMode, clipRect, smoothing) {
         //ctx.imageSmoothingEnabled = smoothing;
         //ctx.webkitImageSmoothingEnabled = smoothing;
         //ctx.mozImageSmoothingEnabled = smoothing;
@@ -1027,18 +1850,18 @@
         return this;
     }
 
-    tc_BitmapData.prototype.drawWithQuality = function (source, matrix, colorTransform, blendMode, clipRect, smoothing, quality) {
+    dsBitmapData.prototype.drawWithQuality = function (source, matrix, colorTransform, blendMode, clipRect, smoothing, quality) {
 
     }
 
-    tc_BitmapData.prototype.encode = function (rect, compressor, byteArray) {
+    dsBitmapData.prototype.encode = function (rect, compressor, byteArray) {
 
     }
 
-    tc_BitmapData.prototype.fillRect = function (rect, color) {
+    dsBitmapData.prototype.fillRect = function (rect, color) {
         this._floodrect.push(rect);
         //var mrect = this._rect.intersection(rect);
-        var c = new Color(color).toArray();
+        var c = new dsColor(color).toArray();
         for (var i = rect.x; i < rect.right; i++) {
             W
             for (var j = rect.y; j < rect.bottom; j++) {
@@ -1053,13 +1876,13 @@
             this._trans();
         }
     }
-    tc_BitmapData.prototype.floodFill = function (x, y, color) {
-        var c = new Color(color).toArray();
+    dsBitmapData.prototype.floodFill = function (x, y, color) {
+        var c = new dsColor(color).toArray();
         var da = this._imgdata.data;
         if (this._floodrect && this._floodrect.length > 0) {
 
         } else {
-            var c = new Color(color).toArray();
+            var c = new dsColor(color).toArray();
             for (var i = 0; i < this._rect.width; i++) {
                 for (var j = 0; j < this._rect.height; j++) {
                     var index = i * 4 + this._width * 4 * j;
@@ -1076,7 +1899,7 @@
         }
     }
 
-    tc_BitmapData.prototype._trans = function () {
+    dsBitmapData.prototype._trans = function () {
         window.fbcanvavs.width = this._width;
         window.fbcanvavs.height = this._height;
         window.fbcanvavs.getContext("2d").putImageData(this._imgdata, 0, 0);
@@ -1085,7 +1908,7 @@
     }
 
 
-    tc_BitmapData.prototype.generateFilterRect = function (sourceRect, filter) {
+    dsBitmapData.prototype.generateFilterRect = function (sourceRect, filter) {
         fbcanvavs.width = this.width;
         fbcanvavs.height = this.height;
         fbcanvavs.putImageData(this._imgdata);
@@ -1095,9 +1918,9 @@
         this._imgdata = fbcanvavs.getImageData(0, 0, this.width, this.height);
     }
 
-    tc_BitmapData.prototype.getColorBoundsRect = function (mask, color, findColor) {
-        var lefttop = new Point();
-        var rightbottom = new Point();
+    dsBitmapData.prototype.getColorBoundsRect = function (mask, color, findColor) {
+        var lefttop = new dsPoint();
+        var rightbottom = new dsPoint();
         var d = this._imgdata.data;
         if (findColor) {
             for (var i = 0; i < d.length; i += 4) {
@@ -1126,26 +1949,26 @@
                 }
             }
         }
-        return new Rectangle(lefttop.x, lefttop.y, rightbottom.x - lefttop.x, rightbottom.y - lefttop.y);
+        return new dsRectangle(lefttop.x, lefttop.y, rightbottom.x - lefttop.x, rightbottom.y - lefttop.y);
     }
 
-    tc_BitmapData.prototype.getPixel = function (x, y) {
+    dsBitmapData.prototype.getPixel = function (x, y) {
         x = x >= this._width ? this._width - 1 : x;
         y = y >= this._height ? this._height - 1 : y;
         x = x < 0 ? 0 : x;
         y = y < 0 ? 0 : y;
         var i = x * 4 + this._width * 4 * y;
-        return Color.toColor(this._imgdata.data[i], this._imgdata.data[i + 1], this._imgdata.data[i + 2]);
+        return dsColor.toColor(this._imgdata.data[i], this._imgdata.data[i + 1], this._imgdata.data[i + 2]);
     }
-    tc_BitmapData.prototype.getPixel32 = function (x, y) {
+    dsBitmapData.prototype.getPixel32 = function (x, y) {
         x = x >= this._width ? this._width - 1 : x;
         y = y >= this._height ? this._height - 1 : y;
         x = x < 0 ? 0 : x;
         y = y < 0 ? 0 : y;
         var i = x * 4 + this._width * 4 * y;
-        return Color.toColor(this._imgdata.data[i], this._imgdata.data[i + 1], this._imgdata.data[i + 2], this._imgdata.data[i + 3]);
+        return dsColor.toColor(this._imgdata.data[i], this._imgdata.data[i + 1], this._imgdata.data[i + 2], this._imgdata.data[i + 3]);
     }
-    tc_BitmapData.prototype.getPixels = function (rect) {
+    dsBitmapData.prototype.getPixels = function (rect) {
         var md = window.fbcanvavs.getContext("2d").createImageData(0, 0, rect.width, rect.height);
         var xx = rect.x;
         var yy = rect.y;
@@ -1155,18 +1978,18 @@
         }
         return md.data;
     }
-    tc_BitmapData.prototype.getPixels = function (rect) {
+    dsBitmapData.prototype.getPixels = function (rect) {
         var len = rect.width * rect.height;
         var i = (rect.x + this._width * rect.y) * 4;
         var d = this._imgdata;
         var h = [];
         for (i; i < len; i += 4) {
-            h.push(Color.toColor(d[i], d[i + 1], d[i + 2], d[i + 3]));
+            h.push(dsColor.toColor(d[i], d[i + 1], d[i + 2], d[i + 3]));
         }
         return h;
     }
 
-    tc_BitmapData.prototype.histogram = function (hRect) {
+    dsBitmapData.prototype.histogram = function (hRect) {
         var i = (hRect.x + this._width * hRect.y) * 4;
         var len = hRect.width * hRect.height;
         var data = this._imgdata;
@@ -1185,16 +2008,16 @@
         }
         return h;
     }
-//secondBitmapDataPoint,secondAlphaThreshold,secondObject çš„å€¼æ˜¯ BitmapData å¯¹è±¡æ—¶ä½¿ç”¨æ­¤å‚æ•°ã€‚
-    tc_BitmapData.prototype.hitTest = function (firstPoint, firstAlphaThreshold, secondObject, secondBitmapDataPoint, secondAlphaThreshold) {
+//secondBitmapDataPoint,secondAlphaThreshold,secondObject µÄÖµÊÇ BitmapData ¶ÔÏóÊ±Ê¹ÓÃ´Ë²ÎÊı¡£
+    dsBitmapData.prototype.hitTest = function (firstPoint, firstAlphaThreshold, secondObject, secondBitmapDataPoint, secondAlphaThreshold) {
         firstAlphaThreshold = firstAlphaThreshold || 0;
         var sx = secondObject.x - firstPoint.x;
         var sy = secondObject.y - firstPoint.y;
-        if (secondObject instanceof Point) {
+        if (secondObject instanceof dsPoint) {
             if (sx > this.width || sx < firstPoint.x || sy > this.height || sy < this.y)return false;
             return firstAlphaThreshold <= this.__data[((this.width * sy) + sx) * 4 + 3];
-        } else if (secondObject instanceof Rectangle) {
-            var rect = new Rectangle(firstPoint.x, firstPoint.y, this.width, this.height).intersection(secondObject);
+        } else if (secondObject instanceof dsRectangle) {
+            var rect = new dsRectangle(firstPoint.x, firstPoint.y, this.width, this.height).intersection(secondObject);
             if (rect == null)return false;
             var i = rect.x * this.width + rect.y;
             var len = rect.width * rect.height;
@@ -1206,15 +2029,15 @@
             return this.hitTest(firstPoint, firstAlphaThreshold, secondObject.bitmapData, secondBitmapDataPoint, secondAlphaThreshold)
         } else if (secondObject instanceof BitmapData) {
             secondAlphaThreshold = secondAlphaThreshold || 1;
-            secondBitmapDataPoint = secondBitmapDataPoint || new Point();
-            var r2 = new Rectangle(secondBitmapDataPoint.x, secondBitmapDataPoint.y, secondObject.width, secondObject.height);
+            secondBitmapDataPoint = secondBitmapDataPoint || new dsPoint();
+            var r2 = new dsRectangle(secondBitmapDataPoint.x, secondBitmapDataPoint.y, secondObject.width, secondObject.height);
             return this.hitTest(firstPoint, firstAlphaThreshold, r2, secondBitmapDataPoint, secondAlphaThreshold)
         }
     }
-    tc_BitmapData.prototype.lock = function () {
+    dsBitmapData.prototype.lock = function () {
 
     }
-    tc_BitmapData.prototype.merge = function (sourceBitmapData, sourceRect, destPoint, redMultiplier, greenMultiplier, blueMultiplier, alphaMultiplier) {
+    dsBitmapData.prototype.merge = function (sourceBitmapData, sourceRect, destPoint, redMultiplier, greenMultiplier, blueMultiplier, alphaMultiplier) {
         //[(redSrc * redMultiplier) + (redDest * (256 - redMultiplier))] / 256;
         var p = (sourceRect.x + sourceRect.width * sourceRect.y) * 4;
         var len = sourceRect.width * sourceRect.height;
@@ -1232,7 +2055,7 @@
 //GREEN : 2,
 //BLUE : 4,
 //ALPHA : 8,
-    tc_BitmapData.prototype.noise = function (randomSeed, low, high, channelOptions, grayScale) {
+    dsBitmapData.prototype.noise = function (randomSeed, low, high, channelOptions, grayScale) {
         low = low || 0;
         high = high || 255;
         var range = high - low;
@@ -1258,12 +2081,12 @@
             d[a] = (alpha) ? (Math.random() * range >> 0) + low : 255;
         }
     }
-    tc_BitmapData.prototype.paletteMap = function (sourceBitmapData, sourceRect, destPoint, redArray, greenArray, blueArray, alphaArray) {
+    dsBitmapData.prototype.paletteMap = function (sourceBitmapData, sourceRect, destPoint, redArray, greenArray, blueArray, alphaArray) {
 
     }
-    tc_BitmapData.prototype.perlinNoise = function (baseX, baseY, numOctaves, randomSeed, stitch, fractalNoise, channelOptions, grayScale, offsets) {
+    dsBitmapData.prototype.perlinNoise = function (baseX, baseY, numOctaves, randomSeed, stitch, fractalNoise, channelOptions, grayScale, offsets) {
         if (numOctaves === 0) {
-            this.fillRect(new Rectangle(0, 0, this.width, this.height), 0);
+            this.fillRect(new dsRectangle(0, 0, this.width, this.height), 0);
             return;
         }
         baseX = baseX || 1;
@@ -1306,7 +2129,7 @@
         }
 
     }
-    tc_BitmapData.prototype.pixelDissolve = function (sourceBitmapData, sourceRect, destPoint, randomSeed, numPixels, fillColor) {
+    dsBitmapData.prototype.pixelDissolve = function (sourceBitmapData, sourceRect, destPoint, randomSeed, numPixels, fillColor) {
         var w = this.width;
         var h = this.height;
         var sx = sourceRect.x >> 0;
@@ -1364,13 +2187,13 @@
         }
         return randomSeed;
     }
-    tc_BitmapData.prototype.scroll = function (x, y) {
+    dsBitmapData.prototype.scroll = function (x, y) {
         this.__x = x;
         this.__y = y;
     }
 
-    tc_BitmapData.prototype.setPixel = function (x, y, color) {
-        var c = new Color(color).toArray();
+    dsBitmapData.prototype.setPixel = function (x, y, color) {
+        var c = new dsColor(color).toArray();
         x = x >= this._width ? this._width - 1 : x;
         y = y >= this._height ? this._height - 1 : y;
         x = x < 0 ? 0 : x;
@@ -1382,8 +2205,8 @@
         this._imgdata.data[i + 3] = c[3];
     }
 
-    tc_BitmapData.prototype.setPixel32 = function (x, y, color) {
-        var c = new Color(color).toArray();
+    dsBitmapData.prototype.setPixel32 = function (x, y, color) {
+        var c = new dsColor(color).toArray();
         x = x >= this._width ? this._width - 1 : x;
         y = y >= this._height ? this._height - 1 : y;
         x = x < 0 ? 0 : x;
@@ -1395,7 +2218,7 @@
         this._imgdata.data[i + 3] = c[3];
     }
 
-    tc_BitmapData.prototype.setPixels = function (rect, inputByteArray) {
+    dsBitmapData.prototype.setPixels = function (rect, inputByteArray) {
         var len = rect.width * rect.height;
         var i = rect.x * 4 + this._width * 4 * rect.y;
         for (i; i < len; i += 4) {
@@ -1406,7 +2229,7 @@
         }
     }
 
-    tc_BitmapData.prototype.setVector = function (rect, inputVector) {
+    dsBitmapData.prototype.setVector = function (rect, inputVector) {
 
     }
     function getThresholdMethod(operation) {
@@ -1437,7 +2260,7 @@
                 };
         }
     }
-    tc_BitmapData.prototype.threshold = function (sourceBitmapData, sourceRect, destPoint, operation, threshold, color, mask, copySource) {
+    dsBitmapData.prototype.threshold = function (sourceBitmapData, sourceRect, destPoint, operation, threshold, color, mask, copySource) {
         var thresholdMethod = getThresholdMethod(operation);
         color = color || 0;
         var red = color >> 16 & 0xFF;
@@ -1469,10 +2292,10 @@
             }
         }
     }
-    tc_BitmapData.prototype.unlock = function (changeRect) {
+    dsBitmapData.prototype.unlock = function (changeRect) {
 
     }
-//æ­¤å‡½æ•°æ¥æºäº createjs.BitmapData;
+//´Ëº¯ÊıÀ´Ô´ÓÚ createjs.BitmapData;
     var NoiseGenerator = (function () {
         var PERSISTENCE = 0.5;
         var A = 1103515245;
@@ -1599,497 +2422,10 @@
 
         return NoiseGenerator;
     }());
-//
-    function ByteArray(len) {
-        this.bytesAvailable = 0;
-        this.endian = 'big_endian';//little_endian;
-        this.length = len;
-        this.objectEncoding = 'AMF3';
-        this.position = 0;
-        this.shareable = false;
-        this.length = this.length || 128;
-        this.__data = new Uint8Array(this.length);
-    }
-    DS.ByteArray=ByteArray;
-    ByteArray.defaultObjectEncoding = 'AMF3';
-    ByteArray.prototype.atomicCompareAndSwapIntAt = function (byteIndex, expectedValue, newValue) {
-        var old = this.position;
-        this.position = byteIndex;
-        if (this.readInt() == expectedValue) {
-            this.position = byteIndex;
-            this.writeInt(newValue);
-            this.position = old;
-            return expectedValue;
-        } else {
-            this.position = old;
-            return newValue;
-        }
-    }
-//åœ¨å•ä¸€çš„åŸå­æ“ä½œä¸­ï¼Œå°†æ­¤å­—èŠ‚æ•°ç»„ä¸­çš„ä¸€ä¸ªæ•´æ•°å€¼ä¸å¦ä¸€ä¸ªæ•´æ•°å€¼è¿›è¡Œæ¯”è¾ƒï¼Œå¦‚æœå®ƒä»¬åŒ¹é…ï¼Œåˆ™å°†è¿™äº›å­—èŠ‚ä¸å¦ä¸€ä¸ªå€¼è¿›è¡Œäº¤æ¢ã€‚
-    ByteArray.prototype.atomicCompareAndSwapLength = function (expectedLength, newLength) {
-        if (this.length == expectedLength) {
-            this.length = newLength;
-        }
-        return this.length;
-    }
-//åœ¨å•ä¸€çš„åŸå­æ“ä½œä¸­ï¼Œå°†æ­¤å­—èŠ‚æ•°ç»„çš„é•¿åº¦ä¸æ‰€æä¾›çš„ä¸€ä¸ªå€¼è¿›è¡Œæ¯”è¾ƒï¼Œå¦‚æœå®ƒä»¬åŒ¹é…ï¼Œåˆ™æ›´æ”¹æ­¤å­—èŠ‚æ•°ç»„çš„é•¿åº¦ã€‚
-    ByteArray.prototype.clear = function () {
-        this.__data = new Uint8Array(1);
-        this.length = 0;
-    };
-//æ¸…é™¤å­—èŠ‚æ•°ç»„çš„å†…å®¹ï¼Œå¹¶å°† length å’Œ position å±æ€§é‡ç½®ä¸º 0ã€‚
-    ByteArray.prototype.compress = function (algorithm) {
-
-    }
-//	å‹ç¼©å­—èŠ‚æ•°ç»„ã€‚
-    ByteArray.prototype.deflate = function () {
-
-    }
-//ä½¿ç”¨ deflate å‹ç¼©ç®—æ³•å‹ç¼©å­—èŠ‚æ•°ç»„ã€‚
-    ByteArray.prototype.inflate = function () {
-
-    }
-//ä½¿ç”¨ deflate å‹ç¼©ç®—æ³•å°†å­—èŠ‚æ•°ç»„è§£å‹ç¼©ã€‚
-    ByteArray.prototype.readBoolean = function () {
-        return Boolean(this.__data[this.position++]);
-    }
-//ä»å­—èŠ‚æµä¸­è¯»å–å¸ƒå°”å€¼ã€‚
-    ByteArray.prototype.readByte = function () {
-        return this.__data[this.position++] - 128;
-    }
-//ä»å­—èŠ‚æµä¸­è¯»å–å¸¦ç¬¦å·çš„å­—èŠ‚ã€‚
-    ByteArray.prototype.readBytes = function (bytes, offset, length) {
-        var l = this.__data.subarray(offset, offset + length);
-        bytes.__data.set(l);
-        bytes.length = length;
-    }
-
-//ä»å­—èŠ‚æµä¸­è¯»å– length å‚æ•°æŒ‡å®šçš„æ•°æ®å­—èŠ‚æ•°ã€‚
-//æŒ‡æ•°éƒ¨åˆ†Exponent ï¼ˆEï¼‰     : 11bit      ï¼ˆb62-b52ï¼‰//
-//å°¾æ•°éƒ¨åˆ†Mantissa   ï¼ˆMï¼‰   : 52bit      ï¼ˆb51-b0ï¼‰
-    ByteArray.prototype.readDouble = function () {
-        var z = this.__data[this.position];
-        var kk = this.__data[this.position + 1];
-        z = z << 3 | kk >> 5;
-        var f = kk & 15 | 16;
-        f = f.toString(2);
-        f += (this.__data[this.position + 2] | 256).toString(2).substr(1);
-        f += (this.__data[this.position + 3] | 256).toString(2).substr(1);
-        f += (this.__data[this.position + 4] | 256).toString(2).substr(1);
-        f += (this.__data[this.position + 5] | 256).toString(2).substr(1);
-        f += (this.__data[this.position + 6] | 256).toString(2).substr(1);
-        f += this.__data[this.position + 7].toString(2);
-        f = f.substr(1);
-        var v = 0;
-        for (var i = 0; i < f.length; i++) {
-            v += Math.pow(0.5, i + 1) * parseInt(f[i]);
-        }
-        return v + z;
-    }
-
-//æŒ‡æ•°éƒ¨åˆ†Exponent ï¼ˆEï¼‰      : 8bit       ï¼ˆb30-b23ï¼‰
-//å°¾æ•°éƒ¨åˆ†Mantissa   ï¼ˆMï¼‰    : 23bit     ï¼ˆb22-b0ï¼‰
-//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ª IEEE 754 åŒç²¾åº¦ï¼ˆ64 ä½ï¼‰æµ®ç‚¹æ•°ã€‚
-    ByteArray.prototype.readFloat = function () {
-        var z = this.__data[this.position];
-        var f = this.__data[this.position + 1];
-        if (f & 127 == f)z *= -1;
-        f = f.toString(2);
-        f += (this.__data[this.position + 2] | 256).toString(2).substr(1);
-        f += (this.__data[this.position + 3] | 256).toString(2).substr(1);
-        f = f.substr(1);
-        var v = 0;
-        for (var i = 0; i < f.length; i++) {
-            v += Math.pow(0.5, i + 1) * parseInt(f[i]);
-        }
-        this.position += 4;
-        return z + v;
-    }
-//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ª IEEE 754 å•ç²¾åº¦ï¼ˆ32 ä½ï¼‰æµ®ç‚¹æ•°ã€‚
-    ByteArray.prototype.readInt = function () {
-        var s = this.__data[this.position];
-        s = this.__data[this.position + 1] << 8 | s;
-        s = this.__data[this.position + 2] << 16 | s;
-        var b = this.__data[this.position + 3] & 127;
-        s = b << 24 | s;
-        if (b == this.__data[this.position + 3]) {
-            s *= -1;
-        }
-        return s;
-    }
-//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ªå¸¦ç¬¦å·çš„ 32 ä½æ•´æ•°ã€‚
-    ByteArray.prototype.readMultiByte = function (length, charSet) {
-        var str = '';
-        for (var i = 0; i<length; i++) {
-            str += String.fromCharCode(this.__data[this.position]);
-            this.position++
-        }
-        return unescape(str);
-    }
-//ä½¿ç”¨æŒ‡å®šçš„å­—ç¬¦é›†ä»å­—èŠ‚æµä¸­è¯»å–æŒ‡å®šé•¿åº¦çš„å¤šå­—èŠ‚å­—ç¬¦ä¸²ã€‚
-    ByteArray.prototype.readObject = function () {
-        var s = '';
-        while (this.__data[this.position] != 0) {
-            s += String.fromCharCode(this.__data[this.position]);
-            this.position++;
-        }
-        this.position++;
-        //console.log(s);
-        s = JSON.parse(s);
-        if (s instanceof Array) return s;
-        var obj = eval("new " + s.class + "()");
-        for (var k in s) {
-            obj[k] = s[k];
-        }
-        return obj;
-    }
-
-    ByteArray.prototype.readShort = function () {
-        return this.__data[this.position] | this.__data[this.position + 1] << 8
-    }
-//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ªå¸¦ç¬¦å·çš„ 16 ä½æ•´æ•°ã€‚
-    ByteArray.prototype.readUnsignedByte = function () {
-
-    }
-//ä»å­—èŠ‚æµä¸­è¯»å–æ— ç¬¦å·çš„å­—èŠ‚ã€‚
-    ByteArray.prototype.readUnsignedInt = function () {
-        var s = this.__data[this.position];
-        s = this.__data[this.position + 1] << 8 | s;
-        s = this.__data[this.position + 2] << 16 | s;
-        s = this.__data[this.position + 3] << 24 | s;
-        return s;
-    }
-//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ªæ— ç¬¦å·çš„ 32 ä½æ•´æ•°ã€‚
-    ByteArray.prototype.readUnsignedShort = function () {
-        var s = this.__data[this.position];
-        s = this.__data[this.position + 1] << 8 | s;
-        s = this.__data[this.position + 2] << 16 | s;
-        s = this.__data[this.position + 3] << 24 | s;
-        return s;
-    }
-//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ªæ— ç¬¦å·çš„ 16 ä½æ•´æ•°ã€‚
-    ByteArray.prototype.readUTF = function () {
-        var str = '';
-        for (var i = 0; i < 16; i++) {
-            str += String.fromCharCode(this.__data[this.position]);
-            this.position++;
-        }
-        return unescape(str);
-    }
-//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ª UTF-8 å­—ç¬¦ä¸²ã€‚
-    ByteArray.prototype.readUTFBytes = function (length) {
-        var str = '';
-        for (var i = 0; i < length; i++) {
-            str += String.fromCharCode(this.__data[i]);
-        }
-        return unescape(str);
-    }
-//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ªç”± length å‚æ•°æŒ‡å®šçš„ UTF-8 å­—èŠ‚åºåˆ—ï¼Œå¹¶è¿”å›ä¸€ä¸ªå­—ç¬¦ä¸²ã€‚
-    ByteArray.prototype.toJSON = function (k) {
-
-    }
-//æä¾›ä¸€ç§å¯è¦†ç›–çš„æ–¹æ³•ï¼Œç”¨äºåœ¨ ByteArray å¯¹è±¡ä¸­è‡ªå®šä¹‰å€¼çš„ JSON ç¼–ç ã€‚
-    ByteArray.prototype.toString = function () {
-
-    }
-//å°†å­—èŠ‚æ•°ç»„è½¬æ¢ä¸ºå­—ç¬¦ä¸²ã€‚
-    ByteArray.prototype.uncompress = function (algorithm) {
-
-    }
-//è§£å‹ç¼©å­—èŠ‚æ•°ç»„ã€‚
-    ByteArray.prototype.writeBoolean = function (value) {
-        this.__data.fill(value, this.position, this.position + 1);
-        this.position++;
-    }
-//å†™å…¥å¸ƒå°”å€¼ã€‚
-    ByteArray.prototype.writeByte = function (value) {
-        if (value >= -128 && value < 127) {
-            value += 128
-            this.__data.fill(value, this.position, this.position + 1);
-            this.position++;
-        } else {
-            throw 'wrong writeByte'
-        }
-
-    }
-//åœ¨å­—èŠ‚æµä¸­å†™å…¥ä¸€ä¸ªå­—èŠ‚ã€‚
-//å°†æ¥è‡ªæŒ‡å®šå­—èŠ‚æ•°ç»„ã€å­—èŠ‚æ•°ã€èµ·å§‹åç§»ï¼ˆåŸºäºé›¶çš„ç´¢å¼•ï¼‰å­—èŠ‚çš„é•¿åº¦å­—èŠ‚æ•°åºåˆ—å†™å…¥å­—èŠ‚æµã€‚
-    ByteArray.prototype.writeBytes = function (bytes, offset, length) {
-        var l = bytes.__data.subarray(offset, offset + length);
-        this.__data.set(l);
-        this.length += length;
-    }
-
-//åœ¨å­—èŠ‚æµä¸­å†™å…¥ä¸€ä¸ª IEEE 754 åŒç²¾åº¦ï¼ˆ64 ä½ï¼‰æµ®ç‚¹æ•°ã€‚
-//æŒ‡æ•°éƒ¨åˆ†Exponent ï¼ˆEï¼‰     : 11bit      ï¼ˆb62-b52ï¼‰//
-//å°¾æ•°éƒ¨åˆ†Mantissa   ï¼ˆMï¼‰   : 52bit      ï¼ˆb51-b0ï¼‰
-    ByteArray.prototype.writeDouble = function (value) {
-        var z = parseInt(value);
-        var f = value - z;
-        var n = f.toString().length
-        f = f * Math.pow(10, n);
-        var a = [];
-        z = z >> 2;
-
-        if (value > Math.pow(2, 11))throw 'writeDouble ,value too long';
-        var z = parseInt(value);
-        var f = (value - z).toString(2).substr(2);
-        var arr = [0, 0, 0, 0, 0, 0, 0, 0];
-        arr[7] = parseInt(f.substr(44, 8), 2);
-        arr[6] = parseInt(f.substr(36, 8), 2);
-        arr[5] = parseInt(f.substr(28, 8), 2);
-        arr[4] = parseInt(f.substr(20, 8), 2);
-        arr[3] = parseInt(f.substr(12, 8), 2);
-        arr[2] = parseInt(f.substr(4, 8), 2);
-        var b1 = parseInt(f.substr(0, 4), 2);
-        arr[0] = z >> 3;
-        var b2 = z - (arr[0] << 3);
-        arr[1] = b2 << 5 | b1;
-        if (value > 0)arr[1] = arr[1] | 16;
-        this.__data.set(arr, this.position, this.position + 8);
-        this.position += 8;
-    }
-
-//æŒ‡æ•°éƒ¨åˆ†Exponent ï¼ˆEï¼‰      : 8bit       ï¼ˆb30-b23ï¼‰
-//å°¾æ•°éƒ¨åˆ†Mantissa   ï¼ˆMï¼‰    : 23bit     ï¼ˆb22-b0ï¼‰
-//åœ¨å­—èŠ‚æµä¸­å†™å…¥ä¸€ä¸ª IEEE 754 å•ç²¾åº¦ï¼ˆ32 ä½ï¼‰æµ®ç‚¹æ•°ã€‚
-    ByteArray.prototype.writeFloat = function (value) {
-        if (value > Math.pow(2, 8))throw 'wrong writeFloat';
-        var arr = [0, 0, 0, 0];
-        arr[0] = parseInt(value);
-        var f = value - arr[0];
-        var ff = f.toString(2).substr(2);
-        arr[1] = parseInt(ff.substr(0, 7), 2);
-        if (value > 0)arr[1] = arr[1] | 128;
-        arr[2] = parseInt(ff.substr(7, 8), 2);
-        arr[3] = parseInt(ff.substr(15, 8), 2);
-        this.__data.set(arr, this.position);
-        this.position += 4;
-    }
-//åœ¨å­—èŠ‚æµä¸­å†™å…¥ä¸€ä¸ªå¸¦ç¬¦å·çš„ 32 ä½æ•´æ•°ã€‚
-    ByteArray.prototype.writeInt = function (value) {
-        if (value > Math.pow(2, 31))throw 'wrong writeInt';
-        var val = Math.abs(parseInt(value));
-        var arr = [0, 0, 0, 0];
-        arr[0] = val & 255;
-        arr[1] = (val & 65280) >> 8;
-        arr[2] = (val & 16711680) >> 16;
-        arr[3] = (val & 4278190080) >> 24;
-        if (value > 0)arr[3] = arr[3] | 128;
-
-        this.__data.set(arr, this.position)
-        this.position += 4;
-    }
-//ä½¿ç”¨æŒ‡å®šçš„å­—ç¬¦é›†å°†å¤šå­—èŠ‚å­—ç¬¦ä¸²å†™å…¥å­—èŠ‚æµã€‚
-    ByteArray.prototype.writeMultiByte = function (value, charSet) {
-        var e = escape(value);
-        for (var i = 0; i<e.length;i++) {
-            this.__data[this.position] = e[i].charCodeAt();
-            this.position++;
-        }
-        return e.length;
-    }
-//å°†å¯¹è±¡ä»¥ AMF åºåˆ—åŒ–æ ¼å¼å†™å…¥å­—èŠ‚æ•°ç»„ã€‚
-    ByteArray.prototype.writeObject = function (object) {
-        if (object instanceof Array) {
-
-        } else {
-            object['class'] = object.constructor.name;
-        }
-        var json = JSON.stringify(object);
-        var arr = [];
-        for (var k = 0; k < json.length; k++) {
-            arr.push(json[k].charCodeAt());
-        }
-        arr.push(0);
-        this.__data.set(arr, this.position);
-        this.position += arr.length;
-    }
-//åœ¨å­—èŠ‚æµä¸­å†™å…¥ä¸€ä¸ª 16 ä½æ•´æ•°ã€‚
-    ByteArray.prototype.writeShort = function (value) {
-        if (value > 65280)throw 'wrong writeShort';
-        this.__data[this.position] = value & 255;
-        if (value > 255)this.__data[this.position + 1] = (value & 65280) >> 8;
-        else this.__data[this.position + 1] = 0;
-        this.position += 2;
-    }
-//åœ¨å­—èŠ‚æµä¸­å†™å…¥ä¸€ä¸ªæ— ç¬¦å·çš„ 32 ä½æ•´æ•°ã€‚
-    ByteArray.prototype.writeUnsignedInt = function (value) {
-        if (value > Math.pow(2, 32))throw 'wrong writeUnsignedInt'
-        var arr = [0, 0, 0, 0];
-        arr[0] = value & 255;
-        arr[1] = (value & 65280) >> 8;
-        arr[2] = (value & 16711680) >> 16;
-        arr[3] = (value & 4278190080) >> 24;
-        this.__data.set(arr, this.position);
-        this.position += 4;
-    }
-    ByteArray.prototype.writeUTF = function (value) {
-        var e = escape(value);
-        for (var i = 0; i < 16; i++) {
-            this.__data[this.position] = e[i].charCodeAt();
-            this.position++;
-        }
-    }
-//å°† UTF-8 å­—ç¬¦ä¸²å†™å…¥å­—èŠ‚æµã€‚
-    ByteArray.prototype.writeUTFBytes = function (value) {
-        var e = escape(value);
-        for (var i = 0; i < e.length; i++) {
-            this.__data[i] = e[i].charCodeAt();
-            this.position++;
-        }
-    }
-//å°† UTF-8 å­—ç¬¦ä¸²å†™å…¥å­—èŠ‚æµã€‚
-    function TextField() {
-        dsExtend(tc_TextField, InteractiveObject, ['__render']);
-        tc_TextField.prototype.appendText = function (newText) {
-            this.text += newText;
-        }
-        tc_TextField.prototype.getCharBoundaries = function (charIndex) {
-
-        }
-        tc_TextField.prototype.getCharIndexAtPoint = function (x, y) {
-            //var h=Math.floor(x/this.defaultTextFormat.size);
-            var w = Math.floor(y / this.defaultTextFormat.size);
-            var line = this.getLineIndexAtPoint(x, y);
-            return w;
-            //return line.getAtom(w).char
-        }
-        tc_TextField.prototype.getFirstCharInParagraph = function (charIndex) {
-        }
-        tc_TextField.prototype.getImageReference = function (id) {
-        }
-        tc_TextField.prototype.getLineIndexAtPoint = function (x, y) {
-            var h = Math.floor(x / this.defaultTextFormat.size);
-            //var w=Math.floor(y/this.defaultTextFormat.size);
-            //h=Math.min(this._lines.length,Math.max(h,0))
-            h = h < 0 ? 0 : (h > this._lines.length ? this._lines.length : h)
-            return this._lines[h]
-        }
-        tc_TextField.prototype.getLineIndexOfChar = function (charIndex) {
-            //var w=Math.floor(y/this.defaultTextFormat.size);
-            //var line=this.getLineIndexAtPoint(x,y);
-            //return line.getAtom().char;
-        }
-        tc_TextField.prototype.getLineLength = function (lineIndex) {
-            return this._lines.length;
-        }
-        tc_TextField.prototype.getLineMetrics = function (lineIndex) {
-        }
-        tc_TextField.prototype.getLineOffset = function (lineIndex) {
-        }
-        tc_TextField.prototype.getLineText = function (lineIndex) {
-            lineIndex = lineIndex < 0 ? 0 : (lineIndex > this._lines.length ? this._lines.length : lineIndex);
-            return this._lines[lineIndex].text
-        }
-        tc_TextField.prototype.getParagraphLength = function (charIndex) {
-        }
-        tc_TextField.prototype.isFontCompatible = function (fontName, fontStyle) {
-        }
-        tc_TextField.prototype.replaceSelectedText = function (value) {
-        }
-        tc_TextField.prototype.replaceText = function (beginIndex, endIndex, newText) {
-        }
-        tc_TextField.prototype.setSelection = function (beginIndex, endIndex) {
-            var ll = 0;
-            var b = 0;
-            for (var i = 0; i < this._lines.length; i++) {
-                ll += this._lines[i].getAtomLength();
-                if (b == 0) {
-                    if (beginIndex < ll) {
-                        var bb = ll - this._lines[i].getAtomLength()
-                        var b = beginIndex - bb;
-                        this._lines[i].backgroundBegin(b);
-                        if (endIndex < ll) {
-                            var e = endIndex - bb + 1;
-                            this._lines[i].backgroundEnd(e);
-                            return;
-                        }
-                        b = 1;
-                    }
-                } else if (b == 1) {
-                    if (endIndex < ll) {
-                        this._lines[i].backgroundEnd(ll - endIndex);
-                        b = 2;
-                        return;
-                    }
-                }
-            }
-            if (b == 1) {
-                this._lines[i].backgroundEnd(ll);
-            }
-        }
-        tc_TextField.prototype.setTextFormat = function (format, beginIndex, endIndex) {
-        }
-        tc_TextField.prototype.__render = function (ctx) {
-            this.__recall('__render',[ctx],tc_TextField.__super);
-            if (this.background) {
-                ctx.fillStyle = this.backgroundColor;
-                ctx.fillRect(0, 0, this.width+4, this.height+4);//å·¦å³,ä¸Šä¸‹å„2åƒç´ çš„å®½åº¦
-            }
-            if(this.border){
-                ctx.strokeStyle=this.borderColor;
-                ctx.strokeRect(0, 0, this.width+4, this.height+4);
-            }
-            this.defaultTextFormat.toformat(ctx);
-            var format = this.defaultTextFormat;
-            var h = format.size;//æ–‡æœ¬åŸºçº¿
-            if(this.multiline){
-                for (var c = 0; c < this._chapters.length; c++) {
-                    var cp = this._chapters[c];
-                    for (var l = 0; l < cp.lines.length; l++) {
-                        var lp = cp.lines[l];
-                        var wx = 0;
-                        if (this.autoSize == "right") {
-                            wx=this.width-ctx.measureText(lp.text).width;
-                        } else if (this.autoSize == 'center'){
-                            wx=(this.width-ctx.measureText(lp.text).width)*0.5;
-                        } else {
-                            wx=2;
-                        }
-                        ctx.fillText(lp.text, wx, (c+l+1)*h);
-                    }
-                }
-            }else{
-                var lp = this._chapters[0].lines[0];
-                ctx.fillText(lp.text, 2, h);
-            }
-        }
-        tc_TextField.prototype._sproxy = function (event) {
-            if (!this.selectable) return;
-            if (this._proxy == null) {
-                if (this.displayAsPassword) {
-                    this._proxy = window.document.createElement('input');
-                    this._proxy.type = 'password';
-                } else {
-                    if (this.multiline) {
-                        this._proxy = window.document.createElement('textarea');
-                        this._proxy.style.resize = 'none';
-                    } else {
-                        this._proxy = window.document.createElement('input');
-                    }
-                }
-
-                this._proxy.style.position = 'absolute';
-                var self = this;
-                this._proxy.onblur = function (e) {
-                    e.currentTarget.style.display = "none";
-                    self.text = e.currentTarget.value;
-                };
-                window.document.body.appendChild(this._proxy);
-            }
-            if (this.maxChars)this._proxy.style.maxlength = this.maxChars;
-            this._proxy.style.pattern = this.restrict;
-            this._proxy.style.top = this.y + "px";
-            this._proxy.style.left = this.x + "px";
-            this._proxy.style.display = "block";
-            this._proxy.style.width = this.width + "px";
-            this._proxy.style.height = this.height + "px";
-            this._proxy.style.fontsize = this.defaultTextFormat.size + 'px';
-            this._proxy.value = this.text;
-            this._proxy.focus();
-        }
-        var text = new tc_TextField();
+    ds.dsTextField=dsTextField;
+    function dsTextField() {
+        dsExtend(dsTextField, dsInteractiveObject);
+        var text = new dsTextField.prototype.__init();
         Object.defineProperties(text, {
             "text": {
                 set: function (v) {
@@ -2097,18 +2433,18 @@
                     this._length = this._text.length;
                     this._chapters = [];
                     if (this.displayAsPassword) {
-                        this._chapters.push(new TextChapter(this, '******'));
+                        this._chapters.push(new dsTextChapter(this, '******'));
                     } else {
                         if (this.multiline) {
                             this.textWidth = 0;
-                            var a = this._text.split('\n');//å¤šè¡Œåˆ†æ
+                            var a = this._text.split('\n');//¶àĞĞ·ÖÎö
                             for (var k = 0; k < a.length; k++) {
                                 if (this.numLines || this.numLines > k)break;
-                                this._chapters.push(new TextChapter(this, a[k]));
+                                this._chapters.push(new dsTextChapter(this, a[k]));
                                 this.textWidth = Math.max(this._chapters[k].width, this.textWidth);
                             }
                         } else {
-                            this._chapters.push(new TextChapter(this, this._text));
+                            this._chapters.push(new dsTextChapter(this, this._text));
                             this.textWidth = this._chapters[0].width;
                         }
                     }
@@ -2132,9 +2468,9 @@
                 set: function (v) {
                     this._type = v;
                     //if (this._type == "input") {
-                    //    this.addEventListener(tcMouseEvent.CLICK, this._sproxy)
+                    //    this.addEventListener(dsMouseEvent.CLICK, this._sproxy)
                     //} else {
-                    //    this.removeEventListener(tcMouseEvent.CLICK, this._sproxy);
+                    //    this.removeEventListener(dsMouseEvent.CLICK, this._sproxy);
                     //}
                 },
                 get: function () {
@@ -2166,131 +2502,277 @@
         text.type = 'input';
         return text;
     }
-    function tc_TextField() {
+    dsTextField.prototype.__init=function() {
         this.width = 100;
         this.height = 12;
         this.alwaysShowSelection = true;//Boolean
-        //å¦‚æœè®¾ç½®ä¸º true ä¸”æ–‡æœ¬å­—æ®µæ²¡æœ‰ç„¦ç‚¹ï¼ŒFlash Player å°†ä»¥ç°è‰²çªå‡ºæ˜¾ç¤ºæ–‡æœ¬å­—æ®µä¸­çš„æ‰€é€‰å†…å®¹ã€‚
+        //Èç¹ûÉèÖÃÎª true ÇÒÎÄ±¾×Ö¶ÎÃ»ÓĞ½¹µã£¬Flash Player ½«ÒÔ»ÒÉ«Í»³öÏÔÊ¾ÎÄ±¾×Ö¶ÎÖĞµÄËùÑ¡ÄÚÈİ¡£
         //antiAliasType : String
-        //ç”¨äºæ­¤æ–‡æœ¬å­—æ®µçš„æ¶ˆé™¤é”¯é½¿ç±»å‹ã€‚
+        //ÓÃÓÚ´ËÎÄ±¾×Ö¶ÎµÄÏû³ı¾â³İÀàĞÍ¡£
         this.autoSize = 'none';//left,right,center
-        //æ§åˆ¶æ–‡æœ¬å­—æ®µçš„è‡ªåŠ¨å¤§å°è°ƒæ•´å’Œå¯¹é½ã€‚
+        //¿ØÖÆÎÄ±¾×Ö¶ÎµÄ×Ô¶¯´óĞ¡µ÷ÕûºÍ¶ÔÆë¡£
         this.background = false;
-        //æŒ‡å®šæ–‡æœ¬å­—æ®µæ˜¯å¦å…·æœ‰èƒŒæ™¯å¡«å……ã€‚
+        //Ö¸¶¨ÎÄ±¾×Ö¶ÎÊÇ·ñ¾ßÓĞ±³¾°Ìî³ä¡£
         this.backgroundColor = "#00ffff"
-        //æ–‡æœ¬å­—æ®µèƒŒæ™¯çš„é¢œè‰²ã€‚
+        //ÎÄ±¾×Ö¶Î±³¾°µÄÑÕÉ«¡£
         this.border=false;//: Boolean
-        //æŒ‡å®šæ–‡æœ¬å­—æ®µæ˜¯å¦å…·æœ‰è¾¹æ¡†ã€‚
+        //Ö¸¶¨ÎÄ±¾×Ö¶ÎÊÇ·ñ¾ßÓĞ±ß¿ò¡£
         this.borderColor="#ff0000" //: uint
-        //æ–‡æœ¬å­—æ®µè¾¹æ¡†çš„é¢œè‰²ã€‚
+        //ÎÄ±¾×Ö¶Î±ß¿òµÄÑÕÉ«¡£
         //bottomScrollV : int
-        //	[åªè¯»] ä¸€ä¸ªæ•´æ•°ï¼ˆä» 1 å¼€å§‹çš„ç´¢å¼•ï¼‰ï¼Œè¡¨ç¤ºæŒ‡å®šæ–‡æœ¬å­—æ®µä¸­å½“å‰å¯ä»¥çœ‹åˆ°çš„æœ€åä¸€è¡Œã€‚
+        //	[Ö»¶Á] Ò»¸öÕûÊı£¨´Ó 1 ¿ªÊ¼µÄË÷Òı£©£¬±íÊ¾Ö¸¶¨ÎÄ±¾×Ö¶ÎÖĞµ±Ç°¿ÉÒÔ¿´µ½µÄ×îºóÒ»ĞĞ¡£
         //caretIndex : int
-        //	[åªè¯»] æ’å…¥ç‚¹ï¼ˆå°–å·ï¼‰ä½ç½®çš„ç´¢å¼•ã€‚
+        //	[Ö»¶Á] ²åÈëµã£¨¼âºÅ£©Î»ÖÃµÄË÷Òı¡£
         //condenseWhite : Boolean
-        //ä¸€ä¸ªå¸ƒå°”å€¼ï¼ŒæŒ‡å®šæ˜¯å¦åˆ é™¤å…·æœ‰ HTML æ–‡æœ¬çš„æ–‡æœ¬å­—æ®µä¸­çš„é¢å¤–ç©ºç™½ï¼ˆç©ºæ ¼ã€æ¢è¡Œç¬¦ç­‰ç­‰ï¼‰ã€‚
-        this.defaultTextFormat = new TextFormat();
-        //æŒ‡å®šåº”ç”¨äºæ–°æ’å…¥æ–‡æœ¬ï¼ˆä¾‹å¦‚ï¼Œç”¨æˆ·è¾“å…¥çš„æ–‡æœ¬æˆ–ä½¿ç”¨ replaceSelectedText() æ–¹æ³•æ’å…¥çš„æ–‡æœ¬ï¼‰çš„æ ¼å¼ã€‚
+        //Ò»¸ö²¼¶ûÖµ£¬Ö¸¶¨ÊÇ·ñÉ¾³ı¾ßÓĞ HTML ÎÄ±¾µÄÎÄ±¾×Ö¶ÎÖĞµÄ¶îÍâ¿Õ°×£¨¿Õ¸ñ¡¢»»ĞĞ·ûµÈµÈ£©¡£
+        this.defaultTextFormat = new dsTextFormat();
+        //Ö¸¶¨Ó¦ÓÃÓÚĞÂ²åÈëÎÄ±¾£¨ÀıÈç£¬ÓÃ»§ÊäÈëµÄÎÄ±¾»òÊ¹ÓÃ replaceSelectedText() ·½·¨²åÈëµÄÎÄ±¾£©µÄ¸ñÊ½¡£
         this.displayAsPassword = false;
-        //æŒ‡å®šæ–‡æœ¬å­—æ®µæ˜¯å¦æ˜¯å¯†ç æ–‡æœ¬å­—æ®µã€‚
+        //Ö¸¶¨ÎÄ±¾×Ö¶ÎÊÇ·ñÊÇÃÜÂëÎÄ±¾×Ö¶Î¡£
         //embedFonts : Boolean
-        //æŒ‡å®šæ˜¯å¦ä½¿ç”¨åµŒå…¥å­—ä½“è½®å»“è¿›è¡Œå‘ˆç°ã€‚
+        //Ö¸¶¨ÊÇ·ñÊ¹ÓÃÇ¶Èë×ÖÌåÂÖÀª½øĞĞ³ÊÏÖ¡£
         //gridFitType : String
-        //ç”¨äºæ­¤æ–‡æœ¬å­—æ®µçš„ç½‘æ ¼å›ºå®šç±»å‹ã€‚
+        //ÓÃÓÚ´ËÎÄ±¾×Ö¶ÎµÄÍø¸ñ¹Ì¶¨ÀàĞÍ¡£
         this._htmlText = '';
-        //åŒ…å«æ–‡æœ¬å­—æ®µå†…å®¹çš„ HTML è¡¨ç¤ºå½¢å¼ã€‚
+        //°üº¬ÎÄ±¾×Ö¶ÎÄÚÈİµÄ HTML ±íÊ¾ĞÎÊ½¡£
         this._length = 0;
-        //	[åªè¯»] æ–‡æœ¬å­—æ®µä¸­çš„å­—ç¬¦æ•°ã€‚
+        //	[Ö»¶Á] ÎÄ±¾×Ö¶ÎÖĞµÄ×Ö·ûÊı¡£
         this.maxChars = 0;
-        //æ–‡æœ¬å­—æ®µä¸­æœ€å¤šå¯åŒ…å«çš„å­—ç¬¦æ•°ï¼ˆå³ç”¨æˆ·è¾“å…¥çš„å­—ç¬¦æ•°ï¼‰ã€‚
+        //ÎÄ±¾×Ö¶ÎÖĞ×î¶à¿É°üº¬µÄ×Ö·ûÊı£¨¼´ÓÃ»§ÊäÈëµÄ×Ö·ûÊı£©¡£
         //maxScrollH : int
-        //	[åªè¯»] scrollH çš„æœ€å¤§å€¼ã€‚
+        //	[Ö»¶Á] scrollH µÄ×î´óÖµ¡£
         //maxScrollV : int
-        //	[åªè¯»] scrollV çš„æœ€å¤§å€¼ã€‚
+        //	[Ö»¶Á] scrollV µÄ×î´óÖµ¡£
         //mouseWheelEnabled : Boolean
-        //ä¸€ä¸ªå¸ƒå°”å€¼ï¼Œè¡¨ç¤ºå½“ç”¨æˆ·å•å‡»æŸä¸ªæ–‡æœ¬å­—æ®µå¹¶æ»šåŠ¨é¼ æ ‡æ»šè½®æ—¶ï¼ŒFlash Player æ˜¯å¦è‡ªåŠ¨æ»šåŠ¨å¤šè¡Œæ–‡æœ¬å­—æ®µã€‚
+        //Ò»¸ö²¼¶ûÖµ£¬±íÊ¾µ±ÓÃ»§µ¥»÷Ä³¸öÎÄ±¾×Ö¶Î²¢¹ö¶¯Êó±ê¹öÂÖÊ±£¬Flash Player ÊÇ·ñ×Ô¶¯¹ö¶¯¶àĞĞÎÄ±¾×Ö¶Î¡£
         this.multiline = false;
-        //è¡¨ç¤ºå­—æ®µæ˜¯å¦ä¸ºå¤šè¡Œæ–‡æœ¬å­—æ®µã€‚
+        //±íÊ¾×Ö¶ÎÊÇ·ñÎª¶àĞĞÎÄ±¾×Ö¶Î¡£
         this.numLines = 0;
-        //	[åªè¯»] å®šä¹‰å¤šè¡Œæ–‡æœ¬å­—æ®µä¸­çš„æ–‡æœ¬è¡Œæ•°ã€‚
+        //	[Ö»¶Á] ¶¨Òå¶àĞĞÎÄ±¾×Ö¶ÎÖĞµÄÎÄ±¾ĞĞÊı¡£
         this.restrict = '';
-        //è¡¨ç¤ºç”¨æˆ·å¯è¾“å…¥åˆ°æ–‡æœ¬å­—æ®µä¸­çš„å­—ç¬¦é›†ã€‚
+        //±íÊ¾ÓÃ»§¿ÉÊäÈëµ½ÎÄ±¾×Ö¶ÎÖĞµÄ×Ö·û¼¯¡£
         //scrollH : int
-        //å½“å‰æ°´å¹³æ»šåŠ¨ä½ç½®ã€‚
+        //µ±Ç°Ë®Æ½¹ö¶¯Î»ÖÃ¡£
         //scrollV : int
-        //æ–‡æœ¬åœ¨æ–‡æœ¬å­—æ®µä¸­çš„å‚ç›´ä½ç½®ã€‚
+        //ÎÄ±¾ÔÚÎÄ±¾×Ö¶ÎÖĞµÄ´¹Ö±Î»ÖÃ¡£
         this.selectable = true;
-        //ä¸€ä¸ªå¸ƒå°”å€¼ï¼Œè¡¨ç¤ºæ–‡æœ¬å­—æ®µæ˜¯å¦å¯é€‰ã€‚
+        //Ò»¸ö²¼¶ûÖµ£¬±íÊ¾ÎÄ±¾×Ö¶ÎÊÇ·ñ¿ÉÑ¡¡£
         this._selectionBeginIndex = 0;
-        //	[åªè¯»] å½“å‰æ‰€é€‰å†…å®¹ä¸­ç¬¬ä¸€ä¸ªå­—ç¬¦ä»é›¶å¼€å§‹çš„å­—ç¬¦ç´¢å¼•å€¼ã€‚
+        //	[Ö»¶Á] µ±Ç°ËùÑ¡ÄÚÈİÖĞµÚÒ»¸ö×Ö·û´ÓÁã¿ªÊ¼µÄ×Ö·ûË÷ÒıÖµ¡£
         this._selectionEndIndex = 0;
-        //	[åªè¯»] å½“å‰æ‰€é€‰å†…å®¹ä¸­æœ€åä¸€ä¸ªå­—ç¬¦ä»é›¶å¼€å§‹çš„å­—ç¬¦ç´¢å¼•å€¼ã€‚
+        //	[Ö»¶Á] µ±Ç°ËùÑ¡ÄÚÈİÖĞ×îºóÒ»¸ö×Ö·û´ÓÁã¿ªÊ¼µÄ×Ö·ûË÷ÒıÖµ¡£
         //sharpness : Number
-        //æ­¤æ–‡æœ¬å­—æ®µä¸­å­—å‹è¾¹ç¼˜çš„æ¸…æ™°åº¦ã€‚
+        //´ËÎÄ±¾×Ö¶ÎÖĞ×ÖĞÍ±ßÔµµÄÇåÎú¶È¡£
         //styleSheet : StyleSheet
-        //å°†æ ·å¼è¡¨é™„åŠ åˆ°æ–‡æœ¬å­—æ®µã€‚
+        //½«ÑùÊ½±í¸½¼Óµ½ÎÄ±¾×Ö¶Î¡£
         this._text = "";
-        //ä½œä¸ºæ–‡æœ¬å­—æ®µä¸­å½“å‰æ–‡æœ¬çš„å­—ç¬¦ä¸²ã€‚
+        //×÷ÎªÎÄ±¾×Ö¶ÎÖĞµ±Ç°ÎÄ±¾µÄ×Ö·û´®¡£
         this.textColor = "#000";
-        //æ–‡æœ¬å­—æ®µä¸­æ–‡æœ¬çš„é¢œè‰²ï¼ˆé‡‡ç”¨åå…­è¿›åˆ¶æ ¼å¼ï¼‰ã€‚
+        //ÎÄ±¾×Ö¶ÎÖĞÎÄ±¾µÄÑÕÉ«£¨²ÉÓÃÊ®Áù½øÖÆ¸ñÊ½£©¡£
         this.textHeight = 0;
-        //	[åªè¯»] æ–‡æœ¬çš„é«˜åº¦ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
+        //	[Ö»¶Á] ÎÄ±¾µÄ¸ß¶È£¬ÒÔÏñËØÎªµ¥Î»¡£
         //textInteractionMode : String
-        //	[åªè¯»] äº¤äº’æ¨¡å¼å±æ€§ï¼Œé»˜è®¤å€¼ä¸º TextInteractionMode.NORMALã€‚
+        //	[Ö»¶Á] ½»»¥Ä£Ê½ÊôĞÔ£¬Ä¬ÈÏÖµÎª TextInteractionMode.NORMAL¡£
         this.textWidth = 0;
-        //	[åªè¯»] æ–‡æœ¬çš„å®½åº¦ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
+        //	[Ö»¶Á] ÎÄ±¾µÄ¿í¶È£¬ÒÔÏñËØÎªµ¥Î»¡£
         //thickness : Number
-        //æ­¤æ–‡æœ¬å­—æ®µä¸­å­—å‹è¾¹ç¼˜çš„ç²—ç»†ã€‚
+        //´ËÎÄ±¾×Ö¶ÎÖĞ×ÖĞÍ±ßÔµµÄ´ÖÏ¸¡£
         this._type = '';//dynamic,input
-        //æ–‡æœ¬å­—æ®µçš„ç±»å‹ã€‚
+        //ÎÄ±¾×Ö¶ÎµÄÀàĞÍ¡£
         //useRichTextClipboard : Boolean
-        //æŒ‡å®šåœ¨å¤åˆ¶å’Œç²˜è´´æ–‡æœ¬æ—¶æ˜¯å¦åŒæ—¶å¤åˆ¶å’Œç²˜è´´å…¶æ ¼å¼ã€‚
+        //Ö¸¶¨ÔÚ¸´ÖÆºÍÕ³ÌùÎÄ±¾Ê±ÊÇ·ñÍ¬Ê±¸´ÖÆºÍÕ³ÌùÆä¸ñÊ½¡£
         this.wordWrap = false;
-        //ä¸€ä¸ªå¸ƒå°”å€¼ï¼Œè¡¨ç¤ºæ–‡æœ¬å­—æ®µæ˜¯å¦è‡ªåŠ¨æ¢è¡Œã€‚
+        //Ò»¸ö²¼¶ûÖµ£¬±íÊ¾ÎÄ±¾×Ö¶ÎÊÇ·ñ×Ô¶¯»»ĞĞ¡£
         this._chapters = [];
         this._proxy = null;
     }
-    DS.TextField =TextField;
-    function TextFormat() {
-        this.align = "left";
-        //è¡¨ç¤ºæ®µè½çš„å¯¹é½æ–¹å¼ã€‚
-        this.blockIndent = 0;
-        //è¡¨ç¤ºå—ç¼©è¿›ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
-        this.bold = false;
-        //æŒ‡å®šæ–‡æœ¬æ˜¯å¦ä¸ºç²—ä½“å­—ã€‚
-        this.bullet = false;
-        //è¡¨ç¤ºæ–‡æœ¬ä¸ºå¸¦é¡¹ç›®ç¬¦å·çš„åˆ—è¡¨çš„ä¸€éƒ¨åˆ†ã€‚
-        this.color = "#000";
-        //è¡¨ç¤ºæ–‡æœ¬çš„é¢œè‰²ã€‚
-        this.font = "Arial";//ï¼ˆåœ¨ Mac OS X ä¸Šï¼Œé»˜è®¤å­—ä½“ä¸º Timesï¼‰
-        //ä½¿ç”¨æ­¤æ–‡æœ¬æ ¼å¼çš„æ–‡æœ¬çš„å­—ä½“åç§°ï¼Œä»¥å­—ç¬¦ä¸²å½¢å¼è¡¨ç¤ºã€‚
-        this.indent = 0;
-        //è¡¨ç¤ºä»å·¦è¾¹è·åˆ°æ®µè½ä¸­ç¬¬ä¸€ä¸ªå­—ç¬¦çš„ç¼©è¿›ã€‚
-        this.italic = false;
-        //è¡¨ç¤ºä½¿ç”¨æ­¤æ–‡æœ¬æ ¼å¼çš„æ–‡æœ¬æ˜¯å¦ä¸ºæ–œä½“ã€‚
-        this.kerning = false;
-        //ä¸€ä¸ªå¸ƒå°”å€¼ï¼Œè¡¨ç¤ºæ˜¯å¯ç”¨ (true) è¿˜æ˜¯ç¦ç”¨ (false) å­—è·è°ƒæ•´ã€‚
-        this.leading = 0;
-        //ä¸€ä¸ªæ•´æ•°ï¼Œè¡¨ç¤ºè¡Œä¸è¡Œä¹‹é—´çš„å‚ç›´é—´è·ï¼ˆç§°ä¸ºå‰å¯¼ï¼‰é‡ã€‚
-        this.leftMargin = 0;
-        //æ®µè½çš„å·¦è¾¹è·ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
-        this.letterSpacing = 0;
-        //ä¸€ä¸ªæ•°å­—ï¼Œè¡¨ç¤ºåœ¨æ‰€æœ‰å­—ç¬¦ä¹‹é—´å‡åŒ€åˆ†é…çš„ç©ºé—´é‡ã€‚
-        this.rightMargin = 0;
-        //æ®µè½çš„å³è¾¹è·ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
-        this.size = 12;
-        //ä½¿ç”¨æ­¤æ–‡æœ¬æ ¼å¼çš„æ–‡æœ¬çš„å¤§å°ï¼ˆä»¥åƒç´ ä¸ºå•ä½ï¼‰ã€‚
-        this.tabStops = [];
-        //å°†è‡ªå®šä¹‰ Tab åœé ä½æŒ‡å®šä¸ºä¸€ä¸ªéè´Ÿæ•´æ•°çš„æ•°ç»„ã€‚
-        this.target = "";
-        //è¡¨ç¤ºæ˜¾ç¤ºè¶…é“¾æ¥çš„ç›®æ ‡çª—å£ã€‚
-        this.underline = false;
-        //è¡¨ç¤ºä½¿ç”¨æ­¤æ–‡æœ¬æ ¼å¼çš„æ–‡æœ¬æ˜¯å¸¦ä¸‹åˆ’çº¿ (true) è¿˜æ˜¯ä¸å¸¦ä¸‹åˆ’çº¿ (false)ã€‚
-        this.url = "";
-        //è¡¨ç¤ºä½¿ç”¨æ­¤æ–‡æœ¬æ ¼å¼çš„æ–‡æœ¬çš„ç›®æ ‡ URLã€‚
+    dsTextField.prototype.appendText = function (newText) {
+        this.text += newText;
     }
-    DS.TextFormat =TextFormat;
-    TextFormat.prototype.toformat = function (ctx) {
+    dsTextField.prototype.getCharBoundaries = function (charIndex) {
+
+    }
+    dsTextField.prototype.getCharIndexAtPoint = function (x, y) {
+        //var h=Math.floor(x/this.defaultTextFormat.size);
+        var w = Math.floor(y / this.defaultTextFormat.size);
+        var line = this.getLineIndexAtPoint(x, y);
+        return w;
+        //return line.getAtom(w).char
+    }
+    dsTextField.prototype.getFirstCharInParagraph = function (charIndex) {
+    }
+    dsTextField.prototype.getImageReference = function (id) {
+    }
+    dsTextField.prototype.getLineIndexAtPoint = function (x, y) {
+        var h = Math.floor(x / this.defaultTextFormat.size);
+        //var w=Math.floor(y/this.defaultTextFormat.size);
+        //h=Math.min(this._lines.length,Math.max(h,0))
+        h = h < 0 ? 0 : (h > this._lines.length ? this._lines.length : h)
+        return this._lines[h]
+    }
+    dsTextField.prototype.getLineIndexOfChar = function (charIndex) {
+        //var w=Math.floor(y/this.defaultTextFormat.size);
+        //var line=this.getLineIndexAtPoint(x,y);
+        //return line.getAtom().char;
+    }
+    dsTextField.prototype.getLineLength = function (lineIndex) {
+        return this._lines.length;
+    }
+    dsTextField.prototype.getLineMetrics = function (lineIndex) {
+    }
+    dsTextField.prototype.getLineOffset = function (lineIndex) {
+    }
+    dsTextField.prototype.getLineText = function (lineIndex) {
+        lineIndex = lineIndex < 0 ? 0 : (lineIndex > this._lines.length ? this._lines.length : lineIndex);
+        return this._lines[lineIndex].text
+    }
+    dsTextField.prototype.getParagraphLength = function (charIndex) {
+    }
+    dsTextField.prototype.isFontCompatible = function (fontName, fontStyle) {
+    }
+    dsTextField.prototype.replaceSelectedText = function (value) {
+    }
+    dsTextField.prototype.replaceText = function (beginIndex, endIndex, newText) {
+    }
+    dsTextField.prototype.setSelection = function (beginIndex, endIndex) {
+        var ll = 0;
+        var b = 0;
+        for (var i = 0; i < this._lines.length; i++) {
+            ll += this._lines[i].getAtomLength();
+            if (b == 0) {
+                if (beginIndex < ll) {
+                    var bb = ll - this._lines[i].getAtomLength()
+                    var b = beginIndex - bb;
+                    this._lines[i].backgroundBegin(b);
+                    if (endIndex < ll) {
+                        var e = endIndex - bb + 1;
+                        this._lines[i].backgroundEnd(e);
+                        return;
+                    }
+                    b = 1;
+                }
+            } else if (b == 1) {
+                if (endIndex < ll) {
+                    this._lines[i].backgroundEnd(ll - endIndex);
+                    b = 2;
+                    return;
+                }
+            }
+        }
+        if (b == 1) {
+            this._lines[i].backgroundEnd(ll);
+        }
+    }
+    dsTextField.prototype.setTextFormat = function (format, beginIndex, endIndex) {
+    }
+    dsTextField.prototype.__render = function (ctx) {
+        this.__recall('__render',[ctx],dsTextField.__super);
+        if (this.background) {
+            ctx.fillStyle = this.backgroundColor;
+            ctx.fillRect(0, 0, this.width+4, this.height+4);//×óÓÒ,ÉÏÏÂ¸÷2ÏñËØµÄ¿í¶È
+        }
+        if(this.border){
+            ctx.strokeStyle=this.borderColor;
+            ctx.strokeRect(0, 0, this.width+4, this.height+4);
+        }
+        this.defaultTextFormat.toformat(ctx);
+        var format = this.defaultTextFormat;
+        var h = format.size;//ÎÄ±¾»ùÏß
+        if(this.multiline){
+            for (var c = 0; c < this._chapters.length; c++) {
+                var cp = this._chapters[c];
+                for (var l = 0; l < cp.lines.length; l++) {
+                    var lp = cp.lines[l];
+                    var wx = 0;
+                    if (this.autoSize == "right") {
+                        wx=this.width-ctx.measureText(lp.text).width;
+                    } else if (this.autoSize == 'center'){
+                        wx=(this.width-ctx.measureText(lp.text).width)*0.5;
+                    } else {
+                        wx=2;
+                    }
+                    ctx.fillText(lp.text, wx, (c+l+1)*h);
+                }
+            }
+        }else{
+            var lp = this._chapters[0].lines[0];
+            ctx.fillText(lp.text, 2, h);
+        }
+    }
+    dsTextField.prototype._sproxy = function (event) {
+        if (!this.selectable) return;
+        if (this._proxy == null) {
+            if (this.displayAsPassword) {
+                this._proxy = window.document.createElement('input');
+                this._proxy.type = 'password';
+            } else {
+                if (this.multiline) {
+                    this._proxy = window.document.createElement('textarea');
+                    this._proxy.style.resize = 'none';
+                } else {
+                    this._proxy = window.document.createElement('input');
+                }
+            }
+
+            this._proxy.style.position = 'absolute';
+            var self = this;
+            this._proxy.onblur = function (e) {
+                e.currentTarget.style.display = "none";
+                self.text = e.currentTarget.value;
+            };
+            window.document.body.appendChild(this._proxy);
+        }
+        if (this.maxChars)this._proxy.style.maxlength = this.maxChars;
+        this._proxy.style.pattern = this.restrict;
+        this._proxy.style.top = this.y + "px";
+        this._proxy.style.left = this.x + "px";
+        this._proxy.style.display = "block";
+        this._proxy.style.width = this.width + "px";
+        this._proxy.style.height = this.height + "px";
+        this._proxy.style.fontsize = this.defaultTextFormat.size + 'px';
+        this._proxy.value = this.text;
+        this._proxy.focus();
+    }
+    ds.dsTextFormat=dsTextFormat;
+    function dsTextFormat() {
+        this.align = "left";
+        //±íÊ¾¶ÎÂäµÄ¶ÔÆë·½Ê½¡£
+        this.blockIndent = 0;
+        //±íÊ¾¿éËõ½ø£¬ÒÔÏñËØÎªµ¥Î»¡£
+        this.bold = false;
+        //Ö¸¶¨ÎÄ±¾ÊÇ·ñÎª´ÖÌå×Ö¡£
+        this.bullet = false;
+        //±íÊ¾ÎÄ±¾Îª´øÏîÄ¿·ûºÅµÄÁĞ±íµÄÒ»²¿·Ö¡£
+        this.color = "#000";
+        //±íÊ¾ÎÄ±¾µÄÑÕÉ«¡£
+        this.font = "Arial";//£¨ÔÚ Mac OS X ÉÏ£¬Ä¬ÈÏ×ÖÌåÎª Times£©
+        //Ê¹ÓÃ´ËÎÄ±¾¸ñÊ½µÄÎÄ±¾µÄ×ÖÌåÃû³Æ£¬ÒÔ×Ö·û´®ĞÎÊ½±íÊ¾¡£
+        this.indent = 0;
+        //±íÊ¾´Ó×ó±ß¾àµ½¶ÎÂäÖĞµÚÒ»¸ö×Ö·ûµÄËõ½ø¡£
+        this.italic = false;
+        //±íÊ¾Ê¹ÓÃ´ËÎÄ±¾¸ñÊ½µÄÎÄ±¾ÊÇ·ñÎªĞ±Ìå¡£
+        this.kerning = false;
+        //Ò»¸ö²¼¶ûÖµ£¬±íÊ¾ÊÇÆôÓÃ (true) »¹ÊÇ½ûÓÃ (false) ×Ö¾àµ÷Õû¡£
+        this.leading = 0;
+        //Ò»¸öÕûÊı£¬±íÊ¾ĞĞÓëĞĞÖ®¼äµÄ´¹Ö±¼ä¾à£¨³ÆÎªÇ°µ¼£©Á¿¡£
+        this.leftMargin = 0;
+        //¶ÎÂäµÄ×ó±ß¾à£¬ÒÔÏñËØÎªµ¥Î»¡£
+        this.letterSpacing = 0;
+        //Ò»¸öÊı×Ö£¬±íÊ¾ÔÚËùÓĞ×Ö·ûÖ®¼ä¾ùÔÈ·ÖÅäµÄ¿Õ¼äÁ¿¡£
+        this.rightMargin = 0;
+        //¶ÎÂäµÄÓÒ±ß¾à£¬ÒÔÏñËØÎªµ¥Î»¡£
+        this.size = 12;
+        //Ê¹ÓÃ´ËÎÄ±¾¸ñÊ½µÄÎÄ±¾µÄ´óĞ¡£¨ÒÔÏñËØÎªµ¥Î»£©¡£
+        this.tabStops = [];
+        //½«×Ô¶¨Òå Tab Í£¿¿Î»Ö¸¶¨ÎªÒ»¸ö·Ç¸ºÕûÊıµÄÊı×é¡£
+        this.target = "";
+        //±íÊ¾ÏÔÊ¾³¬Á´½ÓµÄÄ¿±ê´°¿Ú¡£
+        this.underline = false;
+        //±íÊ¾Ê¹ÓÃ´ËÎÄ±¾¸ñÊ½µÄÎÄ±¾ÊÇ´øÏÂ»®Ïß (true) »¹ÊÇ²»´øÏÂ»®Ïß (false)¡£
+        this.url = "";
+        //±íÊ¾Ê¹ÓÃ´ËÎÄ±¾¸ñÊ½µÄÎÄ±¾µÄÄ¿±ê URL¡£
+    }
+    dsTextFormat.prototype.toformat = function (ctx) {
         ctx.fillStyle = this.color;
         var s = "";
         if (this.bold)s += "bold";
@@ -2298,12 +2780,8 @@
         s += " " + this.size + "px " + this.font;
         ctx.font = s;
     }
-//å­—
-    function Word(char) {
-        this.char = char;
-    }
-//æ®µ
-    function TextChapter(parent, text) {
+    
+    function dsTextChapter(parent, text) {
         this.text = text;
         this.lines = [];
         var format = parent.defaultTextFormat;
@@ -2312,122 +2790,27 @@
             this.maxword = this.maxword || 1;
             var le = 0;
             while (le < this.text.length) {
-                this.lines.push(new TextLine(this.text.substr(le, this.maxword)));
+                this.lines.push(new dsTextLine(this.text.substr(le, this.maxword)));
                 le += this.maxword;
             }
         } else {
-            this.lines.push(new TextLine(this.text));
+            this.lines.push(new dsTextLine(this.text));
         }
         //this.width = format.size * this.lines[0].words.length;
         this.height = this.lines.length * format.size;
     }
-//è¡Œ
-    function TextLine(text) {
+//ĞĞ
+    function dsTextLine(text) {
         this.text = text;
         this.words = this.text.split('');
     }
 
-//function TextLineMetrics(){
-//	this.ascent=0;
-//	//æ–‡æœ¬çš„ä¸Šç¼˜å€¼æ˜¯ä»åŸºçº¿åˆ°è¡Œé«˜åº¦é¡¶éƒ¨çš„é•¿åº¦ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
-//	this.descent =12;
-//	//æ–‡æœ¬çš„ä¸‹ç¼˜å€¼æ˜¯ä»åŸºçº¿åˆ°è¡Œæ·±åº¦åº•éƒ¨çš„é•¿åº¦ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
-//	this.height=12;
-//	//é«˜åº¦å€¼æ˜¯é€‰å®šè¡Œä¸­çš„æ–‡æœ¬çš„é«˜åº¦ï¼ˆå¹¶ä¸ä¸€å®šæ˜¯å®Œæ•´æ–‡æœ¬ï¼‰ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
-//	this.leading=0;
-//	//å‰å¯¼å€¼æ˜¯æ–‡æœ¬è¡Œä¹‹é—´çš„å‚ç›´è·ç¦»çš„åº¦é‡å€¼ã€‚
-//	this.width=12;
-//	//å®½åº¦å€¼æ˜¯é€‰å®šè¡Œä¸­çš„æ–‡æœ¬çš„å®½åº¦ï¼ˆå¹¶ä¸ä¸€å®šæ˜¯å®Œæ•´æ–‡æœ¬ï¼‰ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
-//	this.x =0;
-//	//x å€¼æ˜¯ç¬¬ä¸€ä¸ªå­—ç¬¦çš„å·¦ä¾§ä½ç½®ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
-//}
-
-    function tc_MovieClip(source) {
-        this.__et = 0;
-        this.__bt = 0;
-        this._frameRate = 24;
-        this.__pt = parseInt(1000 /this._frameRate);
-        this.currentFrame = 0;
-        this.enabled = false;
-        this.isPlaying = true;
-        this._totalFrames = 0;
-        this._sheet = null;
-        if(source){
-            this.name=source?source:this.name;
-            source = MovieClip.baseURI+source+"."+MovieClip.file;
-            this.__load(source);
-        }
-    }
-    DS.MovieClip=MovieClip;
-    MovieClip.baseURI='';
-    MovieClip.file='json'
-    function MovieClip(source) {
-        dsExtend(tc_MovieClip, Sprite, ["__render"]);
-        var p = tc_MovieClip.prototype;
-        p.gotoAndPlay = function (frame){
-            this.isPlaying = true;
-            this.currentFrame = frame;
-        }
-        p.gotoAndStop = function (frame) {
-            this.isPlaying = false;
-            this.currentFrame = frame;
-        }
-        p.nextFrame = function () {
-            if (this.currentFrame < this.totalFrames)this.currentFrame++;
-            this.isPlaying = false;
-        }
-        p.play = function () {
-            this.isPlaying = true;
-        }
-        p.preFrame = function () {
-            if (this.currentFrame > 1)this.currentFrame--;
-            this.isPlaying = false;
-        }
-        p.stop = function () {
-            this.isPlaying = false;
-        }
-        p.__load=function(source){
-            if(typeof source == 'string'){
-                var res=new URLLoader(new URLRequest(source));
-                var self = this;
-                var fun =function(e){
-                    res.removeEventListener('complete',fun);
-                    var d = JSON.parse(res.data);
-                    if(!d)return
-                    var img = new Image();
-                    img.src = MovieClip.baseURI+d.meta.image;
-                    img.onload = function(e){
-                        window.fbcanvavs.width = d.meta.size.w;
-                        window.fbcanvavs.height = d.meta.size.h;
-                        var xt = window.fbcanvavs.getContext("2d");
-                        xt.drawImage(img, 0, 0);
-                        self._sheet = new SpriteSheet(d).prase(xt);
-                        self.width = self._sheet.width;
-                        self.height = self._sheet.height;
-                        self._totalFrames = self._sheet.imgs.length;
-                        stage.invalidate();
-                        self.dispatchEvent(new tcEvent(tcEvent.COMPLETE));
-                    }
-                }
-                res.addEventListener('complete',fun);
-            }
-        }
-        p.__render = function (ctx) {
-            if(this.__recall("__render", [ctx], tc_MovieClip.__super)){
-                this.__et = new Date().getTime();
-                if (this._sheet) {
-                    var b = this._sheet.getImg(this.currentFrame);
-                    ctx.drawImage(b.img,0, 0, b.w, b.h);
-                    if (this.isPlaying && this.__et - this.__bt > this.__pt){
-                        this.currentFrame++;
-                        if (this.currentFrame >= this._totalFrames)this.currentFrame = 0;
-                        this.__bt = this.__et;
-                    }
-
-                }
-            }
-        }
-        var m = new tc_MovieClip(source);
+    ds.dsMovieClip=dsMovieClip;
+    dsMovieClip.baseURI='';
+    dsMovieClip.file='json'
+    function dsMovieClip(source) {
+        dsExtend(dsMovieClip, Sprite, ["__render"]);
+        var m = new dsMovieClip.prototype.__init(source);
         Object.defineProperties(m, {
             "totalFrames": {
                 get: function () {
@@ -2445,7 +2828,86 @@
         })
         return m;
     }
+    var p = dsMovieClip.prototype;
+    p.__init=function(source){
+        this.__et = 0;
+        this.__bt = 0;
+        this._frameRate = 24;
+        this.__pt = parseInt(1000 /this._frameRate);
+        this.currentFrame = 0;
+        this.enabled = false;
+        this.isPlaying = true;
+        this._totalFrames = 0;
+        this._sheet = null;
+        if(source){
+            this.name=source?source:this.name;
+            source = dsMovieClip.baseURI+source+"."+dsMovieClip.file;
+            this.__load(source);
+        }
+    }
+    p.gotoAndPlay = function (frame){
+        this.isPlaying = true;
+        this.currentFrame = frame;
+    }
+    p.gotoAndStop = function (frame) {
+        this.isPlaying = false;
+        this.currentFrame = frame;
+    }
+    p.nextFrame = function () {
+        if (this.currentFrame < this.totalFrames)this.currentFrame++;
+        this.isPlaying = false;
+    }
+    p.play = function () {
+        this.isPlaying = true;
+    }
+    p.preFrame = function () {
+        if (this.currentFrame > 1)this.currentFrame--;
+        this.isPlaying = false;
+    }
+    p.stop = function () {
+        this.isPlaying = false;
+    }
+    p.__load=function(source){
+        if(typeof source == 'string'){
+            var res=new dsURLLoader(new dsURLRequest(source));
+            var self = this;
+            var fun =function(e){
+                res.removeEventListener('complete',fun);
+                var d = JSON.parse(res.data);
+                if(!d)return
+                var img = new Image();
+                img.src = dsMovieClip.baseURI+d.meta.image;
+                img.onload = function(e){
+                    window.fbcanvavs.width = d.meta.size.w;
+                    window.fbcanvavs.height = d.meta.size.h;
+                    var xt = window.fbcanvavs.getContext("2d");
+                    xt.drawImage(img, 0, 0);
+                    self._sheet = new SpriteSheet(d).prase(xt);
+                    self.width = self._sheet.width;
+                    self.height = self._sheet.height;
+                    self._totalFrames = self._sheet.imgs.length;
+                    stage.invalidate();
+                    self.dispatchEvent(new dsEvent(dsEvent.COMPLETE));
+                }
+            }
+            res.addEventListener('complete',fun);
+        }
+    }
+    p.__render = function (ctx) {
+        if(this.__recall("__render", [ctx], dsMovieClip.__super)){
+            this.__et = new Date().getTime();
+            if (this._sheet) {
+                var b = this._sheet.getImg(this.currentFrame);
+                ctx.drawImage(b.img,0, 0, b.w, b.h);
+                if (this.isPlaying && this.__et - this.__bt > this.__pt){
+                    this.currentFrame++;
+                    if (this.currentFrame >= this._totalFrames)this.currentFrame = 0;
+                    this.__bt = this.__et;
+                }
 
+            }
+        }
+    }
     function SpriteSheet(data){
         this.data = data;
         this.imgs = [];
@@ -2479,43 +2941,45 @@
         o.img = this.imgs[index];
         return o;
     }
-    DS.URLRequest=URLRequest;
-    function URLRequest(url){
+
+    DS.dsURLRequest=dsURLRequest;
+    function dsURLRequest(url){
         this.contentType ='application/x-www-form-urlencoded';// multipart/form-data
         this.data=null;
         this.digest='';
         this.method ='get';//post
-        this.requestHeaders=[];//HTTP è¯·æ±‚æ ‡å¤´çš„æ•°ç»„ é”®å€¼å¯¹
+        this.requestHeaders=[];//HTTP ÇëÇó±êÍ·µÄÊı×é ¼üÖµ¶Ô
         this.url = url;
         this.userAgent=navigator.userAgent;
         //Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en) AppleWebKit/526.9+ (KHTML, like Gecko) AdobeAIR/1.5"
         //"Mozilla/5.0 (Windows; U; en) AppleWebKit/526.9+ (KHTML, like Gecko) AdobeAIR/1.5"
         //"Mozilla/5.0 (X11; U; Linux i686; en-US) AppleWebKit/526.9+ (KHTML, like Gecko) AdobeAIR/1.5"
     }
-    DS.URLLoader=URLLoader;
-    function URLLoader(request){
-        dsExtend(tc_URLLoader, EventDispatcher,[]);
-        tc_URLLoader.prototype.load = function (request) {
-            this.request = request||this.request;
-            this.http.open(this.request.method, this.request.url, true);
-            //this.http.responseType = this.request.contentType;
-            for(var i = 0;i<this.request.requestHeaders.length;i++){
-                var h = this.request.requestHeaders[i];
-                this.http.setRequestHeader(h.head.h.value);
-            }
-            var self = this;
-            this.http.onload = function (event){
-                self.data = event.target.response;
-            }
-            this.http.send(null);
-        }
-        tc_URLLoader.prototype.close = function(){
-            this.http.abort();
-        }
-        return new tc_URLLoader(request);
+
+    DS.dsURLLoader=dsURLLoader;
+    function dsURLLoader(request){
+        dsExtend(dsURLLoader, dsEventDispatcher);
+        return new dsURLLoader.prototype.__init(request);
     }
-//å›¾å½¢åŠ è½½
-    function tc_URLLoader(request) {
+    dsURLLoader.prototype.load = function (request) {
+        this.request = request||this.request;
+        this.http.open(this.request.method, this.request.url, true);
+        //this.http.responseType = this.request.contentType;
+        for(var i = 0;i<this.request.requestHeaders.length;i++){
+            var h = this.request.requestHeaders[i];
+            this.http.setRequestHeader(h.head.h.value);
+        }
+        var self = this;
+        this.http.onload = function (event){
+            self.data = event.target.response;
+        }
+        this.http.send(null);
+    }
+    dsURLLoader.prototype.close = function(){
+        this.http.abort();
+    }
+//Í¼ĞÎ¼ÓÔØ
+    dsURLLoader.prototype.__init=function(request) {
         this.request = request;
         //this.dataFormat = "text";//"arraybuffer""blob""document""json""text"
         this.data = null;
@@ -2542,7 +3006,7 @@
         });
         http.addEventListener("loadend", function () {
             //console.log("loadend");
-            self.dispatchEvent(new tcEvent(tcEvent.COMPLETE))
+            self.dispatchEvent(new dsEvent(dsEvent.COMPLETE))
         });
         http.addEventListener('readystatechange',function(e){
             //http.readyState;
@@ -2554,7 +3018,7 @@
         if(this.request) this.load(this.request);
     }
 
-    function tc_Loader(url) {
+    function dsLoader(url) {
         this.width =0;
         this.height =0;
         this.data = null;
@@ -2563,182 +3027,130 @@
             this.load(url);
         }
     }
-    DS.Loader=Loader;
-    function Loader() {
-        dsExtend(tc_Loader, InteractiveObject, ['__render']);
-        //tc_Loader.prototype
-        tc_Loader.prototype.load = function (url) {
-            var self = this;
-            var mm = new Image();
-            mm.onload = function () {
-                mm.onload = null;
-                self.data = mm;
-                self.width = self.width == 0 ? mm.width : self.width;
-                self.height = self.height == 0 ? mm.height : self.height;
-                //stage.invalidate();
-                self.dispatchEvent(new tcEvent(tcEvent.COMPLETE));
-            }
-            mm.src = url;
-            return this;
-        }
-        tc_Loader.prototype.__render = function (ctx) {
-            if (this.data == null)return;
-            ctx.transform(this._mat.a,this._mat.b,this._mat.c,this._mat.d,this._mat.tx,this._mat.ty);
-            ctx.drawImage(this.data, 0, 0, this.width, this.height, 0, 0, this.width, this.height);
-        }
-        return new tc_Loader();
+    ds.dsLoader=dsLoader;
+    function dsLoader() {
+        dsExtend(dsLoader, dsInteractiveObject);
+        return new dsLoader.prototype.__init();
     }
-
-    function BitmapFilter() {
-
+    dsLoader.prototype.__init=function(){}
+    dsLoader.prototype.load = function (url) {
+        var self = this;
+        var mm = new Image();
+        mm.onload = function () {
+            mm.onload = null;
+            self.data = mm;
+            self.width = self.width == 0 ? mm.width : self.width;
+            self.height = self.height == 0 ? mm.height : self.height;
+            //stage.invalidate();
+            self.dispatchEvent(new dsEvent(dsEvent.COMPLETE));
+        }
+        mm.src = url;
+        return this;
     }
-
-//æ¨¡ç³Šæ»¤é•œ
-    function BlurFilter(blurX, blurY, quality) {
+    dsLoader.prototype.__render = function (ctx) {
+        if (this.data == null)return;
+        ctx.transform(this._mat.a,this._mat.b,this._mat.c,this._mat.d,this._mat.tx,this._mat.ty);
+        ctx.drawImage(this.data, 0, 0, this.width, this.height, 0, 0, this.width, this.height);
+    }
+    ds.dsBlurFilter=dsBlurFilter
+    function dsBlurFilter(blurX, blurY, quality) {
         this.blurX = blurX | 4;
         this.blurY = blurY | 4;
         this.quality = quality | 1;
     }
-//æ–œè§’
+
+//Ğ±½Ç
     function BevelFilter() {
 
     }
-//å‘å…‰
+//·¢¹â
     function GlowFilter() {
 
     }
-    DS.DropShadowFilter=DropShadowFilter;
-//æŠ•å½±
-    function DropShadowFilter(distance, angle, color, alpha, blurX, blurY, strength, quality, inner, knockout, hideObject) {
-        this.distance = distance//:Number (default = 4.0) â€” é˜´å½±çš„åç§»è·ç¦»ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
-        this.angle = Math.PI / 180 * (angle != null ? angle : 0);//:Number (default = 45) â€” é˜´å½±çš„è§’åº¦ï¼Œ0 åˆ° 360 åº¦ï¼ˆæµ®ç‚¹ï¼‰ã€‚
-        this.color = color || 0//:uint (default = 0) â€” é˜´å½±é¢œè‰²ï¼Œé‡‡ç”¨åå…­è¿›åˆ¶æ ¼å¼ 0xRRGGBBã€‚é»˜è®¤å€¼ä¸º 0x000000ã€‚
-        this.alpha = alpha || 1//:Number (default = 1.0) â€” é˜´å½±é¢œè‰²çš„ Alpha é€æ˜åº¦å€¼ã€‚æœ‰æ•ˆå€¼ä¸º 0.0 åˆ° 1.0ã€‚ä¾‹å¦‚ï¼Œ0.25 è®¾ç½®é€æ˜åº¦å€¼ä¸º 25%ã€‚
-        this.blurX = blurX || 4//:Number (default = 4.0) â€” æ°´å¹³æ¨¡ç³Šé‡ã€‚æœ‰æ•ˆå€¼ä¸º 0 åˆ° 255.0ï¼ˆæµ®ç‚¹ï¼‰ã€‚
-        this.strength = strength || 1//:Number (default = 1.0) â€” å°è®°æˆ–è·¨é¡µçš„å¼ºåº¦ã€‚è¯¥å€¼è¶Šé«˜ï¼Œå‹å°çš„é¢œè‰²è¶Šæ·±ï¼Œè€Œä¸”é˜´å½±ä¸èƒŒæ™¯ä¹‹é—´çš„å¯¹æ¯”åº¦ä¹Ÿè¶Šå¼ºã€‚æœ‰æ•ˆå€¼ä¸º 0 åˆ° 255.0ã€‚
-        this.quality = quality || 1//:int (default = 1) â€” åº”ç”¨æ»¤é•œçš„æ¬¡æ•°ã€‚ä½¿ç”¨ BitmapFilterQuality å¸¸é‡ï¼š
-        this.inner = inner//:Boolean (default = false) â€” è¡¨ç¤ºé˜´å½±æ˜¯å¦ä¸ºå†…ä¾§é˜´å½±ã€‚å€¼ true æŒ‡å®šå†…ä¾§é˜´å½±ã€‚å€¼ false æŒ‡å®šå¤–ä¾§é˜´å½±ï¼ˆå¯¹è±¡å¤–ç¼˜å‘¨å›´çš„é˜´å½±ï¼‰ã€‚
-        this.knockout = knockout//:Boolean (default = false) â€” åº”ç”¨æŒ–ç©ºæ•ˆæœ (true)ï¼Œè¿™å°†æœ‰æ•ˆåœ°ä½¿å¯¹è±¡çš„å¡«è‰²å˜ä¸ºé€æ˜ï¼Œå¹¶æ˜¾ç¤ºæ–‡æ¡£çš„èƒŒæ™¯é¢œè‰²ã€‚
-        this.hideObject = hideObject//:Boolean (default = false) â€” è¡¨ç¤ºæ˜¯å¦éšè—å¯¹è±¡ã€‚å¦‚æœå€¼ä¸º trueï¼Œåˆ™è¡¨ç¤ºæ²¡æœ‰ç»˜åˆ¶å¯¹è±¡æœ¬èº«ï¼Œåªæœ‰é˜´å½±æ˜¯å¯è§çš„ã€‚
+
+    ds.dsDropShadowFilter=dsDropShadowFilter;
+//Í¶Ó°
+    function dsDropShadowFilter(distance, angle, color, alpha, blurX, blurY, strength, quality, inner, knockout, hideObject) {
+        this.distance = distance//:Number (default = 4.0) ¡ª ÒõÓ°µÄÆ«ÒÆ¾àÀë£¬ÒÔÏñËØÎªµ¥Î»¡£
+        this.angle = Math.PI / 180 * (angle != null ? angle : 0);//:Number (default = 45) ¡ª ÒõÓ°µÄ½Ç¶È£¬0 µ½ 360 ¶È£¨¸¡µã£©¡£
+        this.color = color || 0//:uint (default = 0) ¡ª ÒõÓ°ÑÕÉ«£¬²ÉÓÃÊ®Áù½øÖÆ¸ñÊ½ 0xRRGGBB¡£Ä¬ÈÏÖµÎª 0x000000¡£
+        this.alpha = alpha || 1//:Number (default = 1.0) ¡ª ÒõÓ°ÑÕÉ«µÄ Alpha Í¸Ã÷¶ÈÖµ¡£ÓĞĞ§ÖµÎª 0.0 µ½ 1.0¡£ÀıÈç£¬0.25 ÉèÖÃÍ¸Ã÷¶ÈÖµÎª 25%¡£
+        this.blurX = blurX || 4//:Number (default = 4.0) ¡ª Ë®Æ½Ä£ºıÁ¿¡£ÓĞĞ§ÖµÎª 0 µ½ 255.0£¨¸¡µã£©¡£
+        this.strength = strength || 1//:Number (default = 1.0) ¡ª Ó¡¼Ç»ò¿çÒ³µÄÇ¿¶È¡£¸ÃÖµÔ½¸ß£¬Ñ¹Ó¡µÄÑÕÉ«Ô½Éî£¬¶øÇÒÒõÓ°Óë±³¾°Ö®¼äµÄ¶Ô±È¶ÈÒ²Ô½Ç¿¡£ÓĞĞ§ÖµÎª 0 µ½ 255.0¡£
+        this.quality = quality || 1//:int (default = 1) ¡ª Ó¦ÓÃÂË¾µµÄ´ÎÊı¡£Ê¹ÓÃ BitmapFilterQuality ³£Á¿£º
+        this.inner = inner//:Boolean (default = false) ¡ª ±íÊ¾ÒõÓ°ÊÇ·ñÎªÄÚ²àÒõÓ°¡£Öµ true Ö¸¶¨ÄÚ²àÒõÓ°¡£Öµ false Ö¸¶¨Íâ²àÒõÓ°£¨¶ÔÏóÍâÔµÖÜÎ§µÄÒõÓ°£©¡£
+        this.knockout = knockout//:Boolean (default = false) ¡ª Ó¦ÓÃÍÚ¿ÕĞ§¹û (true)£¬Õâ½«ÓĞĞ§µØÊ¹¶ÔÏóµÄÌîÉ«±äÎªÍ¸Ã÷£¬²¢ÏÔÊ¾ÎÄµµµÄ±³¾°ÑÕÉ«¡£
+        this.hideObject = hideObject//:Boolean (default = false) ¡ª ±íÊ¾ÊÇ·ñÒş²Ø¶ÔÏó¡£Èç¹ûÖµÎª true£¬Ôò±íÊ¾Ã»ÓĞ»æÖÆ¶ÔÏó±¾Éí£¬Ö»ÓĞÒõÓ°ÊÇ¿É¼ûµÄ¡£
     }
-    DropShadowFilter.prototype.__render = function (ctx) {
+    dsDropShadowFilter.prototype.__render = function (ctx) {
         ctx.shadowBlur = this.strength;
         ctx.shadowColor = this.color;
         ctx.shadowOffsetX = this.blurX * Math.cos(this.angle);
         ctx.shadowOffsetY = this.blurY * Math.sin(this.angle);
     }
-
-    function Sound() {
-        dsExtend(tc_Sound, EventDispatcher, ["__render"]);
+    ds.dsSound=dsSound;
+    function dsSound(stream, context) {
+        dsExtend(dsSound, EventDispatcher, ["__render"]);
+        return new dsSound.prototype.__init(stream, context);
     }
     /*
      stream:URLRequest = null, context:SoundLoaderContext = null
      */
-    function tc_Sound(stream, context) {
+    dsSound.prototype.__init=function(stream, context) {
         //bytesLoaded : uint
-        //	[åªè¯»] è¿”å›æ­¤å£°éŸ³å¯¹è±¡ä¸­å½“å‰å¯ç”¨çš„å­—èŠ‚æ•°ã€‚
+        //	[Ö»¶Á] ·µ»Ø´ËÉùÒô¶ÔÏóÖĞµ±Ç°¿ÉÓÃµÄ×Ö½ÚÊı¡£
         //bytesTotal : int
-        //	[åªè¯»] è¿”å›æ­¤å£°éŸ³å¯¹è±¡ä¸­æ€»çš„å­—èŠ‚æ•°ã€‚
+        //	[Ö»¶Á] ·µ»Ø´ËÉùÒô¶ÔÏóÖĞ×ÜµÄ×Ö½ÚÊı¡£
         //Inherited	constructor : Object
-        //å¯¹ç±»å¯¹è±¡æˆ–ç»™å®šå¯¹è±¡å®ä¾‹çš„æ„é€ å‡½æ•°çš„å¼•ç”¨ã€‚
+        //¶ÔÀà¶ÔÏó»ò¸ø¶¨¶ÔÏóÊµÀıµÄ¹¹Ôìº¯ÊıµÄÒıÓÃ¡£
         //id3 : ID3Info
-        //	[åªè¯»] æä¾›å¯¹ä½œä¸º MP3 æ–‡ä»¶ä¸€éƒ¨åˆ†çš„å…ƒæ•°æ®çš„è®¿é—®ã€‚
+        //	[Ö»¶Á] Ìá¹©¶Ô×÷Îª MP3 ÎÄ¼şÒ»²¿·ÖµÄÔªÊı¾İµÄ·ÃÎÊ¡£
         //isBuffering : Boolean
-        //	[åªè¯»] è¿”å›å¤–éƒ¨ MP3 æ–‡ä»¶çš„ç¼“å†²çŠ¶æ€ã€‚
+        //	[Ö»¶Á] ·µ»ØÍâ²¿ MP3 ÎÄ¼şµÄ»º³å×´Ì¬¡£
         //isURLInaccessible : Boolean
-        //	[åªè¯»] è¡¨ç¤º Sound.url å±æ€§æ˜¯å¦å·²æˆªæ–­ã€‚
+        //	[Ö»¶Á] ±íÊ¾ Sound.url ÊôĞÔÊÇ·ñÒÑ½Ø¶Ï¡£
         //length : Number
-        //	[åªè¯»] å½“å‰å£°éŸ³çš„é•¿åº¦ï¼ˆä»¥æ¯«ç§’ä¸ºå•ä½ï¼‰ã€‚
+        //	[Ö»¶Á] µ±Ç°ÉùÒôµÄ³¤¶È£¨ÒÔºÁÃëÎªµ¥Î»£©¡£
         //url : String
-        //	[åªè¯»] ä»ä¸­åŠ è½½æ­¤å£°éŸ³çš„ URLã€‚
+        //	[Ö»¶Á] ´ÓÖĞ¼ÓÔØ´ËÉùÒôµÄ URL¡£
     }
-    tc_Sound.prototype.close = function () {
+    dsSound.prototype.close = function () {
 
     }
     /*
      target:ByteArray, length:Number, startPosition:Number = -1
      */
-    tc_Sound.prototype.extract = function (target, length, startPosition) {
+    dsSound.prototype.extract = function (target, length, startPosition) {
 
     }
     /*
      stream:URLRequest, context:SoundLoaderContext = null
      */
-    tc_Sound.prototype.load = function (stream, context) {
+    dsSound.prototype.load = function (stream, context) {
 
     }
     /*
      bytes:ByteArray, bytesLength:uint
      */
-    tc_Sound.prototype.loadCompressedDataFromByteArray = function (bytes, bytesLength) {
+    dsSound.prototype.loadCompressedDataFromByteArray = function (bytes, bytesLength) {
 
     }
     /*
-     å°† ByteArray å¯¹è±¡ä¸­çš„ PCM 32 ä½æµ®ç‚¹å£°éŸ³æ•°æ®åŠ è½½åˆ° Sound å¯¹è±¡ä¸­ã€‚
+     ½« ByteArray ¶ÔÏóÖĞµÄ PCM 32 Î»¸¡µãÉùÒôÊı¾İ¼ÓÔØµ½ Sound ¶ÔÏóÖĞ¡£
      bytes:ByteArray, samples:uint, format:String = "float", stereo:Boolean = true, sampleRate:Number = 44100.0
      */
-    tc_Sound.prototype.loadPCMFromByteArray = function (bytes, samples, format, stereo, sampleRate) {
+    dsSound.prototype.loadPCMFromByteArray = function (bytes, samples, format, stereo, sampleRate) {
 
     }
     /*
      startTime:Number = 0, loops:int = 0, sndTransform:flash.media:SoundTransform = null
      */
-    tc_Sound.prototype.play = function (startTime, loops, sndTransform) {
+    dsSound.prototype.play = function (startTime, loops, sndTransform) {
 
     }
-    /**
-     *
-     * @param color åå…­è¿›åˆ¶æ•°å€¼è¡¨ç¤ºçš„ARGB
-     * @constructor
-     */
-    function Color(color) {
-        this.R = (0x00ff0000 & color) >> 16;//red
-        this.G = (0x0000ff00 & color) >> 8;//green;
-        this.B = 0x000000ff & color;//blue
-        if (color > 0xffffff) {
-            this.A = (0xff000000 && color) >> 24;
-            if (this.A < 0)this.A += 256;
-        }//alpha
-        else this.A = 255;
-    }
-    /*
-     ç”Ÿæˆ16ä½é¢œè‰²å€¼
-     */
-    Color.toColor = function (r, g, b, a) {
-        var c = 0;
-        c += r << 16;
-        c += g << 8;
-        c += b;
-        if (a != null)c += a << 24;
-        return c;
-    }
-    /*
-     16ä½é¢œè‰²å€¼è½¬æ¢ä¸º16ä½é¢œè‰²å­—ç¬¦ä¸²
-     */
-    Color.toStr = function (v, radio) {
-        radio = radio || 16;
-        var c = new Color(v);
-        var s = "#";
-        if (radio == 32) {
-            c.A < 10 ? s += "0" : 0;
-            s += c.A.toString(16);
-        }
-        c.R < 10 ? s += "0" : 0;
-        s += c.R.toString(16);
-        c.G < 10 ? s += "0" : 0;
-        s += c.G.toString(16);
-        c.B < 10 ? s += "0" : 0;
-        s += c.B.toString(16);
-        return s;
-    }
-    Color.prototype.toArray = function () {
-        return [this.R, this.G, this.B, this.A];
-    }
-    Color.prototype.toString = function () {
-        console.log("r=" + this.R + " g=" + this.G + " b=" + this.B + " a=" + this.A);
-    }
-    DS.Graphics=Graphics;
-    function Graphics() {
+
+    ds.dsGraphics=dsGraphics;
+    function dsGraphics() {
         this.__aabb = new AABB();
         this._code = [];
         this._codeindex = 0;
@@ -2747,7 +3159,7 @@
         this._AABB = new AABB();
         this._to=[];
     }
-    Graphics.prototype.settarget = function (v) {
+    dsGraphics.prototype.settarget = function (v) {
         //if (v == null) {
         //    this._target = {width: this._target.width, height: this._target.height};
         //} else {
@@ -2756,7 +3168,7 @@
         //    this._target = v;
         //}
     }
-    Graphics.prototype.__render = function (ctx) {
+    dsGraphics.prototype.__render = function (ctx) {
         ctx.beginPath();
         for (var i = 0; i < this._code.length; i++) {
             var code = this._code[i];
@@ -2827,7 +3239,7 @@
         }
         ctx.closePath();
     }
-    Graphics.prototype._gradient = function (ctx, style, draw) {
+    dsGraphics.prototype._gradient = function (ctx, style, draw) {
         var gradient = null;
         if (style[1] == 'bitmap') {
             gradient = ctx.createPattern(style[2].data, style[4]);
@@ -2849,53 +3261,53 @@
         return gradient;
     }
 
-    Graphics.prototype._addCode = function (key, param) {
+    dsGraphics.prototype._addCode = function (key, param) {
         if (this._code[this._codeindex] == null)
             this._code[this._codeindex] = {};
         this._code[this._codeindex][key] = param;
     }
 
-    Graphics.prototype.beginGradientFill = function (type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio) {
+    dsGraphics.prototype.beginGradientFill = function (type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio) {
         this._addCode("fill", ['gradient', type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio]);
         this.__drawfill = true;
     };
-    Graphics.prototype.beginBitmapFill = function (bitmapdata, matrix, repeat, smooth) {
+    dsGraphics.prototype.beginBitmapFill = function (bitmapdata, matrix, repeat, smooth) {
         this._addCode('fill', ['bitmap', bitmapdata, matrix, repeat, smooth]);
         this.__drawfill = true;
     }
     /*
-     color åªèƒ½æ˜¯8ä½é¢œè‰²å€¼
+     color Ö»ÄÜÊÇ8Î»ÑÕÉ«Öµ
      */
-    Graphics.prototype.beginFill = function (color, alpha) {
+    dsGraphics.prototype.beginFill = function (color, alpha) {
         if (typeof color == "number")color = Color.toStr(color);
         this._addCode("fill", ['style', color, alpha || 1]);
         this.__drawfill = true;
     }
 
-    Graphics.prototype.lineBitmapStyle = function (bitmapdata, matrix, repeat, smooth) {
+    dsGraphics.prototype.lineBitmapStyle = function (bitmapdata, matrix, repeat, smooth) {
         this._addCode('line', ['bitmap', bitmapdata, matrix, repeat, smooth]);
         this.__drawline = true;
     }
 
-    Graphics.prototype.lineStyle = function (thickness, color, alpha, pixelHinting, scaleMode, caps, joints, miterLimit) {
+    dsGraphics.prototype.lineStyle = function (thickness, color, alpha, pixelHinting, scaleMode, caps, joints, miterLimit) {
         if (typeof color == 'number')color = Color.toStr(color);
         this._addCode("line", ['style', thickness, color, alpha, pixelHinting, scaleMode, caps, joints, miterLimit]);
         this.__drawline = true;
     }
 
-    Graphics.prototype.lineGradientStyle = function (type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio) {
+    dsGraphics.prototype.lineGradientStyle = function (type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio) {
         this.__drawline = true;
         this._addCode("line", ["gradient", type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio]);
     }
 
-    Graphics.prototype.curveTo = function(controlX, controlY, anchorX, anchorY){
+    dsGraphics.prototype.curveTo = function(controlX, controlY, anchorX, anchorY){
         this.__aabb.setXY(controlX, controlY);
         this.__aabb.setXY(anchorX, anchorY);
         this.__drawline = true;
         this._to.push(['quadraticCurveTo',[controlX, controlY,anchorX, anchorY]]);
         //console.log('graphics.curveTo('+controlX.toFixed(2)+","+controlY.toFixed(2)+","+anchorX.toFixed(2)+","+anchorY.toFixed(2)+")")
     }
-    Graphics.prototype.cubicCurveTo = function(controlX1, controlY1, controlX2, controlY2, anchorX, anchorY){
+    dsGraphics.prototype.cubicCurveTo = function(controlX1, controlY1, controlX2, controlY2, anchorX, anchorY){
         this.__aabb.setXY(controlX1, controlY1);
         this.__aabb.setXY(controlX2, controlY2);
         this.__aabb.setXY(anchorX, anchorY);
@@ -2903,8 +3315,8 @@
         this._to.push(['bezierCurveTo',[controlX1, controlY1, controlX2, controlY2, anchorX, anchorY]]);
         //console.log('cubic',controlX1, controlY1, controlX2, controlY2, anchorX, anchorY);
     }
-//è´å¡å°”æ›²çº¿è½®å»“
-    Graphics.prototype.getCurveBoundary=function (ax, ay, bx, by, cx, cy, dx, dy) {
+//±´Èû¶ûÇúÏßÂÖÀª
+    dsGraphics.prototype.getCurveBoundary=function (ax, ay, bx, by, cx, cy, dx, dy) {
         var tobx = bx - ax;
         var toby = by - ay;
         var tocx = cx - bx;
@@ -2967,13 +3379,13 @@
         }
         return {x: Math.round(minx), y: Math.round(miny), width: Math.round(maxx - minx), height: Math.round(maxy - miny)};
     }
-    Graphics.prototype.lineTo = function (x, y) {
+    dsGraphics.prototype.lineTo = function (x, y) {
         this.__aabb.setXY(x,y);
         this.__drawline = true;
         this._to.push(['lineTo',[x, y]]);
         //console.log('lineTo',x, y);
     }
-    Graphics.prototype.moveTo = function (x, y) {
+    dsGraphics.prototype.moveTo = function (x, y) {
         this.__aabb.setXY(x,y);
         this.__drawline = true;
         //this._target.width = Math.max(this._AABB.width(), this._target.width);
@@ -2981,16 +3393,16 @@
         this._to.push(['moveTo',[x, y]]);
         //console.log('graphics.moveTo('+ x.toFixed(2)+","+y.toFixed(2)+")");
     }
-    Graphics.prototype.clear = function () {
+    dsGraphics.prototype.clear = function () {
         //this._addCode("clearRect",[0,0,this._target.width,this._target.height]);
         //this._proxy["fun"].push(['clearRect', [0, 0, this._target.width, this._target.height]])
         if(this._to==null)this._to =[];
         this._to.push(['clear',[]]);
     }
-    Graphics.prototype.endFill = function () {
+    dsGraphics.prototype.endFill = function () {
 
     };
-    Graphics.prototype.drawCircle = function (x, y, r) {
+    dsGraphics.prototype.drawCircle = function (x, y, r) {
         this.__aabb.add(new AABB(x-r,y-r,x+r,y+r));
         //this._target.width = Math.max(this._AABB.width(), this._target.width);
         //this._target.height = Math.max(this._AABB.height(), this._target.height);
@@ -2998,7 +3410,7 @@
         this._codeindex++;
     };
 
-    Graphics.prototype.drawEllipse = function (x, y, w, h) {
+    dsGraphics.prototype.drawEllipse = function (x, y, w, h) {
         var hw = w*0.5;
         var hh = h*0.5;
         //this._AABB.setXY(x-hw,y-hh,x+hw,y+hh);
@@ -3007,22 +3419,22 @@
         this._addCode("draw", ['ellipse', [x, y, w, h]]);
         this._codeindex++;
     };
-    Graphics.prototype.drawRect = function (x, y, w, h) {
+    dsGraphics.prototype.drawRect = function (x, y, w, h) {
         this.__aabb.add(new AABB(x,y,x+w,y+h));
         //this._target.width = Math.max(this._AABB.width(), this._target.width);
         //this._target.height = Math.max(this._AABB.height(), this._target.height);
         this._addCode('draw', ['rect', [x, y, w, h]]);
         this._codeindex++;
     }
-    Graphics.BASE_64 = {"A":0,"B":1,"C":2,"D":3,"E":4,"F":5,"G":6,"H":7,"I":8,"J":9,"K":10,"L":11,"M":12,"N":13,"O":14,"P":15,"Q":16,"R":17,"S":18,"T":19,"U":20,"V":21,"W":22,"X":23,"Y":24,"Z":25,"a":26,"b":27,"c":28,"d":29,"e":30,"f":31,"g":32,"h":33,"i":34,"j":35,"k":36,"l":37,"m":38,"n":39,"o":40,"p":41,"q":42,"r":43,"s":44,"t":45,"u":46,"v":47,"w":48,"x":49,"y":50,"z":51,"0":52,"1":53,"2":54,"3":55,"4":56,"5":57,"6":58,"7":59,"8":60,"9":61,"+":62,"/":63};
+    dsGraphics.BASE_64 = {"A":0,"B":1,"C":2,"D":3,"E":4,"F":5,"G":6,"H":7,"I":8,"J":9,"K":10,"L":11,"M":12,"N":13,"O":14,"P":15,"Q":16,"R":17,"S":18,"T":19,"U":20,"V":21,"W":22,"X":23,"Y":24,"Z":25,"a":26,"b":27,"c":28,"d":29,"e":30,"f":31,"g":32,"h":33,"i":34,"j":35,"k":36,"l":37,"m":38,"n":39,"o":40,"p":41,"q":42,"r":43,"s":44,"t":45,"u":46,"v":47,"w":48,"x":49,"y":50,"z":51,"0":52,"1":53,"2":54,"3":55,"4":56,"5":57,"6":58,"7":59,"8":60,"9":61,"+":62,"/":63};
 //AiSo0QCfBQBMCWQBECKgMCvQgMCkhOCeQhNCfh8Bp
-    Graphics.prototype.decodePath = function(str) {
+    dsGraphics.prototype.decodePath = function(str) {
         var instructions = [this.moveTo, this.lineTo, this.curveTo, this.cubicCurveTo, this.endFill];
         var paramCount = [2, 2, 4, 6, 0];
         var i=0, l=str.length;
         var params = [];
         var x=0, y=0;
-        var base64 = Graphics.BASE_64;
+        var base64 = dsGraphics.BASE_64;
 
         while (i<l) {
             var c = str.charAt(i);
@@ -3054,375 +3466,15 @@
         }
         return this;
     };
-    DS.Rectangle=Rectangle;
-    function Rectangle(x, y, w, h) {
-        this.x = x;
-        this.y = y;
-        this.width = w;
-        this.height = h;
-        this.left = this.x;
-        this.right = this.x + this.width;
-        this.size = new Point(this.width, this.height);
-        this.top = this.y;
-        this.topLeft = new Point(this.x, this.y);
-        this.bottom = this.y + this.height;
-        this.bottomRight = new Point(this.x, this.bottom);
-    }
-    Rectangle.prototype.clone = function () {
-        return new Rectangle(this.x, this.y, this.width, this.height);
-    };
-    Rectangle.prototype.contains = function (x, y) {
-        return this.left < x && x < this.right && this.top < y && y < this.bottom;
-    };
-    Rectangle.prototype.containsPoint = function (point) {
-        return this.contains(point.x, point.y);
-    };
-    Rectangle.prototype.containsRect = function (rectangle) {
 
-    };
-    Rectangle.prototype.copyFrom = function (rectangle) {
-        this.x = rectangle.x;
-        this.y = rectangle.y;
-        this.left = rectangle.left;
-        this.top = rectangle.top;
-        this.right = rectangle.right;
-        this.bottom = rectangle.bottom;
-        this.topLeft = rectangle.topLeft.copy();
-        this.bottomRight = rectangle.bottomRight.copy();
-
-    };
-    Rectangle.prototype.equals = function (rectangle) {
-
-    };
-    Rectangle.prototype.inflate = function (dx, dy) {
-        this.width += dx;
-        this.height += dy;
-        this.copyFrom(new Rectangle(this.x, this.y, this.width, this.height));
-    };
-    Rectangle.prototype.inflatePoint = function (point) {
-        this.inflate(point.x, point.y);
-    };
-    /*
-     è¿”å›ç›¸äº¤çš„çŸ©å½¢
-     */
-    Rectangle.prototype.intersection = function (rectangle) {
-        var x1 = rectangle.x, y1 = rectangle.y, x2 = rectangle.right, y2 = rectangle.bottom;
-        if (this.x > x1) {
-            x1 = this.x;
-        }
-        if (this.y > y1) {
-            y1 = this.y;
-        }
-        if (this.right < x2) {
-            x2 = this.right;
-        }
-        if (this.bottom < y2) {
-            y2 = this.bottom;
-        }
-        return (x2 <= x1 || y2 <= y1) ? null : new Rectangle(x1, y1, x2 - x1, y2 - y1);
-    };
-    /*
-     åˆ¤æ–­æ˜¯å¦ç›¸äº¤
-     */
-    Rectangle.prototype.instersects = function (rectangle) {
-        return (rectangle.x <= this.right && this.x <= rectangle.right && rectangle.y <= this.bottom && this.y <= rectangle.bottom);
-    };
-    Rectangle.prototype.isEmpty = function () {
-        return this.width | this.height;
-    };
-    Rectangle.prototype.offset = function (dx, dy) {
-        this.x += dx;
-        this.y += dy;
-        this.copyFrom(new Rectangle(this.x, this.y, this.width, this.height));
-    };
-    Rectangle.prototype.offsetPoint = function (point) {
-        this.offset(point.x, point.y);
-    };
-    Rectangle.prototype.setEmpty = function () {
-        this.copyFrom(new Rectangle(0, 0, 0, 0));
-    };
-    Rectangle.prototype.setTo = function (xa, ya, wa, ha) {
-        this.copyFrom(new Rectangle(xa, ya, wa, ha));
-    };
-    Rectangle.prototype.union = function () {
-
-    }
-    function AABB(x1,y1,x2,y2){
-        this.x1 = x1==null?Number.MAX_VALUE:x1;
-        this.y1 = y1==null?Number.MAX_VALUE:y1;
-        this.x2 = x2==null?Number.MIN_VALUE:x2;
-        this.y2 = y2==null?Number.MIN_VALUE:y2;
-    }
-    AABB.prototype.instersects=function(ab){
-        //(rectangle.x <= this.right && this.x <= rectangle.right && rectangle.y <= this.bottom && this.y <= rectangle.bottom);
-        return (ab.x1 <= this.x2 && this.x1 <= ab.x2 && ab.y1 <= this.y2 && this.y1 <= ab.y2);
-    }
-    AABB.prototype.setTo=function(x1,y1,x2,y2){
-        this.x1 = x1;
-        this.y1 = y1;
-        this.x2 = x2;
-        this.y2 = y2;
-        return this;
-    }
-    AABB.prototype.add = function(ab){
-        this.x1 = Math.min(this.x1,ab.x1);
-        this.y1 = Math.min(this.y1,ab.y1);
-        this.x2 = Math.max(this.x2,ab.x2);
-        this.y2 = Math.max(this.y2,ab.y2);
-        return this;
-    }
-    AABB.prototype.contains = function(x,y){
-        return this.x1<x&&this.x2>x&&this.y1<y&&this.y2>y;
-    }
-    AABB.prototype.setXY = function(x,y){
-        this.x1 = Math.min(this.x1,x);
-        this.y1 = Math.min(this.y1,y);
-        this.x2 = Math.max(this.x2,x);
-        this.y2 = Math.max(this.y2,y);
-        return this;
-    }
-    AABB.prototype.inflate=function(x,y){
-        this.x1 +=x;
-        this.y1 +=y;
-        this.x2 +=x;
-        this.y2 +=y;
-    }
-    AABB.prototype.clone = function(){
-        var ab = new AABB();
-        ab.x1 = this.x1;
-        ab.y1 = this.y1;
-        ab.x2 = this.x2;
-        ab.y2 = this.y2;
-        return ab;
-    }
-    AABB.prototype.width = function(){
-        return Math.abs(this.x2-this.x1);
-    }
-    AABB.prototype.height = function(){
-        return Math.abs(this.y2-this.y1);
-    }
-    DS.Point=Point;
-    function Point(x, y) {
-        this.x = x | 0;
-        this.y = y | 0;
-        this.length = Math.sqrt(this.x * this.x + this.y * this.y);
-    }
-    Point.prototype.add = function (point) {
-        return new Point(this.x + point.x, this.y + point.y);
-    };
-    Point.prototype.clone = function () {
-        return new Point(this.x, this.y);
-    };
-    Point.prototype.copyFrom = function (point) {
-        this.x = point.x;
-        this.y = point.y;
-        this.length = point.length;
-    };
-    Point.distance = function (point1, point2) {
-        return new Point(point1.x - point2.x, point1.y - point2.y).length;
-    }
-    Point.prototype.equals = function (point) {
-        return this.x == point.x || this.y == point.y;
-    }
-//å†…æ’å€¼ å¾…éªŒè¯
-    Point.interpolate = function (pt1, pt2, f) {
-        var nor = pt1.clone().subtract(pt2);
-        nor.normalize(nor.length * f);
-        return nor.add(pt1);
-    }
-//
-    Point.prototype.normalize = function (len) {
-        var Q = Math.tan(this.y / this.x);
-        this.setTo(Math.cos(Q) * len, Math.sin(Q) * len);
-    };
-    Point.prototype.offset = function (dx, dy) {
-        this.x += dx;
-        this.y += dy;
-        this.length = Math.sqrt(this.x * this.x + this.y * this.y);
-    };
-    Point.polar = function (len, angle) {
-        return new Point(Math.cos(angle) * len, Math.sin(angle) * len);
-    };
-    Point.prototype.subtract = function (point) {
-        return new Point(this.x - point.x, this.y - point.y);
-    };
-    Point.prototype.setTo = function (xa, ya) {
-        this.x = xa || 0;
-        this.y = ya || 0;
-        this.length = Math.sqrt(this.x * this.x + this.y * this.y);
-    }
-    Point.prototype.toString = function () {
-        return "x = " + this.x + " y = " + this.y;
-    }
-    DS.Matrix=Matrix;
-    function Matrix(a, b, c, d, tx, ty) {
-        //this.a =1//   æ°´å¹³ç¼©æ”¾ç»˜å›¾
-        //this.b=0// 	æ°´å¹³å€¾æ–œç»˜å›¾
-        //this.c=1// 	å‚ç›´å€¾æ–œç»˜å›¾
-        //this.d =1// 	å‚ç›´ç¼©æ”¾ç»˜å›¾
-        //this.tx=0// 	æ°´å¹³ç§»åŠ¨ç»˜å›¾
-        //this.ty=0// 	å‚ç›´ç§»åŠ¨ç»˜å›¾
-        this.setTo(a, b, c, d, tx, ty);
-    }
-
-    Matrix.prototype.clone = function () {
-        return new Matrix(this.a,this.b,this.c,this.d,this.tx,this.ty);
-    }
-//çŸ©é˜µååŠ 
-//å°†æŸä¸ªçŸ©é˜µä¸å½“å‰çŸ©é˜µè¿æ¥ï¼Œä»è€Œå°†è¿™ä¸¤ä¸ªçŸ©é˜µçš„å‡ ä½•æ•ˆæœæœ‰æ•ˆåœ°ç»“åˆåœ¨ä¸€èµ·ã€‚
-    Matrix.prototype.concat = function (matrix) {
-        this.append(matrix.a,matrix.b,matrix.c,matrix.d,matrix.tx,matrix.ty);
-        return this;
-
-    }
-//å°†æº Point å¯¹è±¡ä¸­çš„æ‰€æœ‰çŸ©é˜µæ•°æ®å¤åˆ¶åˆ°è°ƒç”¨æ–¹ Matrix å¯¹è±¡ä¸­ã€‚
-    Matrix.prototype.copyFrom = function (matrix) {
-        this.setTo(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
-    }
-//åŒ…æ‹¬ç”¨äºç¼©æ”¾ã€æ—‹è½¬å’Œè½¬æ¢çš„å‚æ•°ã€‚
-    Matrix.prototype.createBox = function (scaleX, scaleY, rotation, tx, ty) {
-        rotation = rotation*Math.PI/180;
-        var mat1=new Matrix();
-        mat1.identity();
-        mat1.rotate(rotation);
-        mat1.scale(scaleX,scaleY);
-        mat1.translate(tx,ty);
-        return mat1;
-    }
-    Matrix.prototype.createGradientBox=function(width, height, rotation, tx, ty){
-        var mat = new Matrix();
-
-    }
-
-    Matrix.prototype.identity = function () {
-        this.a = this.d = 1;
-        this.b = this.c = this.tx = this.ty = 0;
-        return this;
-    }
-
-    Matrix.prototype.invert = function () {
-        var a1 = this.a;
-        var b1 = this.b;
-        var c1 = this.c;
-        var d1 = this.d;
-        var tx1 = this.tx;
-        var n = a1*d1-b1*c1;
-
-        this.a = d1/n;
-        this.b = -b1/n;
-        this.c = -c1/n;
-        this.d = a1/n;
-        this.tx = (c1*this.ty-d1*tx1)/n;
-        this.ty = -(a1*this.ty-b1*tx1)/n;
-        return this;
-    }
-    Matrix.prototype.rotateX = function(angle){
-        angle = angle*Math.PI/180;
-        var cos = Math.cos(angle);
-        var sin = 1;//Math.sin(angle);
-
-        var a1 = this.a;
-        var b1 = this.b;
-
-        this.a = a1*cos+this.c*sin;
-        this.b = b1*cos+this.d*sin;
-        this.c = -a1*sin+this.c*cos;
-        this.d = -b1*sin+this.d*cos;
-        return this;
-    }
-    Matrix.prototype.rotateY = function(angle){
-        angle = angle*Math.PI/180;
-        var cos = 1;//Math.cos(angle);
-        var sin = Math.sin(angle);
-
-        var a1 = this.a;
-        var b1 = this.b;
-
-        this.a = a1*cos+this.c*sin;
-        this.b = b1*cos+this.d*sin;
-        this.c = -a1*sin+this.c*cos;
-        this.d = -b1*sin+this.d*cos;
-        return this;
-    }
-    Matrix.prototype.rotate = function (angle) {
-        angle = angle*Math.PI/180;
-        var cos = Math.cos(angle);
-        var sin = Math.sin(angle);
-
-        var a1 = this.a;
-        var b1 = this.b;
-
-        this.a = a1*cos+this.c*sin;
-        this.b = b1*cos+this.d*sin;
-        this.c = -a1*sin+this.c*cos;
-        this.d = -b1*sin+this.d*cos;
-        return this;
-    }
-    Matrix.prototype.scale = function (sx, sy) {
-        this.a *= sx;
-        this.b *= sx;
-        this.c *= sy;
-        this.d *= sy;
-        //this.tx/=sx;
-        //this.ty/=sy;
-        return this;
-    }
-
-    Matrix.prototype.setTo = function (aa, bb, ca, da, txa, tya) {
-        this.a = aa || 1;
-        this.b = bb || 0;
-        this.c = ca || 0;
-        this.d = da || 1;
-        this.tx = txa || 0;
-        this.ty = tya || 0;
-    }
-    Matrix.PERRAD = Math.PI/180;
-    Matrix.prototype.skew = function(sx,sy){
-        sx = sx*Matrix.PERRAD;
-        sy = sy*Matrix.PERRAD;
-        this.append(Math.cos(sx), Math.sin(sy), -Math.sin(sx), Math.cos(sy), 0, 0);
-    }
-    Matrix.prototype.append = function(a, b, c, d, tx, ty) {
-        var a1 = this.a;
-        var b1 = this.b;
-        var c1 = this.c;
-        var d1 = this.d;
-        if (a != 1 || b != 0 || c != 0 || d != 1) {
-            this.a  = a1*a+c1*b;
-            this.b  = b1*a+d1*b;
-            this.c  = a1*c+c1*d;
-            this.d  = b1*c+d1*d;
-        }
-        this.tx = a1*tx+c1*ty+this.tx;
-        this.ty = b1*tx+d1*ty+this.ty;
-        return this;
-    };
-    Matrix.prototype.translate = function (dx, dy) {
-        this.tx =dx;//+= this.a*dx + this.c*dy;
-        this.ty =dy;//+= this.b*dx + this.d*dy;
-        return this;
-    }
-    Matrix.prototype.deltaTransformPoint = function(point){
-        var pt = new Point();
-        pt.x = point.x*this.a+point.y*this.c;
-        pt.y = point.x*this.b+point.y*this.d;
-        return pt;
-    }
-
-    Matrix.prototype.transformPoint = function (point) {
-        var pt = new Point();
-        pt.x = point.x*this.a+point.y*this.c+this.tx;
-        pt.y = point.x*this.b+point.y*this.d+this.ty;
-        return pt;
-    }
-    DS.tcEvent=tcEvent;
+    DS.dsEvent=dsEvent;
     /*
      bubbles:
-     æ•è·é˜¶æ®µ (EventPhase.CAPTURING_PHASE)ã€‚
-     ç›®æ ‡é˜¶æ®µ (EventPhase.AT_TARGET)ã€‚
-     å†’æ³¡é˜¶æ®µ (EventPhase.BUBBLING_PHASE)ã€‚
+     ²¶»ñ½×¶Î (EventPhase.CAPTURING_PHASE)¡£
+     Ä¿±ê½×¶Î (EventPhase.AT_TARGET)¡£
+     Ã°Åİ½×¶Î (EventPhase.BUBBLING_PHASE)¡£
      */
-    function tcEvent(type, bubbles, cancelable) {
+    function dsEvent(type, bubbles, cancelable) {
         this.type = type;
         this._bubbles = bubbles || false;
         this._cancelable = cancelable || false;
@@ -3433,23 +3485,23 @@
         this._stoppropagation = false;
     }
 
-    tcEvent.prototype.isDefaultPrevented = function () {
+    dsEvent.prototype.isDefaultPrevented = function () {
 
     }
-//cancelable çš„å€¼ä¸º true åˆ™å¯ä»¥ä½¿ç”¨ preventDefault() æ¥å–æ¶ˆäº‹ä»¶
-    tcEvent.prototype.preventDefault = function () {
+//cancelable µÄÖµÎª true Ôò¿ÉÒÔÊ¹ÓÃ preventDefault() À´È¡ÏûÊÂ¼ş
+    dsEvent.prototype.preventDefault = function () {
 
     }
-//é˜²æ­¢å¯¹äº‹ä»¶æµä¸­å½“å‰èŠ‚ç‚¹ä¸­å’Œæ‰€æœ‰åç»­èŠ‚ç‚¹ä¸­çš„äº‹ä»¶ä¾¦å¬å™¨è¿›è¡Œå¤„ç†
-    tcEvent.prototype.stopImmediatePropagation = function () {
+//·ÀÖ¹¶ÔÊÂ¼şÁ÷ÖĞµ±Ç°½ÚµãÖĞºÍËùÓĞºóĞø½ÚµãÖĞµÄÊÂ¼şÕìÌıÆ÷½øĞĞ´¦Àí
+    dsEvent.prototype.stopImmediatePropagation = function () {
         this._stopimmediatepropagation = true
     }
-//æ­¤æ–¹æ³•ä¸ä¼šå½±å“å½“å‰èŠ‚ç‚¹ (currentTarget) ä¸­çš„ä»»ä½•äº‹ä»¶ä¾¦å¬å™¨
-    tcEvent.prototype.stopPropagation = function () {
+//´Ë·½·¨²»»áÓ°Ïìµ±Ç°½Úµã (currentTarget) ÖĞµÄÈÎºÎÊÂ¼şÕìÌıÆ÷
+    dsEvent.prototype.stopPropagation = function () {
         this._stoppropagation = true;
     }
-    tcEvent.initEvent = function (type, bubbles, cancelable) {
-        var eve = new tcEvent(type, bubbles, cancelable);
+    dsEvent.initEvent = function (type, bubbles, cancelable) {
+        var eve = new dsEvent(type, bubbles, cancelable);
         Object.defineProperties(eve, {
             "cancelable": {
                 set: function (v) {
@@ -3474,37 +3526,37 @@
         });
         return eve;
     }
-    tcEvent.ENTER_FRAME = "enter_frame";
-    tcEvent.ADDED_TO_STAGE = "addtostage";
-    tcEvent.REMOVE_FROM_STAGE = "removefromstage";
-    tcEvent.ACTIVATE = "activate";
-    tcEvent.BROWSER_ZOOM_CHANGE = "browser_zoom_change";
-    tcEvent.CANCEL = "cancel";
-    tcEvent.CHANGE = "change";
-    tcEvent.CHANNELMESSAGE = "channelMessage"
-    tcEvent.CHANNELSTATE = "channelState"
-    tcEvent.CLEAR = "clear"
-    tcEvent.CLOSE = "close"
-    tcEvent.COMPLETE = "complete"
-    tcEvent.CONNECT = "connect"
-    tcEvent.COPY = "copy"
-    tcEvent.DEACTIVATE = "deactivate"
-    tcEvent.EXITFRAME = "exitFrame"
-    tcEvent.FULLSCREEN = "fullScreen"
-    tcEvent.INIT = "init"
-    tcEvent.MOUSELEAVE = "mouseLeave"
-    tcEvent.OPEN = "open"
-    tcEvent.PASTE = "paste"
-    tcEvent.REMOVED = "removed"
-    tcEvent.RENDER = "render"
-    tcEvent.RESIZE = "resize"
-    tcEvent.SCROLL = "scroll"
-    tcEvent.SELECT = "select"
-    tcEvent.SELECTALL = "selectAll"
-    tcEvent.SOUNDCOMPLETE = "soundComplete"
-    tcEvent.TABCHILDRENCHANGE = "tabChildrenChange";
-    DS.tcMouseEvent=tcMouseEvent;
-    function tcMouseEvent(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount) {
+    dsEvent.ENTER_FRAME = "enter_frame";
+    dsEvent.ADDED_TO_STAGE = "addtostage";
+    dsEvent.REMOVE_FROM_STAGE = "removefromstage";
+    dsEvent.ACTIVATE = "activate";
+    dsEvent.BROWSER_ZOOM_CHANGE = "browser_zoom_change";
+    dsEvent.CANCEL = "cancel";
+    dsEvent.CHANGE = "change";
+    dsEvent.CHANNELMESSAGE = "channelMessage"
+    dsEvent.CHANNELSTATE = "channelState"
+    dsEvent.CLEAR = "clear"
+    dsEvent.CLOSE = "close"
+    dsEvent.COMPLETE = "complete"
+    dsEvent.CONNECT = "connect"
+    dsEvent.COPY = "copy"
+    dsEvent.DEACTIVATE = "deactivate"
+    dsEvent.EXITFRAME = "exitFrame"
+    dsEvent.FULLSCREEN = "fullScreen"
+    dsEvent.INIT = "init"
+    dsEvent.MOUSELEAVE = "mouseLeave"
+    dsEvent.OPEN = "open"
+    dsEvent.PASTE = "paste"
+    dsEvent.REMOVED = "removed"
+    dsEvent.RENDER = "render"
+    dsEvent.RESIZE = "resize"
+    dsEvent.SCROLL = "scroll"
+    dsEvent.SELECT = "select"
+    dsEvent.SELECTALL = "selectAll"
+    dsEvent.SOUNDCOMPLETE = "soundComplete"
+    dsEvent.TABCHILDRENCHANGE = "tabChildrenChange";
+    ds.dsMouseEvent=dsMouseEvent;
+    function dsMouseEvent(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount) {
         this.type = type
         this.bubbles = bubbles
         this.cancelable = cancelable
@@ -3524,30 +3576,30 @@
         this.commandKey = commandKey
         this.controlKey = controlKey;
     }
-    tcMouseEvent.prototype = tcEvent.initEvent();
-    tcMouseEvent.prototype.updateAfterEvent = function () {
+    dsMouseEvent.prototype = dsEvent.initEvent();
+    dsMouseEvent.prototype.updateAfterEvent = function () {
 
     }
-    tcMouseEvent.CLICK = "click";
-    tcMouseEvent.DOUBLE_CLICK = "doubleclick";
-    tcMouseEvent.MIDDLE_CLICK = "middleclick";
-    tcMouseEvent.MIDDLE_MOUSE_DOWN = "middlemousedown";
-    tcMouseEvent.MIDDLE_MOUSE_UP = "middlemouseup";
-    tcMouseEvent.MOUSE_DOWN = "mousedown";
-    tcMouseEvent.MOUSE_MOVE = "mousemove";
-    tcMouseEvent.MOUSE_OUT = "mouseout";
-    tcMouseEvent.MOUSE_OVER = "mouseover";
-    tcMouseEvent.MOUSE_UP = "mouseup";
-    tcMouseEvent.MOUSE_WHEEL = "mousewheel";
-    tcMouseEvent.RELEASE_OUTSIDE = "releaseoutside";
-    tcMouseEvent.RIGHT_CLICK = "rightclick";
-    tcMouseEvent.RIGHT_MOUSE_DOWN = "rightmousedown";
-    tcMouseEvent.RIGHT_MOUSE_UP = "rightmouseup";
-    tcMouseEvent.ROLL_OUT = "rollout";
-    tcMouseEvent.ROLL_OVER = "rollover";
-    DS.tcKeyboardEvent=tcKeyboardEvent;
-    tcKeyboardEvent.prototype = tcEvent.initEvent();
-    function tcKeyboardEvent(type, bubbles, cancelable, charCodeValue, keyCodeValue, keyLocationValue, ctrlKeyValue, altKeyValue, shiftKeyValue, controlKeyValue, commandKeyValue) {
+    dsMouseEvent.CLICK = "click";
+    dsMouseEvent.DOUBLE_CLICK = "doubleclick";
+    dsMouseEvent.MIDDLE_CLICK = "middleclick";
+    dsMouseEvent.MIDDLE_MOUSE_DOWN = "middlemousedown";
+    dsMouseEvent.MIDDLE_MOUSE_UP = "middlemouseup";
+    dsMouseEvent.MOUSE_DOWN = "mousedown";
+    dsMouseEvent.MOUSE_MOVE = "mousemove";
+    dsMouseEvent.MOUSE_OUT = "mouseout";
+    dsMouseEvent.MOUSE_OVER = "mouseover";
+    dsMouseEvent.MOUSE_UP = "mouseup";
+    dsMouseEvent.MOUSE_WHEEL = "mousewheel";
+    dsMouseEvent.RELEASE_OUTSIDE = "releaseoutside";
+    dsMouseEvent.RIGHT_CLICK = "rightclick";
+    dsMouseEvent.RIGHT_MOUSE_DOWN = "rightmousedown";
+    dsMouseEvent.RIGHT_MOUSE_UP = "rightmouseup";
+    dsMouseEvent.ROLL_OUT = "rollout";
+    dsMouseEvent.ROLL_OVER = "rollover";
+    ds.dsKeyboardEvent=dsKeyboardEvent;
+    dsKeyboardEvent.prototype = dsEvent.initEvent();
+    function dsKeyboardEvent(type, bubbles, cancelable, charCodeValue, keyCodeValue, keyLocationValue, ctrlKeyValue, altKeyValue, shiftKeyValue, controlKeyValue, commandKeyValue) {
         this.type = type
         this.bubbles = bubbles
         this.cancelable = cancelable
@@ -3559,11 +3611,11 @@
         this.shiftKey = shiftKeyValue
     }
 
-    tcKeyboardEvent.KEY_DOWN = "keydown";
-    tcKeyboardEvent.KEY_UP = "keyup";
-    DS.FocusEvent=FocusEvent;
-    FocusEvent.prototype = tcEvent.initEvent();
-    function FocusEvent(type, bubbles, cancelable, relatedObject, shiftKey, keyCode, direction) {
+    dsKeyboardEvent.KEY_DOWN = "keydown";
+    dsKeyboardEvent.KEY_UP = "keyup";
+    ds.dsFocusEvent=dsFocusEvent;
+    dsFocusEvent.prototype = dsEvent.initEvent();
+    function dsFocusEvent(type, bubbles, cancelable, relatedObject, shiftKey, keyCode, direction) {
         this.type = type;
         this._bubbles = bubbles || false;
         this._cancelable = cancelable || false;
@@ -3573,22 +3625,10 @@
         this.keyCode = keyCode;
         this.direction = direction;
     }
-    FocusEvent.FOCUS_IN = "focusIn"
-    FocusEvent.FOCUS_OUT = "focusOut "
-    FocusEvent.KEY_FOCUS_CHANGE = "keyFocusChange"
-    FocusEvent.MOUSE_FOCUS_CHANGE = "mouseFocusChange"
+    dsFocusEvent.FOCUS_IN = "focusIn"
+    dsFocusEvent.FOCUS_OUT = "focusOut "
+    dsFocusEvent.KEY_FOCUS_CHANGE = "keyFocusChange"
+    dsFocusEvent.MOUSE_FOCUS_CHANGE = "mouseFocusChange"
 
-    var CompositeOperation = {
-        SOURCE_OVER: "source-over",
-        SOURCE_ATOP: "source-atop",
-        SOURCE_IN: "source-in",
-        SOURCE_OUT: "source-out",
-        DESTINATION_OVER: "destination-over",
-        DESTINATION_ATOP: "destination-atop",
-        DESTINATION_IN: "destination-in",
-        DESTINATION_OUT: "destination-out",
-        LIGHTER: "lighter",
-        COPY: "copy",
-        XOR: "xor"
-    }
-})()
+
+})

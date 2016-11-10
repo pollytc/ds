@@ -10,7 +10,7 @@ function road(){
     road.graphics.drawRect(0,0,stage.stageWidth-2,250);
     stage.addChild(road);
 
-    var bg = new Loader().load('./img/jiedao.png');
+    var bg = new Loader().load('/img/jiedao.png');
     stage.addChild(bg);
     var person = new Person();
     person.y = 550;

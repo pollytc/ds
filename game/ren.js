@@ -18,7 +18,7 @@ function Person(){
         this.hand.graphics.lineTo(0,100);
         this.body.graphics.beginFill(0xffffff,1);
         this.body.graphics.decodePath('AhpQUQghgXgZkZQgakyAAmyQAAmvAakyQAbkyAlAAQAlAAAaEyQAaEyCDITQCEITh6ChQh6Cig1AqQg4ArgFAFg');
-        this.head.load('./img/head1.png');
+        this.head.load('/img/head1.png');
         //this.foot.__load('http://test.com/ds/movie/zai.json');
         this.scaleX=this.scaleY = 0.5;
     };
