@@ -3,6 +3,7 @@
  */
 function road(){
     var road = new $s.dsSprite();
+    road.name ='road'
     road.graphics.lineStyle(2,0x7B0000);
     road.graphics.beginFill(0xffffff);
     road.x = 1;
@@ -11,6 +12,7 @@ function road(){
     $s.stage.addChild(road);
 
     var bg = new $s.dsLoader().load('img/jiedao.png');
+    bg.name ='bg'
     $s.stage.addChild(bg);
     var person = new Person();
     person.y = 550;
@@ -18,13 +20,15 @@ function road(){
     $s.stage.addChild(person);
     var pos = {};
     var timeid =0;
+    bg.mousePixel =true;
+    road.mousePixel =true;
     bg.addEventListener($s.dsMouseEvent.MOUSE_DOWN ,function(e){
         pos.x = e.stageX;
-       bg.addEventListener($s.dsMouseEvent.MOUSE_MOVE,movebg)
-    });
+       $s.stage.addEventListener($s.dsMouseEvent.MOUSE_MOVE,movebg)
+    },true);
     bg.addEventListener($s.dsMouseEvent.MOUSE_UP,function(){
-        bg.removeEventListener($s.dsMouseEvent.MOUSE_MOVE,movebg);
-    })
+        $s.stage.removeEventListener($s.dsMouseEvent.MOUSE_MOVE,movebg);
+    },true)
 
     function movebg(event){
         var v=event.stageX-pos.x;
@@ -45,5 +49,5 @@ function road(){
     }
     road.addEventListener($s.dsMouseEvent.MOUSE_DOWN,function(e){
         person.walk(e.stageX, e.stageY,1);
-    });
+    },false);
 }

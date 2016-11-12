@@ -3,7 +3,7 @@
  */
 (function($s){
     $s.ready(function(){
-        changeScene('login')
+        changeScene('road')
     },{baseURI:'movie/'});
 
 })(window.$s);

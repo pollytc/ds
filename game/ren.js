@@ -1,6 +1,7 @@
 /**
  * Created by Administrator on 2016/10/30.
  */
+
 function Person(){
     $s.dsExtend(Person,$s.dsDisplayObjectContainer);
     return new Person.prototype.__init();

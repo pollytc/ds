@@ -1,36 +1,35 @@
 /**
  * Created by Administrator on 2016/11/10.
- * //´úÂëÔ­Ôò
+ * //ä»£ç åŸåˆ™
 
- ÏÂ»®ÏßÊôĞÔ£¬º¯Êı£¬¶¼²»±»Ê¹ÓÃ
- _µ¥ÏÂ»®Ïß£¬ÊÇÀàÊôĞÔ,º¯ÊıÃ»ÓĞµ¥ÏÂ»¬Ïß
- __Ë«ÏÂ»®Ïß£¬ÊÇÔ­ĞÍÊôĞÔ£¬º¯Êı
- ds¿ªÍ·µÄÀà£¬²»±»Ê¹ÓÃµÄÀà
+ ä¸‹åˆ’çº¿å±æ€§ï¼Œå‡½æ•°ï¼Œéƒ½ä¸è¢«ä½¿ç”¨
+ _å•ä¸‹åˆ’çº¿ï¼Œæ˜¯ç±»å±æ€§,å‡½æ•°æ²¡æœ‰å•ä¸‹æ»‘çº¿
+ __åŒä¸‹åˆ’çº¿ï¼Œæ˜¯åŸå‹å±æ€§ï¼Œå‡½æ•°
+ dså¼€å¤´çš„ç±»ï¼Œä¸è¢«ä½¿ç”¨çš„ç±»
  */
 (function(win,fun){
     win.$s||fun(win,function(key,keyfun){
         $s[key]=keyfun(win);
     })
 })(window,function(window,exports){
-    var $s =window.$s||{};
-    window.$s = $s;
-    $s.mains=[];
-    var config = $s.config ={width:800,height:600,baseURI:'',file:'json'};
-    $s.ready=function(main, config) {
+    var $s =window.$s||{},config ={width:800,height:600,baseURI:'',file:'json',pre:'ds',canvas:'',global:'$s'};
+    window.$s=$s;$s.config =config;
+    $s.ready=function(main,fig) {
+        if(typeof fig =='string'){
+            config.canvas = parseStr(fig);
+        }else{
+            for(var s in fig){config[s] = fig[s];}
+            if(config.canvas){config.canvas = parseStr(config.canvas);}
+        }
+        $s.mains =[];
         if($s.stage!= null){
             main();
         }else{
             $s.mains.push(main);
         }
-        if(typeof config =='string'){
-            $s.config.canvas = parseStr(config);
-        }else{
-            for(var s in config){
-                $s.config[s] = config[s];
-            }
-        }
+
         window.onload = function () {
-            if($s.config.canvas==null){
+            if($s.config.canvas==''){
                 var c1 = document.createElement("canvas");
                 c1.width = $s.config.width;
                 c1.height = $s.config.height;
@@ -47,17 +46,9 @@
             trace(errorMessage, scriptURI, lineNumber,columnNumber,errorObj)
         }
     }
-    var exlist = [];
-    $s.export = function(fun){
-        if(typeof fun == 'string'){
-            var f =exlist[fun];
-            if(f==null) throw fun+'not fint in export';
-            return f;
-        }else{
-            exlist[fun.constructor.name] = fun;
-            trace(fun.constructor.name)
-        }
 
+    $s.export = function(fun){
+        $s[fun.prototype.constructor.name] =fun;
     }
     function parseStr(str){
         if(typeof str != 'string')return [];
@@ -72,42 +63,16 @@
     }
     window.trace=$s.trace = console.log;
 
-    $s.dsEvent=dsEvent;
+    $s[config.pre+'Event']=dsEvent;
     /*
      bubbles:
-     ²¶»ñ½×¶Î (EventPhase.CAPTURING_PHASE)¡£
-     Ä¿±ê½×¶Î (EventPhase.AT_TARGET)¡£
-     Ã°Åİ½×¶Î (EventPhase.BUBBLING_PHASE)¡£
+     æ•è·é˜¶æ®µ (EventPhase.CAPTURING_PHASE)ã€‚
+     ç›®æ ‡é˜¶æ®µ (EventPhase.AT_TARGET)ã€‚
+     å†’æ³¡é˜¶æ®µ (EventPhase.BUBBLING_PHASE)ã€‚
      */
     function dsEvent(type, bubbles, cancelable) {
-        this.type = type;
-        this._bubbles = bubbles || false;
-        this._cancelable = cancelable || false;
-        this._currentTarget = null;
-        this._target = null;
-        this.eventPhase = 0;
-        this._stopimmediatepropagation = false;
-        this._stoppropagation = false;
-    }
-
-    dsEvent.prototype.isDefaultPrevented = function () {
-
-    }
-//cancelable µÄÖµÎª true Ôò¿ÉÒÔÊ¹ÓÃ preventDefault() À´È¡ÏûÊÂ¼ş
-    dsEvent.prototype.preventDefault = function () {
-
-    }
-//·ÀÖ¹¶ÔÊÂ¼şÁ÷ÖĞµ±Ç°½ÚµãÖĞºÍËùÓĞºóĞø½ÚµãÖĞµÄÊÂ¼şÕìÌıÆ÷½øĞĞ´¦Àí
-    dsEvent.prototype.stopImmediatePropagation = function () {
-        this._stopimmediatepropagation = true
-    }
-//´Ë·½·¨²»»áÓ°Ïìµ±Ç°½Úµã (currentTarget) ÖĞµÄÈÎºÎÊÂ¼şÕìÌıÆ÷
-    dsEvent.prototype.stopPropagation = function () {
-        this._stoppropagation = true;
-    }
-    dsEvent.initEvent = function (type, bubbles, cancelable) {
-        var eve = new dsEvent(type, bubbles, cancelable);
-        Object.defineProperties(eve, {
+        var obj = new dsEvent.prototype.__init(type, bubbles, cancelable);
+        Object.defineProperties(obj, {
             "cancelable": {
                 set: function (v) {
                     this._cancelable = v
@@ -129,8 +94,36 @@
                 }
             }
         });
-        return eve;
+        return obj;
     }
+
+    dsEvent.prototype.__init=function(type, bubbles, cancelable){
+        this.type = type;
+        this._bubbles = bubbles || false;
+        this._cancelable = cancelable || false;
+        this._currentTarget = null;
+        this._target = null;
+        this.eventPhase = 0;
+        this._stopimmediatepropagation = false;
+        this._stoppropagation = false;
+    }
+    dsEvent.prototype.__init.prototype=dsEvent.prototype;
+    dsEvent.prototype.isDefaultPrevented = function () {
+
+    }
+//cancelable çš„å€¼ä¸º true åˆ™å¯ä»¥ä½¿ç”¨ preventDefault() æ¥å–æ¶ˆäº‹ä»¶
+    dsEvent.prototype.preventDefault = function () {
+
+    }
+//é˜²æ­¢å¯¹äº‹ä»¶æµä¸­å½“å‰èŠ‚ç‚¹ä¸­å’Œæ‰€æœ‰åç»­èŠ‚ç‚¹ä¸­çš„äº‹ä»¶ä¾¦å¬å™¨è¿›è¡Œå¤„ç†
+    dsEvent.prototype.stopImmediatePropagation = function () {
+        this._stopimmediatepropagation = true
+    }
+//æ­¤æ–¹æ³•ä¸ä¼šå½±å“å½“å‰èŠ‚ç‚¹ (currentTarget) ä¸­çš„ä»»ä½•äº‹ä»¶ä¾¦å¬å™¨
+    dsEvent.prototype.stopPropagation = function () {
+        this._stoppropagation = true;
+    }
+
     dsEvent.ENTER_FRAME = "enter_frame";
     dsEvent.ADDED_TO_STAGE = "addtostage";
     dsEvent.REMOVE_FROM_STAGE = "removefromstage";
@@ -160,8 +153,13 @@
     dsEvent.SELECTALL = "selectAll"
     dsEvent.SOUNDCOMPLETE = "soundComplete"
     dsEvent.TABCHILDRENCHANGE = "tabChildrenChange";
-    $s.dsMouseEvent=dsMouseEvent;
+
+    $s[config.pre+'MouseEvent']=dsMouseEvent
     function dsMouseEvent(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount) {
+        dsExtend(dsMouseEvent,dsEvent);
+        return new dsMouseEvent.prototype.__init(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount)
+    }
+    dsMouseEvent.prototype.__init =function(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount){
         this.type = type
         this.bubbles = bubbles
         this.cancelable = cancelable
@@ -181,7 +179,6 @@
         this.commandKey = commandKey
         this.controlKey = controlKey;
     }
-    dsMouseEvent.prototype = dsEvent.initEvent();
     dsMouseEvent.prototype.updateAfterEvent = function () {
 
     }
@@ -202,9 +199,13 @@
     dsMouseEvent.RIGHT_MOUSE_UP = "rightmouseup";
     dsMouseEvent.ROLL_OUT = "rollout";
     dsMouseEvent.ROLL_OVER = "rollover";
-    $s.dsKeyboardEvent=dsKeyboardEvent;
-    dsKeyboardEvent.prototype = dsEvent.initEvent();
+
+    $s[config.pre+'KeyboardEvent']=dsKeyboardEvent
     function dsKeyboardEvent(type, bubbles, cancelable, charCodeValue, keyCodeValue, keyLocationValue, ctrlKeyValue, altKeyValue, shiftKeyValue, controlKeyValue, commandKeyValue) {
+        dsExtend(dsKeyboardEvent,dsEvent);
+        return new dsKeyboardEvent.prototype.__init();
+    }
+    dsKeyboardEvent.prototype.__init = function () {
         this.type = type
         this.bubbles = bubbles
         this.cancelable = cancelable
@@ -215,12 +216,16 @@
         this.keyLocation = keyLocationValue
         this.shiftKey = shiftKeyValue
     }
-
     dsKeyboardEvent.KEY_DOWN = "keydown";
     dsKeyboardEvent.KEY_UP = "keyup";
-    $s.dsFocusEvent=dsFocusEvent;
-    dsFocusEvent.prototype = dsEvent.initEvent();
+
+    $s[config.pre+'FocusEvent']=dsFocusEvent;
+    dsFocusEvent.prototype =new dsEvent();
     function dsFocusEvent(type, bubbles, cancelable, relatedObject, shiftKey, keyCode, direction) {
+        dsExtend(dsFocusEvent,dsEvent);
+        return new dsFocusEvent.prototype.__init(type, bubbles, cancelable, relatedObject, shiftKey, keyCode, direction);
+    }
+    dsFocusEvent.prototype.__init=function(){
         this.type = type;
         this._bubbles = bubbles || false;
         this._cancelable = cancelable || false;
@@ -258,7 +263,8 @@
     var dsChildOf=$s.dsChildOf=function dsChildOf(child,parent){
         var vb = child.__proto__;
         while(vb&&vb.constructor != dsEventDispatcher.prototype.constructor){
-            if(vb.constructor ==parent.prototype.constructor)return true;
+            if(vb.constructor ==parent.prototype.constructor)
+                return true;
             vb=vb.__proto__;
         }
         return false;
@@ -272,6 +278,7 @@
         spro.__init.prototype.constructor = oc;
 
     }
+    $s[config.pre+'Color']=dsColor;
     function dsColor(color) {
         this.R = (0x00ff0000 & color) >> 16;//red
         this.G = (0x0000ff00 & color) >> 8;//green;
@@ -283,7 +290,7 @@
         else this.A = 255;
     }
     /*
-     Éú³É16Î»ÑÕÉ«Öµ
+     ç”Ÿæˆ16ä½é¢œè‰²å€¼
      */
     dsColor.toColor = function (r, g, b, a) {
         var c = 0;
@@ -294,7 +301,7 @@
         return c;
     }
     /*
-     16Î»ÑÕÉ«Öµ×ª»»Îª16Î»ÑÕÉ«×Ö·û´®
+     16ä½é¢œè‰²å€¼è½¬æ¢ä¸º16ä½é¢œè‰²å­—ç¬¦ä¸²
      */
     dsColor.toStr = function (v, radio) {
         radio = radio || 16;
@@ -318,6 +325,7 @@
     dsColor.prototype.toString = function () {
         console.log("r=" + this.R + " g=" + this.G + " b=" + this.B + " a=" + this.A);
     }
+    $s[config.pre+'ByteArray']=dsByteArray;
     function dsByteArray(len) {
         this.bytesAvailable = 0;
         this.endian = 'big_endian';//little_endian;
@@ -328,7 +336,7 @@
         this.length = this.length || 128;
         this.__data = new Uint8Array(this.length);
     }
-    $s.dsByteArray=dsByteArray;
+
     dsByteArray.defaultObjectEncoding = 'AMF3';
     dsByteArray.prototype.atomicCompareAndSwapIntAt = function (byteIndex, expectedValue, newValue) {
         var old = this.position;
@@ -343,48 +351,48 @@
             return newValue;
         }
     }
-//ÔÚµ¥Ò»µÄÔ­×Ó²Ù×÷ÖĞ£¬½«´Ë×Ö½ÚÊı×éÖĞµÄÒ»¸öÕûÊıÖµÓëÁíÒ»¸öÕûÊıÖµ½øĞĞ±È½Ï£¬Èç¹ûËüÃÇÆ¥Åä£¬Ôò½«ÕâĞ©×Ö½ÚÓëÁíÒ»¸öÖµ½øĞĞ½»»»¡£
+//åœ¨å•ä¸€çš„åŸå­æ“ä½œä¸­ï¼Œå°†æ­¤å­—èŠ‚æ•°ç»„ä¸­çš„ä¸€ä¸ªæ•´æ•°å€¼ä¸å¦ä¸€ä¸ªæ•´æ•°å€¼è¿›è¡Œæ¯”è¾ƒï¼Œå¦‚æœå®ƒä»¬åŒ¹é…ï¼Œåˆ™å°†è¿™äº›å­—èŠ‚ä¸å¦ä¸€ä¸ªå€¼è¿›è¡Œäº¤æ¢ã€‚
     dsByteArray.prototype.atomicCompareAndSwapLength = function (expectedLength, newLength) {
         if (this.length == expectedLength) {
             this.length = newLength;
         }
         return this.length;
     }
-//ÔÚµ¥Ò»µÄÔ­×Ó²Ù×÷ÖĞ£¬½«´Ë×Ö½ÚÊı×éµÄ³¤¶ÈÓëËùÌá¹©µÄÒ»¸öÖµ½øĞĞ±È½Ï£¬Èç¹ûËüÃÇÆ¥Åä£¬Ôò¸ü¸Ä´Ë×Ö½ÚÊı×éµÄ³¤¶È¡£
+//åœ¨å•ä¸€çš„åŸå­æ“ä½œä¸­ï¼Œå°†æ­¤å­—èŠ‚æ•°ç»„çš„é•¿åº¦ä¸æ‰€æä¾›çš„ä¸€ä¸ªå€¼è¿›è¡Œæ¯”è¾ƒï¼Œå¦‚æœå®ƒä»¬åŒ¹é…ï¼Œåˆ™æ›´æ”¹æ­¤å­—èŠ‚æ•°ç»„çš„é•¿åº¦ã€‚
     dsByteArray.prototype.clear = function () {
         this.__data = new Uint8Array(1);
         this.length = 0;
     };
-//Çå³ı×Ö½ÚÊı×éµÄÄÚÈİ£¬²¢½« length ºÍ position ÊôĞÔÖØÖÃÎª 0¡£
+//æ¸…é™¤å­—èŠ‚æ•°ç»„çš„å†…å®¹ï¼Œå¹¶å°† length å’Œ position å±æ€§é‡ç½®ä¸º 0ã€‚
     dsByteArray.prototype.compress = function (algorithm) {
 
     }
-//	Ñ¹Ëõ×Ö½ÚÊı×é¡£
+//	å‹ç¼©å­—èŠ‚æ•°ç»„ã€‚
     dsByteArray.prototype.deflate = function () {
 
     }
-//Ê¹ÓÃ deflate Ñ¹ËõËã·¨Ñ¹Ëõ×Ö½ÚÊı×é¡£
+//ä½¿ç”¨ deflate å‹ç¼©ç®—æ³•å‹ç¼©å­—èŠ‚æ•°ç»„ã€‚
     dsByteArray.prototype.inflate = function () {
 
     }
-//Ê¹ÓÃ deflate Ñ¹ËõËã·¨½«×Ö½ÚÊı×é½âÑ¹Ëõ¡£
+//ä½¿ç”¨ deflate å‹ç¼©ç®—æ³•å°†å­—èŠ‚æ•°ç»„è§£å‹ç¼©ã€‚
     dsByteArray.prototype.readBoolean = function () {
         return Boolean(this.__data[this.position++]);
     }
-//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡²¼¶ûÖµ¡£
+//ä»å­—èŠ‚æµä¸­è¯»å–å¸ƒå°”å€¼ã€‚
     dsByteArray.prototype.readByte = function () {
         return this.__data[this.position++] - 128;
     }
-//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡´ø·ûºÅµÄ×Ö½Ú¡£
+//ä»å­—èŠ‚æµä¸­è¯»å–å¸¦ç¬¦å·çš„å­—èŠ‚ã€‚
     dsByteArray.prototype.readBytes = function (bytes, offset, length) {
         var l = this.__data.subarray(offset, offset + length);
         bytes.__data.set(l);
         bytes.length = length;
     }
 
-//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡ length ²ÎÊıÖ¸¶¨µÄÊı¾İ×Ö½ÚÊı¡£
-//Ö¸Êı²¿·ÖExponent £¨E£©     : 11bit      £¨b62-b52£©//
-//Î²Êı²¿·ÖMantissa   £¨M£©   : 52bit      £¨b51-b0£©
+//ä»å­—èŠ‚æµä¸­è¯»å– length å‚æ•°æŒ‡å®šçš„æ•°æ®å­—èŠ‚æ•°ã€‚
+//æŒ‡æ•°éƒ¨åˆ†Exponent ï¼ˆEï¼‰     : 11bit      ï¼ˆb62-b52ï¼‰//
+//å°¾æ•°éƒ¨åˆ†Mantissa   ï¼ˆMï¼‰   : 52bit      ï¼ˆb51-b0ï¼‰
     dsByteArray.prototype.readDouble = function () {
         var z = this.__data[this.position];
         var kk = this.__data[this.position + 1];
@@ -405,9 +413,9 @@
         return v + z;
     }
 
-//Ö¸Êı²¿·ÖExponent £¨E£©      : 8bit       £¨b30-b23£©
-//Î²Êı²¿·ÖMantissa   £¨M£©    : 23bit     £¨b22-b0£©
-//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸ö IEEE 754 Ë«¾«¶È£¨64 Î»£©¸¡µãÊı¡£
+//æŒ‡æ•°éƒ¨åˆ†Exponent ï¼ˆEï¼‰      : 8bit       ï¼ˆb30-b23ï¼‰
+//å°¾æ•°éƒ¨åˆ†Mantissa   ï¼ˆMï¼‰    : 23bit     ï¼ˆb22-b0ï¼‰
+//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ª IEEE 754 åŒç²¾åº¦ï¼ˆ64 ä½ï¼‰æµ®ç‚¹æ•°ã€‚
     dsByteArray.prototype.readFloat = function () {
         var z = this.__data[this.position];
         var f = this.__data[this.position + 1];
@@ -423,7 +431,7 @@
         this.position += 4;
         return z + v;
     }
-//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸ö IEEE 754 µ¥¾«¶È£¨32 Î»£©¸¡µãÊı¡£
+//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ª IEEE 754 å•ç²¾åº¦ï¼ˆ32 ä½ï¼‰æµ®ç‚¹æ•°ã€‚
     dsByteArray.prototype.readInt = function () {
         var s = this.__data[this.position];
         s = this.__data[this.position + 1] << 8 | s;
@@ -435,7 +443,7 @@
         }
         return s;
     }
-//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸ö´ø·ûºÅµÄ 32 Î»ÕûÊı¡£
+//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ªå¸¦ç¬¦å·çš„ 32 ä½æ•´æ•°ã€‚
     dsByteArray.prototype.readMultiByte = function (length, charSet) {
         var str = '';
         for (var i = 0; i<length; i++) {
@@ -444,7 +452,7 @@
         }
         return unescape(str);
     }
-//Ê¹ÓÃÖ¸¶¨µÄ×Ö·û¼¯´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ö¸¶¨³¤¶ÈµÄ¶à×Ö½Ú×Ö·û´®¡£
+//ä½¿ç”¨æŒ‡å®šçš„å­—ç¬¦é›†ä»å­—èŠ‚æµä¸­è¯»å–æŒ‡å®šé•¿åº¦çš„å¤šå­—èŠ‚å­—ç¬¦ä¸²ã€‚
     dsByteArray.prototype.readObject = function () {
         var s = '';
         while (this.__data[this.position] != 0) {
@@ -464,11 +472,11 @@
     dsByteArray.prototype.readShort = function () {
         return this.__data[this.position] | this.__data[this.position + 1] << 8
     }
-//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸ö´ø·ûºÅµÄ 16 Î»ÕûÊı¡£
+//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ªå¸¦ç¬¦å·çš„ 16 ä½æ•´æ•°ã€‚
     dsByteArray.prototype.readUnsignedByte = function () {
 
     }
-//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡ÎŞ·ûºÅµÄ×Ö½Ú¡£
+//ä»å­—èŠ‚æµä¸­è¯»å–æ— ç¬¦å·çš„å­—èŠ‚ã€‚
     dsByteArray.prototype.readUnsignedInt = function () {
         var s = this.__data[this.position];
         s = this.__data[this.position + 1] << 8 | s;
@@ -476,7 +484,7 @@
         s = this.__data[this.position + 3] << 24 | s;
         return s;
     }
-//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸öÎŞ·ûºÅµÄ 32 Î»ÕûÊı¡£
+//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ªæ— ç¬¦å·çš„ 32 ä½æ•´æ•°ã€‚
     dsByteArray.prototype.readUnsignedShort = function () {
         var s = this.__data[this.position];
         s = this.__data[this.position + 1] << 8 | s;
@@ -484,7 +492,7 @@
         s = this.__data[this.position + 3] << 24 | s;
         return s;
     }
-//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸öÎŞ·ûºÅµÄ 16 Î»ÕûÊı¡£
+//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ªæ— ç¬¦å·çš„ 16 ä½æ•´æ•°ã€‚
     dsByteArray.prototype.readUTF = function () {
         var str = '';
         for (var i = 0; i < 16; i++) {
@@ -493,7 +501,7 @@
         }
         return unescape(str);
     }
-//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸ö UTF-8 ×Ö·û´®¡£
+//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ª UTF-8 å­—ç¬¦ä¸²ã€‚
     dsByteArray.prototype.readUTFBytes = function (length) {
         var str = '';
         for (var i = 0; i < length; i++) {
@@ -501,24 +509,24 @@
         }
         return unescape(str);
     }
-//´Ó×Ö½ÚÁ÷ÖĞ¶ÁÈ¡Ò»¸öÓÉ length ²ÎÊıÖ¸¶¨µÄ UTF-8 ×Ö½ÚĞòÁĞ£¬²¢·µ»ØÒ»¸ö×Ö·û´®¡£
+//ä»å­—èŠ‚æµä¸­è¯»å–ä¸€ä¸ªç”± length å‚æ•°æŒ‡å®šçš„ UTF-8 å­—èŠ‚åºåˆ—ï¼Œå¹¶è¿”å›ä¸€ä¸ªå­—ç¬¦ä¸²ã€‚
     dsByteArray.prototype.toJSON = function (k) {
 
     }
-//Ìá¹©Ò»ÖÖ¿É¸²¸ÇµÄ·½·¨£¬ÓÃÓÚÔÚ dsByteArray ¶ÔÏóÖĞ×Ô¶¨ÒåÖµµÄ JSON ±àÂë¡£
+//æä¾›ä¸€ç§å¯è¦†ç›–çš„æ–¹æ³•ï¼Œç”¨äºåœ¨ dsByteArray å¯¹è±¡ä¸­è‡ªå®šä¹‰å€¼çš„ JSON ç¼–ç ã€‚
     dsByteArray.prototype.toString = function () {
 
     }
-//½«×Ö½ÚÊı×é×ª»»Îª×Ö·û´®¡£
+//å°†å­—èŠ‚æ•°ç»„è½¬æ¢ä¸ºå­—ç¬¦ä¸²ã€‚
     dsByteArray.prototype.uncompress = function (algorithm) {
 
     }
-//½âÑ¹Ëõ×Ö½ÚÊı×é¡£
+//è§£å‹ç¼©å­—èŠ‚æ•°ç»„ã€‚
     dsByteArray.prototype.writeBoolean = function (value) {
         this.__data.fill(value, this.position, this.position + 1);
         this.position++;
     }
-//Ğ´Èë²¼¶ûÖµ¡£
+//å†™å…¥å¸ƒå°”å€¼ã€‚
     dsByteArray.prototype.writeByte = function (value) {
         if (value >= -128 && value < 127) {
             value += 128
@@ -529,17 +537,17 @@
         }
 
     }
-//ÔÚ×Ö½ÚÁ÷ÖĞĞ´ÈëÒ»¸ö×Ö½Ú¡£
-//½«À´×ÔÖ¸¶¨×Ö½ÚÊı×é¡¢×Ö½ÚÊı¡¢ÆğÊ¼Æ«ÒÆ£¨»ùÓÚÁãµÄË÷Òı£©×Ö½ÚµÄ³¤¶È×Ö½ÚÊıĞòÁĞĞ´Èë×Ö½ÚÁ÷¡£
+//åœ¨å­—èŠ‚æµä¸­å†™å…¥ä¸€ä¸ªå­—èŠ‚ã€‚
+//å°†æ¥è‡ªæŒ‡å®šå­—èŠ‚æ•°ç»„ã€å­—èŠ‚æ•°ã€èµ·å§‹åç§»ï¼ˆåŸºäºé›¶çš„ç´¢å¼•ï¼‰å­—èŠ‚çš„é•¿åº¦å­—èŠ‚æ•°åºåˆ—å†™å…¥å­—èŠ‚æµã€‚
     dsByteArray.prototype.writeBytes = function (bytes, offset, length) {
         var l = bytes.__data.subarray(offset, offset + length);
         this.__data.set(l);
         this.length += length;
     }
 
-//ÔÚ×Ö½ÚÁ÷ÖĞĞ´ÈëÒ»¸ö IEEE 754 Ë«¾«¶È£¨64 Î»£©¸¡µãÊı¡£
-//Ö¸Êı²¿·ÖExponent £¨E£©     : 11bit      £¨b62-b52£©//
-//Î²Êı²¿·ÖMantissa   £¨M£©   : 52bit      £¨b51-b0£©
+//åœ¨å­—èŠ‚æµä¸­å†™å…¥ä¸€ä¸ª IEEE 754 åŒç²¾åº¦ï¼ˆ64 ä½ï¼‰æµ®ç‚¹æ•°ã€‚
+//æŒ‡æ•°éƒ¨åˆ†Exponent ï¼ˆEï¼‰     : 11bit      ï¼ˆb62-b52ï¼‰//
+//å°¾æ•°éƒ¨åˆ†Mantissa   ï¼ˆMï¼‰   : 52bit      ï¼ˆb51-b0ï¼‰
     dsByteArray.prototype.writeDouble = function (value) {
         var z = parseInt(value);
         var f = value - z;
@@ -567,9 +575,9 @@
         this.position += 8;
     }
 
-//Ö¸Êı²¿·ÖExponent £¨E£©      : 8bit       £¨b30-b23£©
-//Î²Êı²¿·ÖMantissa   £¨M£©    : 23bit     £¨b22-b0£©
-//ÔÚ×Ö½ÚÁ÷ÖĞĞ´ÈëÒ»¸ö IEEE 754 µ¥¾«¶È£¨32 Î»£©¸¡µãÊı¡£
+//æŒ‡æ•°éƒ¨åˆ†Exponent ï¼ˆEï¼‰      : 8bit       ï¼ˆb30-b23ï¼‰
+//å°¾æ•°éƒ¨åˆ†Mantissa   ï¼ˆMï¼‰    : 23bit     ï¼ˆb22-b0ï¼‰
+//åœ¨å­—èŠ‚æµä¸­å†™å…¥ä¸€ä¸ª IEEE 754 å•ç²¾åº¦ï¼ˆ32 ä½ï¼‰æµ®ç‚¹æ•°ã€‚
     dsByteArray.prototype.writeFloat = function (value) {
         if (value > Math.pow(2, 8))throw 'wrong writeFloat';
         var arr = [0, 0, 0, 0];
@@ -583,7 +591,7 @@
         this.__data.set(arr, this.position);
         this.position += 4;
     }
-//ÔÚ×Ö½ÚÁ÷ÖĞĞ´ÈëÒ»¸ö´ø·ûºÅµÄ 32 Î»ÕûÊı¡£
+//åœ¨å­—èŠ‚æµä¸­å†™å…¥ä¸€ä¸ªå¸¦ç¬¦å·çš„ 32 ä½æ•´æ•°ã€‚
     dsByteArray.prototype.writeInt = function (value) {
         if (value > Math.pow(2, 31))throw 'wrong writeInt';
         var val = Math.abs(parseInt(value));
@@ -597,7 +605,7 @@
         this.__data.set(arr, this.position)
         this.position += 4;
     }
-//Ê¹ÓÃÖ¸¶¨µÄ×Ö·û¼¯½«¶à×Ö½Ú×Ö·û´®Ğ´Èë×Ö½ÚÁ÷¡£
+//ä½¿ç”¨æŒ‡å®šçš„å­—ç¬¦é›†å°†å¤šå­—èŠ‚å­—ç¬¦ä¸²å†™å…¥å­—èŠ‚æµã€‚
     dsByteArray.prototype.writeMultiByte = function (value, charSet) {
         var e = escape(value);
         for (var i = 0; i<e.length;i++) {
@@ -606,7 +614,7 @@
         }
         return e.length;
     }
-//½«¶ÔÏóÒÔ AMF ĞòÁĞ»¯¸ñÊ½Ğ´Èë×Ö½ÚÊı×é¡£
+//å°†å¯¹è±¡ä»¥ AMF åºåˆ—åŒ–æ ¼å¼å†™å…¥å­—èŠ‚æ•°ç»„ã€‚
     dsByteArray.prototype.writeObject = function (object) {
         if (object instanceof Array) {
 
@@ -622,7 +630,7 @@
         this.__data.set(arr, this.position);
         this.position += arr.length;
     }
-//ÔÚ×Ö½ÚÁ÷ÖĞĞ´ÈëÒ»¸ö 16 Î»ÕûÊı¡£
+//åœ¨å­—èŠ‚æµä¸­å†™å…¥ä¸€ä¸ª 16 ä½æ•´æ•°ã€‚
     dsByteArray.prototype.writeShort = function (value) {
         if (value > 65280)throw 'wrong writeShort';
         this.__data[this.position] = value & 255;
@@ -630,7 +638,7 @@
         else this.__data[this.position + 1] = 0;
         this.position += 2;
     }
-//ÔÚ×Ö½ÚÁ÷ÖĞĞ´ÈëÒ»¸öÎŞ·ûºÅµÄ 32 Î»ÕûÊı¡£
+//åœ¨å­—èŠ‚æµä¸­å†™å…¥ä¸€ä¸ªæ— ç¬¦å·çš„ 32 ä½æ•´æ•°ã€‚
     dsByteArray.prototype.writeUnsignedInt = function (value) {
         if (value > Math.pow(2, 32))throw 'wrong writeUnsignedInt'
         var arr = [0, 0, 0, 0];
@@ -648,7 +656,7 @@
             this.position++;
         }
     }
-//½« UTF-8 ×Ö·û´®Ğ´Èë×Ö½ÚÁ÷¡£
+//å°† UTF-8 å­—ç¬¦ä¸²å†™å…¥å­—èŠ‚æµã€‚
     dsByteArray.prototype.writeUTFBytes = function (value) {
         var e = escape(value);
         for (var i = 0; i < e.length; i++) {
@@ -656,8 +664,7 @@
             this.position++;
         }
     }
-    
-    $s.dsRectangle=dsRectangle;
+    $s[config.pre+'Rectangle']=dsRectangle;
     function dsRectangle(x, y, w, h) {
         this.x = x;
         this.y = y;
@@ -706,7 +713,7 @@
         this.inflate(point.x, point.y);
     };
     /*
-     ·µ»ØÏà½»µÄ¾ØĞÎ
+     è¿”å›ç›¸äº¤çš„çŸ©å½¢
      */
     dsRectangle.prototype.intersection = function (rectangle) {
         var x1 = rectangle.x, y1 = rectangle.y, x2 = rectangle.right, y2 = rectangle.bottom;
@@ -725,7 +732,7 @@
         return (x2 <= x1 || y2 <= y1) ? null : new dsRectangle(x1, y1, x2 - x1, y2 - y1);
     };
     /*
-     ÅĞ¶ÏÊÇ·ñÏà½»
+     åˆ¤æ–­æ˜¯å¦ç›¸äº¤
      */
     dsRectangle.prototype.instersects = function (rectangle) {
         return (rectangle.x <= this.right && this.x <= rectangle.right && rectangle.y <= this.bottom && this.y <= rectangle.bottom);
@@ -804,7 +811,7 @@
     dsAABB.prototype.height = function(){
         return Math.abs(this.y2-this.y1);
     }
-    $s.dsPoint=dsPoint;
+    $s[config.pre+'Point']=dsPoint;
     function dsPoint(x, y) {
         this.x = x | 0;
         this.y = y | 0;
@@ -827,7 +834,7 @@
     dsPoint.prototype.equals = function (point) {
         return this.x == point.x || this.y == point.y;
     }
-//ÄÚ²åÖµ ´ıÑéÖ¤
+//å†…æ’å€¼ å¾…éªŒè¯
     dsPoint.prototype.interpolate = function (pt1, pt2, f) {
         var nor = pt1.clone().subtract(pt2);
         nor.normalize(nor.length * f);
@@ -857,32 +864,32 @@
     dsPoint.prototype.toString = function () {
         return "x = " + this.x + " y = " + this.y;
     }
-    $s.dsMatrix=dsMatrix;
+    $s[config.pre+'Matrix']=dsMatrix;
     function dsMatrix(a, b, c, d, tx, ty) {
-        //this.a =1//   Ë®Æ½Ëõ·Å»æÍ¼
-        //this.b=0// 	Ë®Æ½ÇãĞ±»æÍ¼
-        //this.c=1// 	´¹Ö±ÇãĞ±»æÍ¼
-        //this.d =1// 	´¹Ö±Ëõ·Å»æÍ¼
-        //this.tx=0// 	Ë®Æ½ÒÆ¶¯»æÍ¼
-        //this.ty=0// 	´¹Ö±ÒÆ¶¯»æÍ¼
+        //this.a =1//   æ°´å¹³ç¼©æ”¾ç»˜å›¾
+        //this.b=0// 	æ°´å¹³å€¾æ–œç»˜å›¾
+        //this.c=1// 	å‚ç›´å€¾æ–œç»˜å›¾
+        //this.d =1// 	å‚ç›´ç¼©æ”¾ç»˜å›¾
+        //this.tx=0// 	æ°´å¹³ç§»åŠ¨ç»˜å›¾
+        //this.ty=0// 	å‚ç›´ç§»åŠ¨ç»˜å›¾
         this.setTo(a, b, c, d, tx, ty);
     }
 
     dsMatrix.prototype.clone = function () {
         return new dsMatrix(this.a,this.b,this.c,this.d,this.tx,this.ty);
     }
-//¾ØÕóºó¼Ó
-//½«Ä³¸ö¾ØÕóÓëµ±Ç°¾ØÕóÁ¬½Ó£¬´Ó¶ø½«ÕâÁ½¸ö¾ØÕóµÄ¼¸ºÎĞ§¹ûÓĞĞ§µØ½áºÏÔÚÒ»Æğ¡£
+//çŸ©é˜µååŠ 
+//å°†æŸä¸ªçŸ©é˜µä¸å½“å‰çŸ©é˜µè¿æ¥ï¼Œä»è€Œå°†è¿™ä¸¤ä¸ªçŸ©é˜µçš„å‡ ä½•æ•ˆæœæœ‰æ•ˆåœ°ç»“åˆåœ¨ä¸€èµ·ã€‚
     dsMatrix.prototype.concat = function (matrix) {
         this.append(matrix.a,matrix.b,matrix.c,matrix.d,matrix.tx,matrix.ty);
         return this;
 
     }
-//½«Ô´ dsPoint ¶ÔÏóÖĞµÄËùÓĞ¾ØÕóÊı¾İ¸´ÖÆµ½µ÷ÓÃ·½ dsMatrix ¶ÔÏóÖĞ¡£
+//å°†æº dsPoint å¯¹è±¡ä¸­çš„æ‰€æœ‰çŸ©é˜µæ•°æ®å¤åˆ¶åˆ°è°ƒç”¨æ–¹ dsMatrix å¯¹è±¡ä¸­ã€‚
     dsMatrix.prototype.copyFrom = function (matrix) {
         this.setTo(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
     }
-//°üÀ¨ÓÃÓÚËõ·Å¡¢Ğı×ªºÍ×ª»»µÄ²ÎÊı¡£
+//åŒ…æ‹¬ç”¨äºç¼©æ”¾ã€æ—‹è½¬å’Œè½¬æ¢çš„å‚æ•°ã€‚
     dsMatrix.prototype.createBox = function (scaleX, scaleY, rotation, tx, ty) {
         rotation = rotation*Math.PI/180;
         var mat1=new dsMatrix();
@@ -1023,17 +1030,6 @@
         this.__oldfun = [];
         this.__uuid = this.constructor.name + utils.UUID();
     }
-//ÏòÉÏÖ´ĞĞ±»ÖØĞ´µÄº¯Êı,paramArr
-//    dsEventDispatcher.prototype.__recall = function (key, paramArr, parent) {
-//        var pn = parent;
-//        if (this.__oldfun[pn][key]) {
-//            if (paramArr instanceof Array) {
-//                return this.__oldfun[pn][key].apply(this, paramArr);
-//            } else {
-//                return this.__oldfun[pn][key].call(this, paramArr);
-//            }
-//        }
-//    }
     dsEventDispatcher.prototype.__call = function (parent,key,paramArr) {
         paramArr=paramArr||[];
         if(parent.prototype[key]==null)
@@ -1049,6 +1045,7 @@
         if (dsChildOf(event,dsEvent)) {
             event.currentTarget = this;
             var a = this.__events[event.type];
+
             for (var i in a) {
                 a[i].call(this, event);
             }
@@ -1075,8 +1072,12 @@
         }
         return false;
     }
+    dsEventDispatcher.prototype.__release = function(){
+        this.__events = [];
+        this.__oldfun = [];
+    }
 
-    $s.dsDisplayObject =dsDisplayObject;
+    $s[config.pre+'DisplayObject']=dsDisplayObject;
     function dsDisplayObject() {
         dsExtend(dsDisplayObject,dsEventDispatcher);
         var obj = new dsDisplayObject.prototype.__init();
@@ -1199,7 +1200,7 @@
         this.transform = null;
         this.visible = true;
         this.blendMode = "source-over";//source-in,source-out,source-atop,lighter,xor,destination-over,destination-in,destination-,destination-atop,darker
-        this.cacheAsBitmap = false;//»º´æÏÔÊ¾¶ÔÏóµÄÄÚ²¿Î»Í¼±íÊ¾ĞÎÊ½¡£
+        this.cacheAsBitmap = false;//ç¼“å­˜æ˜¾ç¤ºå¯¹è±¡çš„å†…éƒ¨ä½å›¾è¡¨ç¤ºå½¢å¼ã€‚
         this.stage = null;
         this._graphics = null;
         this.filters = [];
@@ -1207,11 +1208,11 @@
         this.__aabb = new dsAABB();
     }
     dsDisplayObject.prototype.__init.prototype = new dsEventDispatcher;
-//Ñ­»·Í¼ĞÎäÖÈ¾º¯Êı
+//å¾ªç¯å›¾å½¢æ¸²æŸ“å‡½æ•°
     dsDisplayObject.prototype.__render = function (ctx) {
         if (!this.visible || this._ismask)return false;
         if(this.cacheAsBitmap){
-            //Î»Í¼»º´æ
+            //ä½å›¾ç¼“å­˜
             if(this.maskdata){
                 var ab = this._mask.__AABB();
                 ctx.drawImage(this.maskdata,ab.x1,ab.y1);
@@ -1241,7 +1242,7 @@
         }
         return true;
     }
-//Ñ­»·´¦ÀíÒµÎñÂß¼­µÄº¯Êı
+//å¾ªç¯å¤„ç†ä¸šåŠ¡é€»è¾‘çš„å‡½æ•°
     dsDisplayObject.prototype.__frame = function () {
         if(!this.visible) return false;
         this.dispatchEvent(new dsEvent(dsEvent.ENTER_FRAME, false, false));
@@ -1249,14 +1250,14 @@
     }
 
     dsDisplayObject.prototype.getBounds = function (displayObject) {
-        //Î´¿¼ÂÇĞı×ª
+        //æœªè€ƒè™‘æ—‹è½¬
         var lw = this._graphics ? this._graphics["lineWidth"] : 0;
         var rect=this.getRect(displayObject)
         return new dsRectangle(rect.x, rect.y, rect.width + lw, rect.height + lw);
     }
 
     dsDisplayObject.prototype.getRect = function (displayObject) {
-        //±È½ÏÓëgetBounds ,´Ë·½·¨²»°üº¬linestyleµÄ
+        //æ¯”è¾ƒä¸getBounds ,æ­¤æ–¹æ³•ä¸åŒ…å«linestyleçš„
         var p=displayObject._mat.transformPoint(new dsPoint(this.x,this.y))
         return new dsRectangle(p.x, p.y, this.width, this.height);
     }
@@ -1265,9 +1266,8 @@
         var r2 = displayObject.__AABB();
         return r1.instersects(r2);
     }
-//point È«¾Ö×ø±ê
+//point å…¨å±€åæ ‡
     dsDisplayObject.prototype.hitTestPoint = function (dx,dy,shapeFlag) {
-        shapeFlag =shapeFlag||false;
         var ab = this.__AABB();
         var bool = ab.contains(dx,dy);
         if(shapeFlag&&bool){
@@ -1320,53 +1320,58 @@
         ab.setXY(p4.x, p4.y);
         return ab;
     }
-    $s.dsInteractiveObject=dsInteractiveObject;
+
+    $s[config.pre+'InteractiveObject']=dsInteractiveObject;
     function dsInteractiveObject() {
         dsExtend(dsInteractiveObject,dsDisplayObject);
-        //Êó±êÊÂ¼şÄ¿±ê½×¶Î
+        //é¼ æ ‡äº‹ä»¶ç›®æ ‡é˜¶æ®µ
         return new dsInteractiveObject.prototype.__init();
     }
     dsInteractiveObject.prototype.__init=function(){
         this.doubleClickEnabled = false;
         this.mouseEnabled = true;
         this._befocus = false;
-        this.__activeType = utils.INTERACTIVEEVENT.concat(utils.MOUSE).concat(utils.KEY);
-        this.__mouseType = utils.MOUSE;
-        this.__keyType = utils.KEY;
-        this.__activeEvent = new Object();
         this.__mouseEvent = new Object();
         this.__keyEvent = new Object();
+        this.__activeEvent=[];
+        this.mousePixel = false;
     };
     dsInteractiveObject.prototype.__mouseaction = function (event) {
         var evs = this.__activeEvent[event.type];
-        if(evs==null)return
+        if(evs==null)return;
         var p = this.globalToLocal(new dsPoint(event.offsetX,event.offsetY));
         var mev = new dsMouseEvent(event.type, 1, event.cancelable, p.x, p.y, this, event.ctrlKey, event.altKey, event.shiftKey, event.button, event.detail, false, false,1);
         mev.stageX=event.offsetX;
         mev.stageY=event.offsetY;
         mev._currentTarget = this;
+        mev._target = this;
         if(dsChildOf(this,dsDisplayObjectContainer)){
             var c = this.getObjectsUnderPoint(mev.stageX, mev.stageY);
-            if (c.length)mev.target = c[0];
-        }else mev.target = this;
+            if (c.length)mev._target = c[0];
+        }
         for (var i = 0; i < evs.length; i++) {
-            if (mev._stoppropagation) return;//È¡Ïû×ÔÉíµÄĞĞÎª
+            if (mev._stoppropagation) return;//å–æ¶ˆè‡ªèº«çš„è¡Œä¸º
             evs[i]["fun"].call(this, mev);
             this.__eventaction(evs[i]["param"][0], mev);
         }
     };
-    //¼üÅÌÊÂ¼ş
+    //é”®ç›˜äº‹ä»¶
     dsInteractiveObject.prototype.__keyaction = function (event) {
         var evs = this.__activeEvent[event.type];
         var mev = new dsKeyboardEvent(event.type, event.bubbles);
         mev._currentTarget = this;
+        mev._target = this;
+        if(dsChildOf(this,dsDisplayObjectContainer)){
+            var c = this.getObjectsUnderPoint(mev.stageX, mev.stageY);
+            if (c.length)mev._target = c[0];
+        }
         for (var i = 0; i < evs.length; i++) {
-            if (mev._stoppropagation) return;//È¡Ïû×ÔÉíµÄĞĞÎª
+            if (mev._stoppropagation) return;//å–æ¶ˆè‡ªèº«çš„è¡Œä¸º
             evs[i]["fun"].call(this, mev);
             this.__eventaction(evs[i]["param"][0], mev);
         }
     };
-    //ÊÂ¼şµÄÃ°Åİ£¬²¶×¥
+    //äº‹ä»¶çš„å†’æ³¡ï¼Œæ•æŠ“
     dsInteractiveObject.prototype.__eventaction = function (useCapture, event) {
         if (event._stopimmediatepropagation)return;
         var pare =this.parent;
@@ -1377,80 +1382,78 @@
         }
 
         if (useCapture) {
-            //Ã°Åİ
+            //å†’æ³¡
             for (var i = 0; i < arr.length; i++) {
                 event._target = arr[i]
                 arr[i].dispatchEvent(event);
             }
         } else {
-            //²¶×¥
+            //æ•æŠ“
             for (var i = arr.length-1; i >0; i--) {
                 event._target = arr[i];
                 arr[i].dispatchEvent(event);
             }
         }
     };
+
     /*
-     useCapture == true Ã°Åİ false ²¶×¥ Ä¬ÈÏ false
-     priority ÓÅÑ¡¼¶
+     useCapture == true å†’æ³¡ false æ•æŠ“ é»˜è®¤ false
+     priority ä¼˜é€‰çº§
      */
-    dsInteractiveObject.prototype.addEventListener = function (type, listener, useCapture, priority, useWeakReference) {
-        //Ö÷¶¯´¥·¢ÊÂ¼şµÄ¼àÌı´¦Àí
-        if (this.__activeType.indexOf(type) != -1) {
-            ////Êó±êÊÂ¼şµÄ¼àÌı´¦Àí
+    dsInteractiveObject.prototype.addEventListener = function (type, listener, pixel,useCapture, priority, useWeakReference) {
+        //ä¸»åŠ¨è§¦å‘äº‹ä»¶çš„ç›‘å¬å¤„ç†
+        if ($s.stage.__activeType.indexOf(type) != -1) {
+            ////é¼ æ ‡äº‹ä»¶çš„ç›‘å¬å¤„ç†
+            this.mousePixel =this.mousePixel||pixel;
             var self = this;
             var fun = null;
-            if (self.__mouseType.indexOf(type) != -1) {
+            if ($s.stage.__mouseType.indexOf(type) != -1) {
                 fun = function (event) {
                     if(self ==$s.stage){
-                        return stage.__mouseaction(event);
+                        return $s.stage.__mouseaction(event);
                     }
-                    var child = $s.stage.getObjectsUnderPoint(new dsPoint(event.offsetX, event.offsetY));
+                    var child = $s.stage.getObjectsUnderPoint(new dsPoint(event.offsetX, event.offsetY),self.mousePixel);
                     if (child.length > 0) {
                         if (self == child[0]) {
                             self.__mouseaction(event);
                         }
                     }
                 }
-            } else if (self.__keyType.indexOf(type) != -1) {
+            }else if (self.__keyType.indexOf(type) != -1){
                 fun = function (event) {
+                    if(self ==$s.stage){
+                        return $s.stage.__keyaction(event);
+                    }
                     if ($s.stage.focus == self) {
                         self.__keyaction(event);
                     }
                 }
             }
-
-            if (this.__activeEvent[type] == null) {
-                this.__activeEvent[type] = [];
-                $s.stage.__canvas.addEventListener(type, fun);
-                $s.stage.__mainevent.push({type:type,fun:fun});
+            if(this.__activeEvent[type] ==null){
+                this.__activeEvent[type]=[];
+                $s.stage.__canvas.addEventListener(type, fun,false);
             }
-            var obj = {"fun": listener, "param": [useCapture, priority, useWeakReference]}
+            var obj = {"fun": listener,type:type,back:fun,"param": [useCapture, priority, useWeakReference]}
             this.__activeEvent[type].push(obj);
-            this.__activeEvent[type].sort(function (e1, e2) {
+            this.__activeEvent[type].sort(function (e1, e2){
                 return e1["param"][1] > e2["param"][1]
             })
+            $s.stage.__globalEvent[this.__uuid]=this.__activeEvent;
         } else {
             this.__call(dsEventDispatcher,"addEventListener",[type, listener, useCapture, priority, useWeakReference]);
         }
     };
     dsInteractiveObject.prototype.removeEventListener = function (type, listener) {
-        if (this.__activeType.indexOf(type) != -1) {
+        if ($s.stage.__activeType.indexOf(type) != -1) {
             var ts = this.__activeEvent[type];
             for (var i in ts) {
                 if (ts[i]['fun'] == listener) {
-                    ts.splice(i, 1);
-                    if (ts.length <= 0) {
-                        var me=$s.stage.__mainevent;
-                        for(var i=0;i<me.length;i++){
-                            if(me[i].type == type){
-                                $s.stage.__canvas.removeEventListener(me[i].type,me[i].fun)
-                                me.splice(1,i);
-                                break;
-                            }
-                        }
-                        delete  this.__activeEvent[type];
+                    var op =ts.splice(i,1);
+                    if(ts.length==0){
+                        $s.stage.__canvas.removeEventListener(op.type, op.back);
+                        delete this.__activeEvent[type]
                     }
+                    break;
                 }
             }
         } else {
@@ -1458,8 +1461,8 @@
         }
     };
     dsInteractiveObject.prototype.dispatchEvent = function (event) {
-        if (this.__activeType.indexOf(event.type) != -1) {
-            var a = this.__activeEvent[event.type];
+        if ($s.stage.__activeType.indexOf(event.type) != -1) {
+            var a = $s.stage.__activeEvent[event.type];
             if (a == null)return
             event.currentTarget = this;
             for (var i in a) {
@@ -1470,14 +1473,14 @@
         }
     };
     dsInteractiveObject.prototype.hasEventListener = function (type) {
-        if (type in this.__activeType)
-            return this.__activeEvent[type];
+        if (type in $s.stage.__activeType)
+            return $s.stage.__activeEvent[type];
         else {
             this.__call(dsEventDispatcher,"hasEventListener", [type]);
         }
         return false;
     };
-    $s.dsDisplayObjectContainer=dsDisplayObjectContainer
+    $s[config.pre+'DisplayObjectContainer']=dsDisplayObjectContainer;
     function dsDisplayObjectContainer() {
         dsExtend(dsDisplayObjectContainer, dsInteractiveObject);
         return new dsDisplayObjectContainer.prototype.__init();
@@ -1485,8 +1488,8 @@
     dsDisplayObjectContainer.prototype.__init= function(){
         this.mouseChildren = true;
         this.numChildren = 0;
-        this.__children = Array();//·ÅÖÃ×Ó¶ÔÏó
-        this.__namechildren = Array();//·ÅÖÃ×Ó¶ÔÏóÃû³Æ£¬Ã¿¸ö¶ÔÏóµÄÃû³ÆÊÇÎ¨Ò»Öµ¡£
+        this.__children = Array();//æ”¾ç½®å­å¯¹è±¡
+        this.__namechildren = Array();//æ”¾ç½®å­å¯¹è±¡åç§°ï¼Œæ¯ä¸ªå¯¹è±¡çš„åç§°æ˜¯å”¯ä¸€å€¼ã€‚
     }
     dsDisplayObjectContainer.prototype.__frame = function(){
         if(this.__call(dsDisplayObject,"__frame")){
@@ -1543,14 +1546,14 @@
         return this.__namechildren[displayobject.name]-1;
     };
     /*
-     ¸Ã·½·¨Ö»·µ»Ø displayobject ¶ÔÏó
+     è¯¥æ–¹æ³•åªè¿”å› displayobject å¯¹è±¡
      */
-    dsDisplayObjectContainer.prototype.getObjectsUnderPoint = function (point) {
+    dsDisplayObjectContainer.prototype.getObjectsUnderPoint = function (point,pixel) {
         var arr = [];
         for (var i = this.__children.length - 1; i >= 0; i--) {
-            if (this.__children[i].hitTestPoint(point.x,point.y,true)) {
+            if (this.__children[i].hitTestPoint(point.x,point.y,pixel)) {
                 if (dsChildOf(this.__children[i], dsDisplayObjectContainer)) {
-                    arr = arr.concat(this.__children[i].getObjectsUnderPoint(point));
+                    arr = arr.concat(this.__children[i].getObjectsUnderPoint(point,pixel));
                 }
                 arr.push(this.__children[i]);
             }
@@ -1607,10 +1610,10 @@
         return ab;
     }
 
-//äÖÈ¾¸±±¾ÄÚÈİ
+//æ¸²æŸ“å‰¯æœ¬å†…å®¹
     function dsStage(canvas) {
         dsExtend(dsStage, dsDisplayObjectContainer);
-        // Ö»ÄÜÊÇÓÃ»§³ö·¢È«ÆÁÊÂ¼ş£¬Êó±ê¡¢¼üÅÌ´¥·¢
+        // åªèƒ½æ˜¯ç”¨æˆ·å‡ºå‘å…¨å±äº‹ä»¶ï¼Œé¼ æ ‡ã€é”®ç›˜è§¦å‘
         var obj = new dsStage.prototype.__init(canvas);
         Object.defineProperties(obj, {
             "stageHeight": {
@@ -1660,7 +1663,11 @@
         return obj;
     };
     dsStage.prototype.__init=function(canvas){
-        this.__mainevent=[];//¼àÌıµÄÊÂ¼şº¯Êı
+        this.__activeType = utils.INTERACTIVEEVENT.concat(utils.MOUSE).concat(utils.KEY);
+        this.__mouseType = utils.MOUSE;
+        this.__keyType = utils.KEY;
+        this.__globalEvent = new Object();
+        //this.__mainevent=[];//ç›‘å¬çš„äº‹ä»¶å‡½æ•°
         this.name = "Stage";
         this.__fb = null;
         this.__canvas = canvas;
@@ -1697,6 +1704,7 @@
             self._mouseY = e.clientY;
         })
     };
+
     dsStage.prototype.displayState = function (state) {
         if (state == "full_screen" || state == "full_screen_interactive") {
             var de = this.__canvas;
@@ -1744,7 +1752,7 @@
         ma._ismask = true;
         //return m;
     }
-    //ÖØÖÃÎèÌ¨£¬¹éÖÃÎª¿Õ
+    //é‡ç½®èˆå°ï¼Œå½’ç½®ä¸ºç©º
     dsStage.prototype.reset = function(){
         this.name = "Stage";
         //this.__fb = null;
@@ -1764,16 +1772,22 @@
         this.stage = window;
         this.__et = 0;
         this.__bt = 0;
-        //this.__pt = parseInt(1000 / this._frameRate);
+        this.__pt = parseInt(1000 / this._frameRate);
         this.__namechildren =[];
         this.__children =[];
         this.numChildren =0;
         this.__events=[];
-        for(var i =0;i<this.__mainevent.length;i++){
-            var op=this.__mainevent[i];
-            this.__canvas.removeEventListener(op.type,op.fun);
+        for(var i in this.__globalEvent){
+            var op=this.__globalEvent[i];
+            for(var j in op){
+                var oj =op[j];
+                for(var k in oj){
+                    this.__canvas.removeEventListener(oj[k].type,oj[k].back);
+                }
+            }
         }
-        this.__mainevent=[]
+
+        //this.__activeEvent=[];
     }
     dsStage.prototype.__render = function (ctx) {
         this.__ctx2d.clearRect(0, 0, this.stageWidth, this.stageHeight);
@@ -1786,8 +1800,8 @@
             ctx.restore();
         }
     }
-//ÏÔÊ¾¶ÔÏó
-    $s.dsSprite =dsSprite
+//æ˜¾ç¤ºå¯¹è±¡
+    $s[config.pre+'Sprite']=dsSprite;
     function dsSprite() {
         dsExtend(dsSprite,dsDisplayObjectContainer);
         return new dsSprite.prototype.__init();
@@ -1829,7 +1843,7 @@
             }
         }
     }
-    $s.dsBitmap=dsBitmap;
+    $s[config.pre+'Bitmap']=dsBitmap;
     function dsBitmap(bitmapData, pixelSnapping, smoothing) {
         dsExtend(dsBitmap, dsDisplayObject);
         return new dsBitmap.prototype.__init(bitmapData, pixelSnapping, smoothing);
@@ -1846,8 +1860,7 @@
             ctx.putImageData(this.bitmapData._imgdata, this.x, this.y);
         }
     }
-
-    $s.dsBitmapData = dsBitmapData;
+    $s[config.pre+'BitmapData']=dsBitmapData;
     function BitmapData(w, h, transparent, fillcolor) {
         var obj = new dsBitmapData(w, h, transparent, fillcolor);
         Object.defineProperties(obj, {
@@ -1938,7 +1951,7 @@
             d[i + destChannel] = s[j + sourceChannel];
         }
     }
-//alphaBitmapData, alphaPoint, mergeAlpha Õâ¸öÊÇÄÄ¸ö²ÎÊıÔİÊ±²»ÊµÏÖ
+//alphaBitmapData, alphaPoint, mergeAlpha è¿™ä¸ªæ˜¯å“ªä¸ªå‚æ•°æš‚æ—¶ä¸å®ç°
     dsBitmapData.prototype.copyPixels = function (sourceBitmapData, sourceRect, destPoint, alphaBitmapData, alphaPoint, mergeAlpha) {
         fbcanvavs.width = sourceBitmapData.width;
         fbcanvavs.height = sourceBitmapData.height;
@@ -2135,7 +2148,7 @@
         }
         return h;
     }
-//secondBitmapDataPoint,secondAlphaThreshold,secondObject µÄÖµÊÇ BitmapData ¶ÔÏóÊ±Ê¹ÓÃ´Ë²ÎÊı¡£
+//secondBitmapDataPoint,secondAlphaThreshold,secondObject çš„å€¼æ˜¯ BitmapData å¯¹è±¡æ—¶ä½¿ç”¨æ­¤å‚æ•°ã€‚
     dsBitmapData.prototype.hitTest = function (firstPoint, firstAlphaThreshold, secondObject, secondBitmapDataPoint, secondAlphaThreshold) {
         firstAlphaThreshold = firstAlphaThreshold || 0;
         var sx = secondObject.x - firstPoint.x;
@@ -2422,7 +2435,7 @@
     dsBitmapData.prototype.unlock = function (changeRect) {
 
     }
-//´Ëº¯ÊıÀ´Ô´ÓÚ createjs.BitmapData;
+//æ­¤å‡½æ•°æ¥æºäº createjs.BitmapData;
     var NoiseGenerator = (function(){
         var PERSISTENCE = 0.5;
         var A = 1103515245;
@@ -2549,8 +2562,7 @@
 
         return NoiseGenerator;
     }());
-
-    $s.dsTextField=dsTextField;
+    $s[config.pre+'TextField']=dsTextField;
     function dsTextField() {
         dsExtend(dsTextField, dsInteractiveObject);
         var text = new dsTextField.prototype.__init();
@@ -2565,7 +2577,7 @@
                     } else {
                         if (this.multiline) {
                             this.textWidth = 0;
-                            var a = this._text.split('\n');//¶àĞĞ·ÖÎö
+                            var a = this._text.split('\n');//å¤šè¡Œåˆ†æ
                             for (var k = 0; k < a.length; k++) {
                                 if (this.numLines || this.numLines > k)break;
                                 this._chapters.push(new dsTextChapter(this, a[k]));
@@ -2634,83 +2646,83 @@
         this.width = 100;
         this.height = 12;
         this.alwaysShowSelection = true;//Boolean
-        //Èç¹ûÉèÖÃÎª true ÇÒÎÄ±¾×Ö¶ÎÃ»ÓĞ½¹µã£¬Flash Player ½«ÒÔ»ÒÉ«Í»³öÏÔÊ¾ÎÄ±¾×Ö¶ÎÖĞµÄËùÑ¡ÄÚÈİ¡£
+        //å¦‚æœè®¾ç½®ä¸º true ä¸”æ–‡æœ¬å­—æ®µæ²¡æœ‰ç„¦ç‚¹ï¼ŒFlash Player å°†ä»¥ç°è‰²çªå‡ºæ˜¾ç¤ºæ–‡æœ¬å­—æ®µä¸­çš„æ‰€é€‰å†…å®¹ã€‚
         //antiAliasType : String
-        //ÓÃÓÚ´ËÎÄ±¾×Ö¶ÎµÄÏû³ı¾â³İÀàĞÍ¡£
+        //ç”¨äºæ­¤æ–‡æœ¬å­—æ®µçš„æ¶ˆé™¤é”¯é½¿ç±»å‹ã€‚
         this.autoSize = 'none';//left,right,center
-        //¿ØÖÆÎÄ±¾×Ö¶ÎµÄ×Ô¶¯´óĞ¡µ÷ÕûºÍ¶ÔÆë¡£
+        //æ§åˆ¶æ–‡æœ¬å­—æ®µçš„è‡ªåŠ¨å¤§å°è°ƒæ•´å’Œå¯¹é½ã€‚
         this.background = false;
-        //Ö¸¶¨ÎÄ±¾×Ö¶ÎÊÇ·ñ¾ßÓĞ±³¾°Ìî³ä¡£
+        //æŒ‡å®šæ–‡æœ¬å­—æ®µæ˜¯å¦å…·æœ‰èƒŒæ™¯å¡«å……ã€‚
         this.backgroundColor = "#00ffff"
-        //ÎÄ±¾×Ö¶Î±³¾°µÄÑÕÉ«¡£
+        //æ–‡æœ¬å­—æ®µèƒŒæ™¯çš„é¢œè‰²ã€‚
         this.border=false;//: Boolean
-        //Ö¸¶¨ÎÄ±¾×Ö¶ÎÊÇ·ñ¾ßÓĞ±ß¿ò¡£
+        //æŒ‡å®šæ–‡æœ¬å­—æ®µæ˜¯å¦å…·æœ‰è¾¹æ¡†ã€‚
         this.borderColor="#ff0000" //: uint
-        //ÎÄ±¾×Ö¶Î±ß¿òµÄÑÕÉ«¡£
+        //æ–‡æœ¬å­—æ®µè¾¹æ¡†çš„é¢œè‰²ã€‚
         //bottomScrollV : int
-        //	[Ö»¶Á] Ò»¸öÕûÊı£¨´Ó 1 ¿ªÊ¼µÄË÷Òı£©£¬±íÊ¾Ö¸¶¨ÎÄ±¾×Ö¶ÎÖĞµ±Ç°¿ÉÒÔ¿´µ½µÄ×îºóÒ»ĞĞ¡£
+        //	[åªè¯»] ä¸€ä¸ªæ•´æ•°ï¼ˆä» 1 å¼€å§‹çš„ç´¢å¼•ï¼‰ï¼Œè¡¨ç¤ºæŒ‡å®šæ–‡æœ¬å­—æ®µä¸­å½“å‰å¯ä»¥çœ‹åˆ°çš„æœ€åä¸€è¡Œã€‚
         //caretIndex : int
-        //	[Ö»¶Á] ²åÈëµã£¨¼âºÅ£©Î»ÖÃµÄË÷Òı¡£
+        //	[åªè¯»] æ’å…¥ç‚¹ï¼ˆå°–å·ï¼‰ä½ç½®çš„ç´¢å¼•ã€‚
         //condenseWhite : Boolean
-        //Ò»¸ö²¼¶ûÖµ£¬Ö¸¶¨ÊÇ·ñÉ¾³ı¾ßÓĞ HTML ÎÄ±¾µÄÎÄ±¾×Ö¶ÎÖĞµÄ¶îÍâ¿Õ°×£¨¿Õ¸ñ¡¢»»ĞĞ·ûµÈµÈ£©¡£
+        //ä¸€ä¸ªå¸ƒå°”å€¼ï¼ŒæŒ‡å®šæ˜¯å¦åˆ é™¤å…·æœ‰ HTML æ–‡æœ¬çš„æ–‡æœ¬å­—æ®µä¸­çš„é¢å¤–ç©ºç™½ï¼ˆç©ºæ ¼ã€æ¢è¡Œç¬¦ç­‰ç­‰ï¼‰ã€‚
         this.defaultTextFormat = new dsTextFormat();
-        //Ö¸¶¨Ó¦ÓÃÓÚĞÂ²åÈëÎÄ±¾£¨ÀıÈç£¬ÓÃ»§ÊäÈëµÄÎÄ±¾»òÊ¹ÓÃ replaceSelectedText() ·½·¨²åÈëµÄÎÄ±¾£©µÄ¸ñÊ½¡£
+        //æŒ‡å®šåº”ç”¨äºæ–°æ’å…¥æ–‡æœ¬ï¼ˆä¾‹å¦‚ï¼Œç”¨æˆ·è¾“å…¥çš„æ–‡æœ¬æˆ–ä½¿ç”¨ replaceSelectedText() æ–¹æ³•æ’å…¥çš„æ–‡æœ¬ï¼‰çš„æ ¼å¼ã€‚
         this.displayAsPassword = false;
-        //Ö¸¶¨ÎÄ±¾×Ö¶ÎÊÇ·ñÊÇÃÜÂëÎÄ±¾×Ö¶Î¡£
+        //æŒ‡å®šæ–‡æœ¬å­—æ®µæ˜¯å¦æ˜¯å¯†ç æ–‡æœ¬å­—æ®µã€‚
         //embedFonts : Boolean
-        //Ö¸¶¨ÊÇ·ñÊ¹ÓÃÇ¶Èë×ÖÌåÂÖÀª½øĞĞ³ÊÏÖ¡£
+        //æŒ‡å®šæ˜¯å¦ä½¿ç”¨åµŒå…¥å­—ä½“è½®å»“è¿›è¡Œå‘ˆç°ã€‚
         //gridFitType : String
-        //ÓÃÓÚ´ËÎÄ±¾×Ö¶ÎµÄÍø¸ñ¹Ì¶¨ÀàĞÍ¡£
+        //ç”¨äºæ­¤æ–‡æœ¬å­—æ®µçš„ç½‘æ ¼å›ºå®šç±»å‹ã€‚
         this._htmlText = '';
-        //°üº¬ÎÄ±¾×Ö¶ÎÄÚÈİµÄ HTML ±íÊ¾ĞÎÊ½¡£
+        //åŒ…å«æ–‡æœ¬å­—æ®µå†…å®¹çš„ HTML è¡¨ç¤ºå½¢å¼ã€‚
         this._length = 0;
-        //	[Ö»¶Á] ÎÄ±¾×Ö¶ÎÖĞµÄ×Ö·ûÊı¡£
+        //	[åªè¯»] æ–‡æœ¬å­—æ®µä¸­çš„å­—ç¬¦æ•°ã€‚
         this.maxChars = 0;
-        //ÎÄ±¾×Ö¶ÎÖĞ×î¶à¿É°üº¬µÄ×Ö·ûÊı£¨¼´ÓÃ»§ÊäÈëµÄ×Ö·ûÊı£©¡£
+        //æ–‡æœ¬å­—æ®µä¸­æœ€å¤šå¯åŒ…å«çš„å­—ç¬¦æ•°ï¼ˆå³ç”¨æˆ·è¾“å…¥çš„å­—ç¬¦æ•°ï¼‰ã€‚
         //maxScrollH : int
-        //	[Ö»¶Á] scrollH µÄ×î´óÖµ¡£
+        //	[åªè¯»] scrollH çš„æœ€å¤§å€¼ã€‚
         //maxScrollV : int
-        //	[Ö»¶Á] scrollV µÄ×î´óÖµ¡£
+        //	[åªè¯»] scrollV çš„æœ€å¤§å€¼ã€‚
         //mouseWheelEnabled : Boolean
-        //Ò»¸ö²¼¶ûÖµ£¬±íÊ¾µ±ÓÃ»§µ¥»÷Ä³¸öÎÄ±¾×Ö¶Î²¢¹ö¶¯Êó±ê¹öÂÖÊ±£¬Flash Player ÊÇ·ñ×Ô¶¯¹ö¶¯¶àĞĞÎÄ±¾×Ö¶Î¡£
+        //ä¸€ä¸ªå¸ƒå°”å€¼ï¼Œè¡¨ç¤ºå½“ç”¨æˆ·å•å‡»æŸä¸ªæ–‡æœ¬å­—æ®µå¹¶æ»šåŠ¨é¼ æ ‡æ»šè½®æ—¶ï¼ŒFlash Player æ˜¯å¦è‡ªåŠ¨æ»šåŠ¨å¤šè¡Œæ–‡æœ¬å­—æ®µã€‚
         this.multiline = false;
-        //±íÊ¾×Ö¶ÎÊÇ·ñÎª¶àĞĞÎÄ±¾×Ö¶Î¡£
+        //è¡¨ç¤ºå­—æ®µæ˜¯å¦ä¸ºå¤šè¡Œæ–‡æœ¬å­—æ®µã€‚
         this.numLines = 0;
-        //	[Ö»¶Á] ¶¨Òå¶àĞĞÎÄ±¾×Ö¶ÎÖĞµÄÎÄ±¾ĞĞÊı¡£
+        //	[åªè¯»] å®šä¹‰å¤šè¡Œæ–‡æœ¬å­—æ®µä¸­çš„æ–‡æœ¬è¡Œæ•°ã€‚
         this.restrict = '';
-        //±íÊ¾ÓÃ»§¿ÉÊäÈëµ½ÎÄ±¾×Ö¶ÎÖĞµÄ×Ö·û¼¯¡£
+        //è¡¨ç¤ºç”¨æˆ·å¯è¾“å…¥åˆ°æ–‡æœ¬å­—æ®µä¸­çš„å­—ç¬¦é›†ã€‚
         //scrollH : int
-        //µ±Ç°Ë®Æ½¹ö¶¯Î»ÖÃ¡£
+        //å½“å‰æ°´å¹³æ»šåŠ¨ä½ç½®ã€‚
         //scrollV : int
-        //ÎÄ±¾ÔÚÎÄ±¾×Ö¶ÎÖĞµÄ´¹Ö±Î»ÖÃ¡£
+        //æ–‡æœ¬åœ¨æ–‡æœ¬å­—æ®µä¸­çš„å‚ç›´ä½ç½®ã€‚
         this.selectable = true;
-        //Ò»¸ö²¼¶ûÖµ£¬±íÊ¾ÎÄ±¾×Ö¶ÎÊÇ·ñ¿ÉÑ¡¡£
+        //ä¸€ä¸ªå¸ƒå°”å€¼ï¼Œè¡¨ç¤ºæ–‡æœ¬å­—æ®µæ˜¯å¦å¯é€‰ã€‚
         this._selectionBeginIndex = 0;
-        //	[Ö»¶Á] µ±Ç°ËùÑ¡ÄÚÈİÖĞµÚÒ»¸ö×Ö·û´ÓÁã¿ªÊ¼µÄ×Ö·ûË÷ÒıÖµ¡£
+        //	[åªè¯»] å½“å‰æ‰€é€‰å†…å®¹ä¸­ç¬¬ä¸€ä¸ªå­—ç¬¦ä»é›¶å¼€å§‹çš„å­—ç¬¦ç´¢å¼•å€¼ã€‚
         this._selectionEndIndex = 0;
-        //	[Ö»¶Á] µ±Ç°ËùÑ¡ÄÚÈİÖĞ×îºóÒ»¸ö×Ö·û´ÓÁã¿ªÊ¼µÄ×Ö·ûË÷ÒıÖµ¡£
+        //	[åªè¯»] å½“å‰æ‰€é€‰å†…å®¹ä¸­æœ€åä¸€ä¸ªå­—ç¬¦ä»é›¶å¼€å§‹çš„å­—ç¬¦ç´¢å¼•å€¼ã€‚
         //sharpness : Number
-        //´ËÎÄ±¾×Ö¶ÎÖĞ×ÖĞÍ±ßÔµµÄÇåÎú¶È¡£
+        //æ­¤æ–‡æœ¬å­—æ®µä¸­å­—å‹è¾¹ç¼˜çš„æ¸…æ™°åº¦ã€‚
         //styleSheet : StyleSheet
-        //½«ÑùÊ½±í¸½¼Óµ½ÎÄ±¾×Ö¶Î¡£
+        //å°†æ ·å¼è¡¨é™„åŠ åˆ°æ–‡æœ¬å­—æ®µã€‚
         this._text = "";
-        //×÷ÎªÎÄ±¾×Ö¶ÎÖĞµ±Ç°ÎÄ±¾µÄ×Ö·û´®¡£
+        //ä½œä¸ºæ–‡æœ¬å­—æ®µä¸­å½“å‰æ–‡æœ¬çš„å­—ç¬¦ä¸²ã€‚
         this.textColor = "#000";
-        //ÎÄ±¾×Ö¶ÎÖĞÎÄ±¾µÄÑÕÉ«£¨²ÉÓÃÊ®Áù½øÖÆ¸ñÊ½£©¡£
+        //æ–‡æœ¬å­—æ®µä¸­æ–‡æœ¬çš„é¢œè‰²ï¼ˆé‡‡ç”¨åå…­è¿›åˆ¶æ ¼å¼ï¼‰ã€‚
         this.textHeight = 0;
-        //	[Ö»¶Á] ÎÄ±¾µÄ¸ß¶È£¬ÒÔÏñËØÎªµ¥Î»¡£
+        //	[åªè¯»] æ–‡æœ¬çš„é«˜åº¦ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
         //textInteractionMode : String
-        //	[Ö»¶Á] ½»»¥Ä£Ê½ÊôĞÔ£¬Ä¬ÈÏÖµÎª TextInteractionMode.NORMAL¡£
+        //	[åªè¯»] äº¤äº’æ¨¡å¼å±æ€§ï¼Œé»˜è®¤å€¼ä¸º TextInteractionMode.NORMALã€‚
         this.textWidth = 0;
-        //	[Ö»¶Á] ÎÄ±¾µÄ¿í¶È£¬ÒÔÏñËØÎªµ¥Î»¡£
+        //	[åªè¯»] æ–‡æœ¬çš„å®½åº¦ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
         //thickness : Number
-        //´ËÎÄ±¾×Ö¶ÎÖĞ×ÖĞÍ±ßÔµµÄ´ÖÏ¸¡£
+        //æ­¤æ–‡æœ¬å­—æ®µä¸­å­—å‹è¾¹ç¼˜çš„ç²—ç»†ã€‚
         this._type = '';//dynamic,input
-        //ÎÄ±¾×Ö¶ÎµÄÀàĞÍ¡£
+        //æ–‡æœ¬å­—æ®µçš„ç±»å‹ã€‚
         //useRichTextClipboard : Boolean
-        //Ö¸¶¨ÔÚ¸´ÖÆºÍÕ³ÌùÎÄ±¾Ê±ÊÇ·ñÍ¬Ê±¸´ÖÆºÍÕ³ÌùÆä¸ñÊ½¡£
+        //æŒ‡å®šåœ¨å¤åˆ¶å’Œç²˜è´´æ–‡æœ¬æ—¶æ˜¯å¦åŒæ—¶å¤åˆ¶å’Œç²˜è´´å…¶æ ¼å¼ã€‚
         this.wordWrap = false;
-        //Ò»¸ö²¼¶ûÖµ£¬±íÊ¾ÎÄ±¾×Ö¶ÎÊÇ·ñ×Ô¶¯»»ĞĞ¡£
+        //ä¸€ä¸ªå¸ƒå°”å€¼ï¼Œè¡¨ç¤ºæ–‡æœ¬å­—æ®µæ˜¯å¦è‡ªåŠ¨æ¢è¡Œã€‚
         this._chapters = [];
         this._proxy = null;
     }
@@ -2797,7 +2809,7 @@
         this.__call(dsInteractiveObject,'__render',[ctx]);
         if (this.background) {
             ctx.fillStyle = this.backgroundColor;
-            ctx.fillRect(0, 0, this.width+4, this.height+4);//×óÓÒ,ÉÏÏÂ¸÷2ÏñËØµÄ¿í¶È
+            ctx.fillRect(0, 0, this.width+4, this.height+4);//å·¦å³,ä¸Šä¸‹å„2åƒç´ çš„å®½åº¦
         }
         if(this.border){
             ctx.strokeStyle=this.borderColor;
@@ -2805,7 +2817,7 @@
         }
         this.defaultTextFormat.toformat(ctx);
         var format = this.defaultTextFormat;
-        var h = format.size;//ÎÄ±¾»ùÏß
+        var h = format.size;//æ–‡æœ¬åŸºçº¿
         if(this.multiline){
             for (var c = 0; c < this._chapters.length; c++) {
                 var cp = this._chapters[c];
@@ -2861,44 +2873,44 @@
         this._proxy.value = this.text;
         this._proxy.focus();
     }
-    $s.dsTextFormat=dsTextFormat;
+    $s[config.pre+'TextFormat']=dsTextFormat;
     function dsTextFormat() {
         this.align = "left";
-        //±íÊ¾¶ÎÂäµÄ¶ÔÆë·½Ê½¡£
+        //è¡¨ç¤ºæ®µè½çš„å¯¹é½æ–¹å¼ã€‚
         this.blockIndent = 0;
-        //±íÊ¾¿éËõ½ø£¬ÒÔÏñËØÎªµ¥Î»¡£
+        //è¡¨ç¤ºå—ç¼©è¿›ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
         this.bold = false;
-        //Ö¸¶¨ÎÄ±¾ÊÇ·ñÎª´ÖÌå×Ö¡£
+        //æŒ‡å®šæ–‡æœ¬æ˜¯å¦ä¸ºç²—ä½“å­—ã€‚
         this.bullet = false;
-        //±íÊ¾ÎÄ±¾Îª´øÏîÄ¿·ûºÅµÄÁĞ±íµÄÒ»²¿·Ö¡£
+        //è¡¨ç¤ºæ–‡æœ¬ä¸ºå¸¦é¡¹ç›®ç¬¦å·çš„åˆ—è¡¨çš„ä¸€éƒ¨åˆ†ã€‚
         this.color = "#000";
-        //±íÊ¾ÎÄ±¾µÄÑÕÉ«¡£
-        this.font = "Arial";//£¨ÔÚ Mac OS X ÉÏ£¬Ä¬ÈÏ×ÖÌåÎª Times£©
-        //Ê¹ÓÃ´ËÎÄ±¾¸ñÊ½µÄÎÄ±¾µÄ×ÖÌåÃû³Æ£¬ÒÔ×Ö·û´®ĞÎÊ½±íÊ¾¡£
+        //è¡¨ç¤ºæ–‡æœ¬çš„é¢œè‰²ã€‚
+        this.font = "Arial";//ï¼ˆåœ¨ Mac OS X ä¸Šï¼Œé»˜è®¤å­—ä½“ä¸º Timesï¼‰
+        //ä½¿ç”¨æ­¤æ–‡æœ¬æ ¼å¼çš„æ–‡æœ¬çš„å­—ä½“åç§°ï¼Œä»¥å­—ç¬¦ä¸²å½¢å¼è¡¨ç¤ºã€‚
         this.indent = 0;
-        //±íÊ¾´Ó×ó±ß¾àµ½¶ÎÂäÖĞµÚÒ»¸ö×Ö·ûµÄËõ½ø¡£
+        //è¡¨ç¤ºä»å·¦è¾¹è·åˆ°æ®µè½ä¸­ç¬¬ä¸€ä¸ªå­—ç¬¦çš„ç¼©è¿›ã€‚
         this.italic = false;
-        //±íÊ¾Ê¹ÓÃ´ËÎÄ±¾¸ñÊ½µÄÎÄ±¾ÊÇ·ñÎªĞ±Ìå¡£
+        //è¡¨ç¤ºä½¿ç”¨æ­¤æ–‡æœ¬æ ¼å¼çš„æ–‡æœ¬æ˜¯å¦ä¸ºæ–œä½“ã€‚
         this.kerning = false;
-        //Ò»¸ö²¼¶ûÖµ£¬±íÊ¾ÊÇÆôÓÃ (true) »¹ÊÇ½ûÓÃ (false) ×Ö¾àµ÷Õû¡£
+        //ä¸€ä¸ªå¸ƒå°”å€¼ï¼Œè¡¨ç¤ºæ˜¯å¯ç”¨ (true) è¿˜æ˜¯ç¦ç”¨ (false) å­—è·è°ƒæ•´ã€‚
         this.leading = 0;
-        //Ò»¸öÕûÊı£¬±íÊ¾ĞĞÓëĞĞÖ®¼äµÄ´¹Ö±¼ä¾à£¨³ÆÎªÇ°µ¼£©Á¿¡£
+        //ä¸€ä¸ªæ•´æ•°ï¼Œè¡¨ç¤ºè¡Œä¸è¡Œä¹‹é—´çš„å‚ç›´é—´è·ï¼ˆç§°ä¸ºå‰å¯¼ï¼‰é‡ã€‚
         this.leftMargin = 0;
-        //¶ÎÂäµÄ×ó±ß¾à£¬ÒÔÏñËØÎªµ¥Î»¡£
+        //æ®µè½çš„å·¦è¾¹è·ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
         this.letterSpacing = 0;
-        //Ò»¸öÊı×Ö£¬±íÊ¾ÔÚËùÓĞ×Ö·ûÖ®¼ä¾ùÔÈ·ÖÅäµÄ¿Õ¼äÁ¿¡£
+        //ä¸€ä¸ªæ•°å­—ï¼Œè¡¨ç¤ºåœ¨æ‰€æœ‰å­—ç¬¦ä¹‹é—´å‡åŒ€åˆ†é…çš„ç©ºé—´é‡ã€‚
         this.rightMargin = 0;
-        //¶ÎÂäµÄÓÒ±ß¾à£¬ÒÔÏñËØÎªµ¥Î»¡£
+        //æ®µè½çš„å³è¾¹è·ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
         this.size = 12;
-        //Ê¹ÓÃ´ËÎÄ±¾¸ñÊ½µÄÎÄ±¾µÄ´óĞ¡£¨ÒÔÏñËØÎªµ¥Î»£©¡£
+        //ä½¿ç”¨æ­¤æ–‡æœ¬æ ¼å¼çš„æ–‡æœ¬çš„å¤§å°ï¼ˆä»¥åƒç´ ä¸ºå•ä½ï¼‰ã€‚
         this.tabStops = [];
-        //½«×Ô¶¨Òå Tab Í£¿¿Î»Ö¸¶¨ÎªÒ»¸ö·Ç¸ºÕûÊıµÄÊı×é¡£
+        //å°†è‡ªå®šä¹‰ Tab åœé ä½æŒ‡å®šä¸ºä¸€ä¸ªéè´Ÿæ•´æ•°çš„æ•°ç»„ã€‚
         this.target = "";
-        //±íÊ¾ÏÔÊ¾³¬Á´½ÓµÄÄ¿±ê´°¿Ú¡£
+        //è¡¨ç¤ºæ˜¾ç¤ºè¶…é“¾æ¥çš„ç›®æ ‡çª—å£ã€‚
         this.underline = false;
-        //±íÊ¾Ê¹ÓÃ´ËÎÄ±¾¸ñÊ½µÄÎÄ±¾ÊÇ´øÏÂ»®Ïß (true) »¹ÊÇ²»´øÏÂ»®Ïß (false)¡£
+        //è¡¨ç¤ºä½¿ç”¨æ­¤æ–‡æœ¬æ ¼å¼çš„æ–‡æœ¬æ˜¯å¸¦ä¸‹åˆ’çº¿ (true) è¿˜æ˜¯ä¸å¸¦ä¸‹åˆ’çº¿ (false)ã€‚
         this.url = "";
-        //±íÊ¾Ê¹ÓÃ´ËÎÄ±¾¸ñÊ½µÄÎÄ±¾µÄÄ¿±ê URL¡£
+        //è¡¨ç¤ºä½¿ç”¨æ­¤æ–‡æœ¬æ ¼å¼çš„æ–‡æœ¬çš„ç›®æ ‡ URLã€‚
     }
     dsTextFormat.prototype.toformat = function (ctx) {
         ctx.fillStyle = this.color;
@@ -2927,15 +2939,14 @@
         //this.width = format.size * this.lines[0].words.length;
         this.height = this.lines.length * format.size;
     }
-//ĞĞ
+//è¡Œ
     function dsTextLine(text) {
         this.text = text;
         this.words = this.text.split('');
     }
-
-    $s.dsMovieClip=dsMovieClip;
+    $s[config.pre+'MovieClip']=dsMovieClip;
     function dsMovieClip(source) {
-        dsExtend(dsMovieClip, dsSprite, ["__render"]);
+        dsExtend(dsMovieClip, dsSprite);
         var m = new dsMovieClip.prototype.__init(source);
         Object.defineProperties(m, {
             "totalFrames": {
@@ -3004,7 +3015,7 @@
                 var img = new Image();
                 img.src = config.baseURI+d.meta.image;
                 img.onerror = function(e){
-                    throw e;
+                    throw 'can find img url '+this.src;
                 }
                 img.onload = function(e){
                     $s.fdds.width = d.meta.size.w;
@@ -3037,6 +3048,7 @@
             }
         }
     }
+    $s[config.pre+'SpriteSheet']=SpriteSheet;
     function SpriteSheet(data){
         this.data = data;
         this.imgs = [];
@@ -3070,28 +3082,27 @@
         o.img = this.imgs[index];
         return o;
     }
-
+    $s[config.pre+'URLRequest']=dsURLRequest;
     $s.dsURLRequest=dsURLRequest;
     function dsURLRequest(url){
         this.contentType ='application/x-www-form-urlencoded';// multipart/form-data
         this.data=null;
         this.digest='';
         this.method ='get';//post
-        this.requestHeaders=[];//HTTP ÇëÇó±êÍ·µÄÊı×é ¼üÖµ¶Ô
+        this.requestHeaders=[];//HTTP è¯·æ±‚æ ‡å¤´çš„æ•°ç»„ é”®å€¼å¯¹
         this.url = url;
         this.userAgent=navigator.userAgent;
         //Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en) AppleWebKit/526.9+ (KHTML, like Gecko) AdobeAIR/1.5"
         //"Mozilla/5.0 (Windows; U; en) AppleWebKit/526.9+ (KHTML, like Gecko) AdobeAIR/1.5"
         //"Mozilla/5.0 (X11; U; Linux i686; en-US) AppleWebKit/526.9+ (KHTML, like Gecko) AdobeAIR/1.5"
     }
-
-    $s.dsURLLoader=dsURLLoader;
+    $s[config.pre+'URLLoader']=dsURLLoader;
     function dsURLLoader(request){
         dsExtend(dsURLLoader, dsEventDispatcher);
         return new dsURLLoader.prototype.__init(request);
     }
     dsURLLoader.prototype.load = function (request) {
-        this.request = request||this.request;
+        this.request = typeof request =='string'?new dsURLRequest(request):request
         this.http.open(this.request.method, this.request.url, true);
         //this.http.responseType = this.request.contentType;
         for(var i = 0;i<this.request.requestHeaders.length;i++){
@@ -3107,7 +3118,7 @@
     dsURLLoader.prototype.close = function(){
         this.http.abort();
     }
-//Í¼ĞÎ¼ÓÔØ
+//å›¾å½¢åŠ è½½
     dsURLLoader.prototype.__init=function(request) {
         this.request = request;
         //this.dataFormat = "text";//"arraybuffer""blob""document""json""text"
@@ -3127,14 +3138,13 @@
             //console.log(event);
         });
         http.addEventListener("error", function () {
-            //console.log("error");
+            trace("error");
             //this.dispatchEvent()
         });
         http.addEventListener("abort", function () {
             //console.log("abort");
         });
         http.addEventListener("loadend", function () {
-            //console.log("loadend");
             self.dispatchEvent(new dsEvent(dsEvent.COMPLETE))
         });
         http.addEventListener('readystatechange',function(e){
@@ -3156,7 +3166,7 @@
             this.load(url);
         }
     }
-    $s.dsLoader=dsLoader;
+    $s[config.pre+'Loader']=dsLoader;
     function dsLoader() {
         dsExtend(dsLoader, dsInteractiveObject);
         return new dsLoader.prototype.__init();
@@ -3181,35 +3191,34 @@
         ctx.transform(this._mat.a,this._mat.b,this._mat.c,this._mat.d,this._mat.tx,this._mat.ty);
         ctx.drawImage(this.data, 0, 0, this.width, this.height, 0, 0, this.width, this.height);
     }
-    $s.dsBlurFilter=dsBlurFilter
+    $s[config.pre+'BlurFilter']=dsBlurFilter;
     function dsBlurFilter(blurX, blurY, quality) {
         this.blurX = blurX | 4;
         this.blurY = blurY | 4;
         this.quality = quality | 1;
     }
 
-//Ğ±½Ç
+//æ–œè§’
     function BevelFilter() {
 
     }
-//·¢¹â
+//å‘å…‰
     function GlowFilter() {
 
     }
-
-    $s.dsDropShadowFilter=dsDropShadowFilter;
-//Í¶Ó°
+    $s[config.pre+'DropShadowFilter']=dsDropShadowFilter;
+//æŠ•å½±
     function dsDropShadowFilter(distance, angle, color, alpha, blurX, blurY, strength, quality, inner, knockout, hideObject) {
-        this.distance = distance//:Number (default = 4.0) ¡ª ÒõÓ°µÄÆ«ÒÆ¾àÀë£¬ÒÔÏñËØÎªµ¥Î»¡£
-        this.angle = Math.PI / 180 * (angle != null ? angle : 0);//:Number (default = 45) ¡ª ÒõÓ°µÄ½Ç¶È£¬0 µ½ 360 ¶È£¨¸¡µã£©¡£
-        this.color = color || 0//:uint (default = 0) ¡ª ÒõÓ°ÑÕÉ«£¬²ÉÓÃÊ®Áù½øÖÆ¸ñÊ½ 0xRRGGBB¡£Ä¬ÈÏÖµÎª 0x000000¡£
-        this.alpha = alpha || 1//:Number (default = 1.0) ¡ª ÒõÓ°ÑÕÉ«µÄ Alpha Í¸Ã÷¶ÈÖµ¡£ÓĞĞ§ÖµÎª 0.0 µ½ 1.0¡£ÀıÈç£¬0.25 ÉèÖÃÍ¸Ã÷¶ÈÖµÎª 25%¡£
-        this.blurX = blurX || 4//:Number (default = 4.0) ¡ª Ë®Æ½Ä£ºıÁ¿¡£ÓĞĞ§ÖµÎª 0 µ½ 255.0£¨¸¡µã£©¡£
-        this.strength = strength || 1//:Number (default = 1.0) ¡ª Ó¡¼Ç»ò¿çÒ³µÄÇ¿¶È¡£¸ÃÖµÔ½¸ß£¬Ñ¹Ó¡µÄÑÕÉ«Ô½Éî£¬¶øÇÒÒõÓ°Óë±³¾°Ö®¼äµÄ¶Ô±È¶ÈÒ²Ô½Ç¿¡£ÓĞĞ§ÖµÎª 0 µ½ 255.0¡£
-        this.quality = quality || 1//:int (default = 1) ¡ª Ó¦ÓÃÂË¾µµÄ´ÎÊı¡£Ê¹ÓÃ BitmapFilterQuality ³£Á¿£º
-        this.inner = inner//:Boolean (default = false) ¡ª ±íÊ¾ÒõÓ°ÊÇ·ñÎªÄÚ²àÒõÓ°¡£Öµ true Ö¸¶¨ÄÚ²àÒõÓ°¡£Öµ false Ö¸¶¨Íâ²àÒõÓ°£¨¶ÔÏóÍâÔµÖÜÎ§µÄÒõÓ°£©¡£
-        this.knockout = knockout//:Boolean (default = false) ¡ª Ó¦ÓÃÍÚ¿ÕĞ§¹û (true)£¬Õâ½«ÓĞĞ§µØÊ¹¶ÔÏóµÄÌîÉ«±äÎªÍ¸Ã÷£¬²¢ÏÔÊ¾ÎÄµµµÄ±³¾°ÑÕÉ«¡£
-        this.hideObject = hideObject//:Boolean (default = false) ¡ª ±íÊ¾ÊÇ·ñÒş²Ø¶ÔÏó¡£Èç¹ûÖµÎª true£¬Ôò±íÊ¾Ã»ÓĞ»æÖÆ¶ÔÏó±¾Éí£¬Ö»ÓĞÒõÓ°ÊÇ¿É¼ûµÄ¡£
+        this.distance = distance//:Number (default = 4.0) â€” é˜´å½±çš„åç§»è·ç¦»ï¼Œä»¥åƒç´ ä¸ºå•ä½ã€‚
+        this.angle = Math.PI / 180 * (angle != null ? angle : 0);//:Number (default = 45) â€” é˜´å½±çš„è§’åº¦ï¼Œ0 åˆ° 360 åº¦ï¼ˆæµ®ç‚¹ï¼‰ã€‚
+        this.color = color || 0//:uint (default = 0) â€” é˜´å½±é¢œè‰²ï¼Œé‡‡ç”¨åå…­è¿›åˆ¶æ ¼å¼ 0xRRGGBBã€‚é»˜è®¤å€¼ä¸º 0x000000ã€‚
+        this.alpha = alpha || 1//:Number (default = 1.0) â€” é˜´å½±é¢œè‰²çš„ Alpha é€æ˜åº¦å€¼ã€‚æœ‰æ•ˆå€¼ä¸º 0.0 åˆ° 1.0ã€‚ä¾‹å¦‚ï¼Œ0.25 è®¾ç½®é€æ˜åº¦å€¼ä¸º 25%ã€‚
+        this.blurX = blurX || 4//:Number (default = 4.0) â€” æ°´å¹³æ¨¡ç³Šé‡ã€‚æœ‰æ•ˆå€¼ä¸º 0 åˆ° 255.0ï¼ˆæµ®ç‚¹ï¼‰ã€‚
+        this.strength = strength || 1//:Number (default = 1.0) â€” å°è®°æˆ–è·¨é¡µçš„å¼ºåº¦ã€‚è¯¥å€¼è¶Šé«˜ï¼Œå‹å°çš„é¢œè‰²è¶Šæ·±ï¼Œè€Œä¸”é˜´å½±ä¸èƒŒæ™¯ä¹‹é—´çš„å¯¹æ¯”åº¦ä¹Ÿè¶Šå¼ºã€‚æœ‰æ•ˆå€¼ä¸º 0 åˆ° 255.0ã€‚
+        this.quality = quality || 1//:int (default = 1) â€” åº”ç”¨æ»¤é•œçš„æ¬¡æ•°ã€‚ä½¿ç”¨ BitmapFilterQuality å¸¸é‡ï¼š
+        this.inner = inner//:Boolean (default = false) â€” è¡¨ç¤ºé˜´å½±æ˜¯å¦ä¸ºå†…ä¾§é˜´å½±ã€‚å€¼ true æŒ‡å®šå†…ä¾§é˜´å½±ã€‚å€¼ false æŒ‡å®šå¤–ä¾§é˜´å½±ï¼ˆå¯¹è±¡å¤–ç¼˜å‘¨å›´çš„é˜´å½±ï¼‰ã€‚
+        this.knockout = knockout//:Boolean (default = false) â€” åº”ç”¨æŒ–ç©ºæ•ˆæœ (true)ï¼Œè¿™å°†æœ‰æ•ˆåœ°ä½¿å¯¹è±¡çš„å¡«è‰²å˜ä¸ºé€æ˜ï¼Œå¹¶æ˜¾ç¤ºæ–‡æ¡£çš„èƒŒæ™¯é¢œè‰²ã€‚
+        this.hideObject = hideObject//:Boolean (default = false) â€” è¡¨ç¤ºæ˜¯å¦éšè—å¯¹è±¡ã€‚å¦‚æœå€¼ä¸º trueï¼Œåˆ™è¡¨ç¤ºæ²¡æœ‰ç»˜åˆ¶å¯¹è±¡æœ¬èº«ï¼Œåªæœ‰é˜´å½±æ˜¯å¯è§çš„ã€‚
     }
     dsDropShadowFilter.prototype.__render = function (ctx) {
         ctx.shadowBlur = this.strength;
@@ -3217,7 +3226,7 @@
         ctx.shadowOffsetX = this.blurX * Math.cos(this.angle);
         ctx.shadowOffsetY = this.blurY * Math.sin(this.angle);
     }
-    $s.dsSound=dsSound;
+    $s[config.pre+'Sound']=dsSound;
     function dsSound(stream, context) {
         dsExtend(dsSound, dsEventDispatcher, ["__render"]);
         return new dsSound.prototype.__init(stream, context);
@@ -3227,21 +3236,21 @@
      */
     dsSound.prototype.__init=function(stream, context) {
         //bytesLoaded : uint
-        //	[Ö»¶Á] ·µ»Ø´ËÉùÒô¶ÔÏóÖĞµ±Ç°¿ÉÓÃµÄ×Ö½ÚÊı¡£
+        //	[åªè¯»] è¿”å›æ­¤å£°éŸ³å¯¹è±¡ä¸­å½“å‰å¯ç”¨çš„å­—èŠ‚æ•°ã€‚
         //bytesTotal : int
-        //	[Ö»¶Á] ·µ»Ø´ËÉùÒô¶ÔÏóÖĞ×ÜµÄ×Ö½ÚÊı¡£
+        //	[åªè¯»] è¿”å›æ­¤å£°éŸ³å¯¹è±¡ä¸­æ€»çš„å­—èŠ‚æ•°ã€‚
         //Inherited	constructor : Object
-        //¶ÔÀà¶ÔÏó»ò¸ø¶¨¶ÔÏóÊµÀıµÄ¹¹Ôìº¯ÊıµÄÒıÓÃ¡£
+        //å¯¹ç±»å¯¹è±¡æˆ–ç»™å®šå¯¹è±¡å®ä¾‹çš„æ„é€ å‡½æ•°çš„å¼•ç”¨ã€‚
         //id3 : ID3Info
-        //	[Ö»¶Á] Ìá¹©¶Ô×÷Îª MP3 ÎÄ¼şÒ»²¿·ÖµÄÔªÊı¾İµÄ·ÃÎÊ¡£
+        //	[åªè¯»] æä¾›å¯¹ä½œä¸º MP3 æ–‡ä»¶ä¸€éƒ¨åˆ†çš„å…ƒæ•°æ®çš„è®¿é—®ã€‚
         //isBuffering : Boolean
-        //	[Ö»¶Á] ·µ»ØÍâ²¿ MP3 ÎÄ¼şµÄ»º³å×´Ì¬¡£
+        //	[åªè¯»] è¿”å›å¤–éƒ¨ MP3 æ–‡ä»¶çš„ç¼“å†²çŠ¶æ€ã€‚
         //isURLInaccessible : Boolean
-        //	[Ö»¶Á] ±íÊ¾ Sound.url ÊôĞÔÊÇ·ñÒÑ½Ø¶Ï¡£
+        //	[åªè¯»] è¡¨ç¤º Sound.url å±æ€§æ˜¯å¦å·²æˆªæ–­ã€‚
         //length : Number
-        //	[Ö»¶Á] µ±Ç°ÉùÒôµÄ³¤¶È£¨ÒÔºÁÃëÎªµ¥Î»£©¡£
+        //	[åªè¯»] å½“å‰å£°éŸ³çš„é•¿åº¦ï¼ˆä»¥æ¯«ç§’ä¸ºå•ä½ï¼‰ã€‚
         //url : String
-        //	[Ö»¶Á] ´ÓÖĞ¼ÓÔØ´ËÉùÒôµÄ URL¡£
+        //	[åªè¯»] ä»ä¸­åŠ è½½æ­¤å£°éŸ³çš„ URLã€‚
     }
     dsSound.prototype.close = function () {
 
@@ -3265,7 +3274,7 @@
 
     }
     /*
-     ½« ByteArray ¶ÔÏóÖĞµÄ PCM 32 Î»¸¡µãÉùÒôÊı¾İ¼ÓÔØµ½ Sound ¶ÔÏóÖĞ¡£
+     å°† ByteArray å¯¹è±¡ä¸­çš„ PCM 32 ä½æµ®ç‚¹å£°éŸ³æ•°æ®åŠ è½½åˆ° Sound å¯¹è±¡ä¸­ã€‚
      bytes:ByteArray, samples:uint, format:String = "float", stereo:Boolean = true, sampleRate:Number = 44100.0
      */
     dsSound.prototype.loadPCMFromByteArray = function (bytes, samples, format, stereo, sampleRate) {
@@ -3280,7 +3289,7 @@
     //exports('dsGraphics',function(global){
     //
     //})
-    $s.dsGraphics=dsGraphics;
+    $s[config.pre+'Graphics']=dsGraphics;
     function dsGraphics() {
         this.__aabb = new dsAABB();
         this._code = [];
@@ -3407,7 +3416,7 @@
         this.__drawfill = true;
     }
     /*
-     color Ö»ÄÜÊÇ8Î»ÑÕÉ«Öµ
+     color åªèƒ½æ˜¯8ä½é¢œè‰²å€¼
      */
     dsGraphics.prototype.beginFill = function (color, alpha) {
         if (typeof color == "number")color = dsColor.toStr(color);
@@ -3446,7 +3455,7 @@
         this._to.push(['bezierCurveTo',[controlX1, controlY1, controlX2, controlY2, anchorX, anchorY]]);
         //console.log('cubic',controlX1, controlY1, controlX2, controlY2, anchorX, anchorY);
     }
-//±´Èû¶ûÇúÏßÂÖÀª
+//è´å¡å°”æ›²çº¿è½®å»“
     dsGraphics.prototype.getCurveBoundary=function (ax, ay, bx, by, cx, cy, dx, dy) {
         var tobx = bx - ax;
         var toby = by - ay;
@@ -3598,4 +3607,4 @@
         return this;
     };
 
-})
+});

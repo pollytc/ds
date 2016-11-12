@@ -79,42 +79,19 @@ function room() {
 
     bgclick.addEventListener($s.dsMouseEvent.CLICK, goto);
     function goto(event) {
-        if (event.currentTarget.name == 'bgclick') {
-            trace(event.stageX, event.stageY)
-            person.walk(event.stageX, event.stageY,1);
-        }
+        trace(event.target.name)
+        trace(event.stageX, event.stageY)
+        addCode('',event.stageX, event.stageY)
+        //person.walk(event.stageX, event.stageY,1);
     }
-
-    //function walk(dx, dy) {
-        //var r = new Rectangle(dx - 5, dy - 5, 10, 10);
-        //var p = stage.getChildByName('person');
-        //if (r.contains(p.x, p.y)) {
-        //
-        //} else {
-        //    var a = Math.atan2(dy - p.y, dx - p.x);
-        //    clearInterval(p.timeid);
-        //    p.walk(1);
-        //    p.timeid = setInterval(function () {
-        //        p.x += Math.cos(a) * p.speed;
-        //        p.y += Math.sin(a) * p.speed;
-        //        if (r.contains(p.x, p.y)) {
-        //            p.stand(1);
-        //            clearInterval(p.timeid);
-        //            doCode(p.action);
-        //        }
-        //    }, 100);
-        //}
-
-    //}
-
     function addCode(type, dx, dy) {
         var p = $s.stage.getChildByName('person');
         p.alpha = 1;
         if (p.action != type) {
             reset(p.action);
-            person.walk(dx, dy,1);
             p.action = type;
         }
+        person.walk(dx, dy,1);
     }
 
     function doCode(type) {

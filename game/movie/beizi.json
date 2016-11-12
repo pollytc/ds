@@ -19,7 +19,7 @@
 "meta": {
 	"app": "Adobe Flash Professional",
 	"version": "15.0.0.173",
-	"image": "movie/beizi.png",
+	"image": "beizi.png",
 	"format": "RGBA8888",
 	"size": {"w":800,"h":123},
 	"scale": "1"
