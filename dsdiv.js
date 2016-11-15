@@ -2,34 +2,30 @@
  * Created by Administrator on 2016/11/7.
  */
 (function(window){
-    var DS = window;
-    DS.trace = console.log;
-    DS.unit = "px";
+    var DS = window.$s||window.$ui||{};
+    window.$ui=DS;DS.trace = console.log;DS.uimains = [];
+    var config = DS.config={body:'',unit:"px",width:400,height:500};
     window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,errorObj){
         trace(errorMessage, scriptURI, lineNumber,columnNumber,errorObj)
     }
-    DS.dsMain = function(body,back){
-        window.onload=function(){
-            var a = parseEle(body);
-            if(a.length<=0) throw('body is null');
-            DS.uistage = new uiDiv(a[0]);
-            DS.uistage.setStyle('overflow','hidden');
-            DS.uistage.height=600;
-            DS.uistage.width=800;
-            back();
-            window.requestAnimationFrame(function(){
-                DS.uistage.caller();
-                DS.uistage.invalidate();
-            });
-        }
+    window.addEventListener('load',function(){
+        DS.uistage = new uiDiv(config.body?document.querySelector(config.body):null);
+        DS.uistage.setStyle('overflow','hidden');
+        DS.uistage.height=config.width;
+        DS.uistage.width=config.height;
+        DS.uimains.forEach(function(e){e()});
+        window.requestAnimationFrame(function(){
+            DS.uistage.caller();
+            DS.uistage.invalidate();
+        });
+    })
+    DS.dsMain = function(back,fig){
+        if(typeof fig =='string')config.body = fig;
+        else for(var s in fig)config[s] = fig[s];
+        if(DS.uistage)back();
+        else DS.uimains.push(back);
     }
-    function parseEle(str){
-        if(typeof str != 'string')return [];
-        var pre =str.substr(0,1);
-        if(pre=="#")return [document.getElementById(str.substr(1))];
-        if(pre==".")return document.getElementsByClassName(str.substr(1));
-        return document.getElementsByTagName(str);
-    }
+
     function htmltotext(html){
         var span=document.createElement('span');
         span.innerHTML = html;
@@ -327,16 +323,16 @@
         dsExtend(uiDisplayObject,uiEventDispatcher,arg);
         var obj =new uiDisplayObject.prototype.__init();
         Object.defineProperties(obj,{
-            x:{set:function(v){this._x=v+DS.unit;},get:function(){return this._x.replace(DS.unit,'')*1},enumerable:true},
-            y:{set:function(v){this._y =v+DS.unit;},get:function(){return this._y.replace(DS.unit,'')*1},enumerable:true},
-            width:{set:function(v){this._width=v+DS.unit},get:function(){return this._width.replace(DS.unit,'')*1},enumerable:true},
-            height:{set:function(v){this._height=v+DS.unit},get:function(){return this._height.replace(DS.unit,'')*1},enumerable:true},
+            x:{set:function(v){this._x=v+config.unit;},get:function(){return this._x.replace(config.unit,'')*1},enumerable:true},
+            y:{set:function(v){this._y =v+config.unit;},get:function(){return this._y.replace(config.unit,'')*1},enumerable:true},
+            width:{set:function(v){this._width=v+config.unit},get:function(){return this._width.replace(config.unit,'')*1},enumerable:true},
+            height:{set:function(v){this._height=v+config.unit},get:function(){return this._height.replace(config.unit,'')*1},enumerable:true},
             percentWidth:{set:function(v){this._width = v+"%"},get:function(){return this._width}},
             percentHeight:{set:function(v){this._height = v+"%"},get:function(){return this._height}},
-            maxWidth:{set:function(v){this._maxwidth=v+DS.unit},get:function(){return this._maxwidth.replace(DS.unit,'')*1}},
-            maxHeigth:{set:function(v){this._maxheigth=v+DS.unit},get:function(){return this._maxheigth.replace(DS.unit,'')*1}},
-            minWidth:{set:function(v){this._minwidth=v+DS.unit},get:function(){return this._minwidth.replace(DS.unit,'')*1}},
-            minHeight:{set:function(v){this._minheight=v+DS.unit},get:function(){return this._minheight.replace(DS.unit,'')*1}},
+            maxWidth:{set:function(v){this._maxwidth=v+config.unit},get:function(){return this._maxwidth.replace(config.unit,'')*1}},
+            maxHeigth:{set:function(v){this._maxheigth=v+config.unit},get:function(){return this._maxheigth.replace(config.unit,'')*1}},
+            minWidth:{set:function(v){this._minwidth=v+config.unit},get:function(){return this._minwidth.replace(config.unit,'')*1}},
+            minHeight:{set:function(v){this._minheight=v+config.unit},get:function(){return this._minheight.replace(config.unit,'')*1}},
             scaleX:{set:function(v){this._scaleX=v;this._mat.scale(this._scaleX,this._scaleY);},get:function(){return this._scaleX}},
             scaleY:{set:function(v){this._scaleY=v;this._mat.scale(this._scaleX,this._scaleY);},get:function(){return this._scaleY}},
         })
@@ -356,7 +352,7 @@
         this._scaleX =1;
         this._scaleY =1;
         this.align ='left';
-        this.backgroundColor=Color.toStr(0xffffff*Math.random());
+        this.backgroundColor="#ffffff";
         this.parent=null;
         this._mat=new Matrix();
         this.includeInLayout = false;
@@ -381,8 +377,8 @@
         this.style.left=this._x;
         this.style.float = this.align;
         this.style.backgroundColor = this.backgroundColor;
-        if(this._width)this.style.width = this._width;
-        if(this._height)this.style.height =this._height;
+        this.style.width = this._width;
+        this.style.height =this._height;
         if(this._maxwidth)this.style['max-width']=this._maxwidth;
         if(this._maxheigth)this.style['max-height']=this._maxheigth;
         if(this._minwidth)this.style['min-width']=this._minwidth;
@@ -509,7 +505,7 @@
     }
     uiTextFormat.prototype.format=function(ele){
         var style = ele.style;
-        style['font-size'] = this.size+DS.unit;
+        style['font-size'] = this.size+config.unit;
         if(this.italic)
             style['font-style']='italic';
 

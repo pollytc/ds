@@ -1,10 +1,13 @@
 /**
  * Created by Administrator on 2016/11/4.
  */
+
 (function($s){
     $s.ready(function(){
-        changeScene('road')
-    },{baseURI:'movie/'});
+        if($s.platform.moblie)$s.stage.screenOrientation('h')
+        changeScene('room');
+        //$s.stage.color=0xff0000;
+    },{baseURI:'movie/',canvas:'#can'});
 
 })(window.$s);
 

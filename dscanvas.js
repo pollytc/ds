@@ -1,67 +1,69 @@
 /**
  * Created by Administrator on 2016/11/10.
  * //代码原则
-
  下划线属性，函数，都不被使用
  _单下划线，是类属性,函数没有单下滑线
  __双下划线，是原型属性，函数
  ds开头的类，不被使用的类
  */
 (function(win,fun){
-    win.$s||fun(win,function(key,keyfun){
-        $s[key]=keyfun(win);
-    })
+    win.$s||fun(win,function(key,keyfun){$s[key]=keyfun(win);})
 })(window,function(window,exports){
-    var $s =window.$s||{},config ={width:800,height:600,baseURI:'',file:'json',pre:'ds',canvas:'',global:'$s'};
-    window.$s=$s;$s.config =config;
+    var $s =window.$s||{},config ={width:'100%',height:'100%',baseURI:'',file:'json',pre:'ds',canvas:'',global:'$s'};
+    window.$s=$s;$s.config =config;$s.mains =[];
+    var trace =window.trace=$s.trace = console.log;
+    $s.export = function(fun){$s[fun.prototype.constructor.name] =fun;};
+    $s.platform={};
+    window.addEventListener('load',function(){
+        $s.Head();
+        if(config.canvas){config.canvas = document.querySelector(config.canvas);}
+        if(!config.canvas){config.canvas = document.createElement("canvas");document.body.appendChild(config.canvas);}
+        if(typeof config.width =='string'){
+            var w = parseFloat(config.width)/100*document.body.clientWidth;
+            var h = parseFloat(config.height)/100*document.body.clientHeight;
+            config.canvas.width = w;
+            config.canvas.height = h;
+        }else{
+            config.canvas.width = config.width;
+            config.canvas.height = config.height;
+        }
+        $s.platform.moblie= navigator.userAgent.match(/(iPhone|iPod|Android|ios)/i);
+        $s.stage = new dsStage(config.canvas);
+        var c2 = document.createElement("canvas");
+        c2.style = "display:none";
+        document.body.appendChild(c2);
+        $s.fdds = c2;
+        $s.mains.forEach(function(e){e($s);});
+    })
+    window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,errorObj){
+        console.log(errorMessage, scriptURI, lineNumber,columnNumber,errorObj)
+    }
     $s.ready=function(main,fig) {
         if(typeof fig =='string'){
-            config.canvas = parseStr(fig);
+            config.canvas = document.querySelector(fig);
+            if(!config.canvas)throw 'can find '+fig;
         }else{
             for(var s in fig){config[s] = fig[s];}
-            if(config.canvas){config.canvas = parseStr(config.canvas);}
         }
-        $s.mains =[];
-        if($s.stage!= null){
+        if($s.stage){
             main();
         }else{
-            $s.mains.push(main);
-        }
-
-        window.onload = function () {
-            if($s.config.canvas==''){
-                var c1 = document.createElement("canvas");
-                c1.width = $s.config.width;
-                c1.height = $s.config.height;
-                document.body.appendChild(c1);
-                $s.stage = new dsStage(c1);
-            }
-            var c2 = document.createElement("canvas");
-            c2.style = "display:none";
-            document.body.appendChild(c2);
-            $s.fdds = c2;
-            $s.mains.forEach(function(e){e($s);});
-        }
-        window.onerror = function(errorMessage, scriptURI, lineNumber,columnNumber,errorObj){
-            trace(errorMessage, scriptURI, lineNumber,columnNumber,errorObj)
-        }
+            $s.mains.push(main);}
     }
-
-    $s.export = function(fun){
-        $s[fun.prototype.constructor.name] =fun;
-    }
-    function parseStr(str){
-        if(typeof str != 'string')return [];
-        try{
-            var pre =str.substr(0,1);
-            if(pre=="#")return [document.getElementById(str.substr(1))];
-            if(pre==".")return document.getElementsByClassName(str.substr(1));
-            return document.getElementsByTagName(str);
-        }catch(e){
-            throw 'can not find '+str+' elements';
-        }
-    }
-    window.trace=$s.trace = console.log;
+    $s.Head=function(){
+        var node =document.createElement('meta');
+        node.setAttribute('name','apple-mobile-web-app-capable');
+        node.setAttribute('content','yes')
+        document.head.appendChild(node);
+        node =document.createElement('meta');
+        node.setAttribute('name','viewport');
+        node.setAttribute('content','width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no');
+        document.head.appendChild(node);
+        node =document.createElement('style');
+        node.innerHTML='*{margin: 0;border: 0;width: 100%;height: 100%;overflow: hidden}';
+        document.body.appendChild(node);
+    };
+    //浏览器版本
 
     $s[config.pre+'Event']=dsEvent;
     /*
@@ -199,6 +201,38 @@
     dsMouseEvent.RIGHT_MOUSE_UP = "rightmouseup";
     dsMouseEvent.ROLL_OUT = "rollout";
     dsMouseEvent.ROLL_OVER = "rollover";
+    dsMouseEvent.TOUCH_START ='touchstart';
+    dsMouseEvent.touchmove='touchmove';
+    dsMouseEvent.touchend='dsMouseEvent';
+
+    function dsTouchEvent(type, bubbles, cancelable, touchPointID, isPrimaryTouchPoint, localX, localY, sizeX, sizeY, pressure, relatedObject, ctrlKey, altKey, shiftKey, commandKey, controlKey, timestamp, touchIntent, samples, isTouchPointCanceled){
+        dsExtend(dsTouchEvent,dsEvent);
+        return new dsTouchEvent.prototype.__init(type, bubbles, cancelable, touchPointID, isPrimaryTouchPoint, localX, localY, sizeX, sizeY, pressure, relatedObject, ctrlKey, altKey, shiftKey, commandKey, controlKey, timestamp, touchIntent, samples, isTouchPointCanceled);
+    }
+    dsTouchEvent.prototype.__init=function(type, bubbles, cancelable, touchPointID, isPrimaryTouchPoint, localX, localY, sizeX, sizeY, pressure, relatedObject, ctrlKey, altKey, shiftKey, commandKey, controlKey, timestamp, touchIntent, samples, isTouchPointCanceled){
+        this.type = type
+        this.bubbles = bubbles
+        this.cancelable = cancelable
+        this.altKey = altKey;
+        this.ctrlKey = ctrlKey;
+        this.movementX = 0;
+        this.relatedObject = relatedObject;
+        this.shiftKey = shiftKey;
+        this.commandKey = commandKey
+        this.controlKey = controlKey;
+        this.timestamp=timestamp
+        this.touchIntent=touchIntent;
+        this.samples=samples;
+        this.isTouchPointCanceled=isTouchPointCanceled;
+    }
+    dsTouchEvent.TOUCH_BEGIN='touchBegin';
+    dsTouchEvent.TOUCH_END='';
+    dsTouchEvent.TOUCH_MOVE='';
+    dsTouchEvent.TOUCH_OUT='';
+    dsTouchEvent.TOUCH_OVER='';
+    dsTouchEvent.TOUCH_ROLL_OUT='';
+    dsTouchEvent.TOUCH_ROLL_OVER='';
+
 
     $s[config.pre+'KeyboardEvent']=dsKeyboardEvent
     function dsKeyboardEvent(type, bubbles, cancelable, charCodeValue, keyCodeValue, keyLocationValue, ctrlKeyValue, altKeyValue, shiftKeyValue, controlKeyValue, commandKeyValue) {
@@ -245,7 +279,8 @@
             UUID: function (){return Math.random().toString(36).substr(2)+(this.uid++);},
             INTERACTIVEEVENT: [dsEvent.ENTER_FRAME,],
             MOUSE: [dsFocusEvent.FOCUS_IN, dsFocusEvent.FOCUS_OUT, dsFocusEvent.KEY_FOCUS_CHANGE, dsFocusEvent.MOUSE_FOCUS_CHANGE, dsMouseEvent.ROLL_OVER, dsMouseEvent.ROLL_OUT, dsMouseEvent.RIGHT_MOUSE_UP, dsMouseEvent.RIGHT_MOUSE_DOWN, dsMouseEvent.RIGHT_CLICK, dsMouseEvent.RELEASE_OUTSIDE, dsMouseEvent.MOUSE_WHEEL, dsMouseEvent.MOUSE_UP, dsMouseEvent.MOUSE_OVER, dsMouseEvent.CLICK, dsMouseEvent.DOUBLE_CLICK, dsMouseEvent.MIDDLE_CLICK, dsMouseEvent.MIDDLE_MOUSE_DOWN, dsMouseEvent.MIDDLE_MOUSE_UP, dsMouseEvent.MOUSE_DOWN, dsMouseEvent.MOUSE_MOVE, dsMouseEvent.MOUSE_OUT],
-            KEY: [dsKeyboardEvent.KEY_DOWN, dsKeyboardEvent.KEY_UP]
+            KEY: [dsKeyboardEvent.KEY_DOWN, dsKeyboardEvent.KEY_UP],
+            TOUCH:['touchstart','touchmove','touchend','touchcancel']
         }
     var CompositeOperation = {
         SOURCE_OVER: "source-over",
@@ -668,8 +703,8 @@
     function dsRectangle(x, y, w, h) {
         this.x = x;
         this.y = y;
-        this.width = w;
-        this.height = h;
+        this.width = w<=0?1:w;
+        this.height = h<=0?1:h;
         this.left = this.x;
         this.right = this.x + this.width;
         this.size = new dsPoint(this.width, this.height);
@@ -1032,8 +1067,6 @@
     }
     dsEventDispatcher.prototype.__call = function (parent,key,paramArr) {
         paramArr=paramArr||[];
-        if(parent.prototype[key]==null)
-            trace(1)
         return parent.prototype[key].apply(this,paramArr);
     }
     dsEventDispatcher.prototype.addEventListener = function (type, listener, useCapture, priority, useWeakReference) {
@@ -1222,6 +1255,7 @@
             return false;
         }
         ctx.transform(this._mat.a,this._mat.b,this._mat.c,this._mat.d,this._mat.tx,this._mat.ty);
+
         ctx.globalAlpha = this.alpha;
         if (this._mask) {
             if(this.maskdata){
@@ -1252,7 +1286,7 @@
     dsDisplayObject.prototype.getBounds = function (displayObject) {
         //未考虑旋转
         var lw = this._graphics ? this._graphics["lineWidth"] : 0;
-        var rect=this.getRect(displayObject)
+        var rect=this.getRect(displayObject);
         return new dsRectangle(rect.x, rect.y, rect.width + lw, rect.height + lw);
     }
 
@@ -1280,6 +1314,7 @@
         return bool
     }
     dsDisplayObject.prototype.localToGlobal = function (point) {
+
         var p = this.parent;
         var po= this._mat.transformPoint(point);
         while (p) {
@@ -1309,10 +1344,13 @@
         return fbc.getImageData(ab.x1,ab.y1,ab.width(), ab.height());
     }
     dsDisplayObject.prototype.__AABB = function () {
-        var p1 = this.localToGlobal(new dsPoint(0,0));
-        var p2=this.localToGlobal(new dsPoint(this.width,0));
-        var p3=this.localToGlobal(new dsPoint(this.width,this.height));
-        var p4=this.localToGlobal(new dsPoint(0,this.height));
+        var a = new dsPoint(0,0);
+        if(this._graphics)
+            a = new dsPoint(this._graphics.__aabb.x1,this._graphics.__aabb.y1);
+        var p1 = this.localToGlobal(a);
+        var p2=this.localToGlobal(new dsPoint(this.width+ a.x, a.y));
+        var p3=this.localToGlobal(new dsPoint(this.width+ a.x,this.height+ a.y));
+        var p4=this.localToGlobal(new dsPoint(a.x,this.height+ a.y));
         var ab = this.__aabb.clone();
         ab.setXY(p1.x, p1.y);
         ab.setXY(p2.x, p2.y);
@@ -1336,9 +1374,33 @@
         this.__activeEvent=[];
         this.mousePixel = false;
     };
-    dsInteractiveObject.prototype.__mouseaction = function (event) {
+    dsInteractiveObject.prototype.__touchaction = function(event){
+
+        event.stopImmediatePropagation = function(){
+            event._stopImmediatePropagation = true;
+        }
+        event.stoppropagation = function(){
+            event._stoppropagation = true;
+        }
+        event.currentTarget = this;
+        event.target = this;
+        if(dsChildOf(this,dsDisplayObjectContainer)){
+            var c = this.getObjectsUnderPoint(new dsPoint(event.stageX, event.stageY));
+            if (c.length)event.target = c[0];
+        }
+
         var evs = this.__activeEvent[event.type];
-        if(evs==null)return;
+        if(!evs){
+            this.__eventaction(true, event);
+            return;
+        };
+        for (var i = 0; i < evs.length; i++) {
+            if (event._stoppropagation) return;//取消自身的行为
+            evs[i]["fun"].call(this, event);
+            this.__eventaction(evs[i]["param"][0], event);
+        }
+    }
+    dsInteractiveObject.prototype.__mouseaction = function (event) {
         var p = this.globalToLocal(new dsPoint(event.offsetX,event.offsetY));
         var mev = new dsMouseEvent(event.type, 1, event.cancelable, p.x, p.y, this, event.ctrlKey, event.altKey, event.shiftKey, event.button, event.detail, false, false,1);
         mev.stageX=event.offsetX;
@@ -1346,9 +1408,15 @@
         mev._currentTarget = this;
         mev._target = this;
         if(dsChildOf(this,dsDisplayObjectContainer)){
-            var c = this.getObjectsUnderPoint(mev.stageX, mev.stageY);
+            var c = this.getObjectsUnderPoint(new dsPoint(mev.stageX, mev.stageY));
             if (c.length)mev._target = c[0];
         }
+
+        var evs = this.__activeEvent[event.type];
+        if(!evs){
+            this.__eventaction(true, mev);
+            return;
+        };
         for (var i = 0; i < evs.length; i++) {
             if (mev._stoppropagation) return;//取消自身的行为
             evs[i]["fun"].call(this, mev);
@@ -1362,7 +1430,7 @@
         mev._currentTarget = this;
         mev._target = this;
         if(dsChildOf(this,dsDisplayObjectContainer)){
-            var c = this.getObjectsUnderPoint(mev.stageX, mev.stageY);
+            var c = this.getObjectsUnderPoint(new dsPoint(mev.stageX, mev.stageY));
             if (c.length)mev._target = c[0];
         }
         for (var i = 0; i < evs.length; i++) {
@@ -1384,7 +1452,7 @@
         if (useCapture) {
             //冒泡
             for (var i = 0; i < arr.length; i++) {
-                event._target = arr[i]
+                event._target = arr[i];
                 arr[i].dispatchEvent(event);
             }
         } else {
@@ -1404,23 +1472,27 @@
         //主动触发事件的监听处理
         if ($s.stage.__activeType.indexOf(type) != -1) {
             ////鼠标事件的监听处理
-            this.mousePixel =this.mousePixel||pixel;
+            this.mousePixel =!!(this.mousePixel||pixel);
             var self = this;
             var fun = null;
             if ($s.stage.__mouseType.indexOf(type) != -1) {
                 fun = function (event) {
+                    if(arguments.callee.uid !=self.name)return
                     if(self ==$s.stage){
                         return $s.stage.__mouseaction(event);
                     }
+                    if(self.stage == null)return;
                     var child = $s.stage.getObjectsUnderPoint(new dsPoint(event.offsetX, event.offsetY),self.mousePixel);
                     if (child.length > 0) {
-                        if (self == child[0]) {
-                            self.__mouseaction(event);
-                        }
+                        child[0].__mouseaction(event);
+                    }else{
+                        self.__touchaction(event);
                     }
                 }
-            }else if (self.__keyType.indexOf(type) != -1){
+                fun.uid = this.name;
+            }else if ($s.stage.__keyType.indexOf(type) != -1){
                 fun = function (event) {
+                    if(arguments.callee.uid !=self.name)return
                     if(self ==$s.stage){
                         return $s.stage.__keyaction(event);
                     }
@@ -1428,6 +1500,26 @@
                         self.__keyaction(event);
                     }
                 }
+                fun.uid = this.name;
+            }else if($s.stage.__touchType.indexOf(type) != -1){
+                fun=function(event){
+                    if(arguments.callee.uid !=self.name)return;
+                    var po = event.changedTouches[0];
+                    event.stageX=po.clientX;
+                    event.stageY=po.clientY;
+                    if(self ==$s.stage){
+                        return $s.stage.__touchaction(event);
+                    }
+                    if(self.stage == null)return;
+
+                    var child = $s.stage.getObjectsUnderPoint(new dsPoint(event.stageX, event.stageY),self.mousePixel);
+                    if (child.length > 0) {
+                        child[0].__touchaction(event);
+                    }else{
+                        self.__touchaction(event);
+                    }
+                }
+                fun.uid = this.name;
             }
             if(this.__activeEvent[type] ==null){
                 this.__activeEvent[type]=[];
@@ -1435,9 +1527,7 @@
             }
             var obj = {"fun": listener,type:type,back:fun,"param": [useCapture, priority, useWeakReference]}
             this.__activeEvent[type].push(obj);
-            this.__activeEvent[type].sort(function (e1, e2){
-                return e1["param"][1] > e2["param"][1]
-            })
+            this.__activeEvent[type].sort(function (e1, e2){return e1["param"][1] > e2["param"][1]});
             $s.stage.__globalEvent[this.__uuid]=this.__activeEvent;
         } else {
             this.__call(dsEventDispatcher,"addEventListener",[type, listener, useCapture, priority, useWeakReference]);
@@ -1462,7 +1552,7 @@
     };
     dsInteractiveObject.prototype.dispatchEvent = function (event) {
         if ($s.stage.__activeType.indexOf(event.type) != -1) {
-            var a = $s.stage.__activeEvent[event.type];
+            var a = this.__activeEvent[event.type];
             if (a == null)return
             event.currentTarget = this;
             for (var i in a) {
@@ -1497,6 +1587,7 @@
                 this.__children[i].__frame();
             }
         }
+        return true;
     };
     dsDisplayObjectContainer.prototype.__render = function (ctx) {
         if(this.__call(dsDisplayObject,"__render", [ctx]))
@@ -1534,6 +1625,16 @@
         displayObject.dispatchEvent(new dsEvent(dsEvent.REMOVE_FROM_STAGE));
     };
     dsDisplayObjectContainer.prototype.contains = function (displayObject) {
+        var bool =false;
+        for(var i = 0;i<this.__children;i++){
+            var d =  this.__children[i];
+            if(dsChildOf(d,dsDisplayObjectContainer)){
+                bool = d.contains(displayObject);
+            }else{
+                bool= d ==displayObject;
+            }
+            if(bool)return bool;
+        }
         return this.__children[this.__namechildren[displayObject.name]-1];
     };
     dsDisplayObjectContainer.prototype.getChildAt = function (index) {
@@ -1551,7 +1652,7 @@
     dsDisplayObjectContainer.prototype.getObjectsUnderPoint = function (point,pixel) {
         var arr = [];
         for (var i = this.__children.length - 1; i >= 0; i--) {
-            if (this.__children[i].hitTestPoint(point.x,point.y,pixel)) {
+            if (this.__children[i].hitTestPoint(point.x,point.y,!!pixel)) {
                 if (dsChildOf(this.__children[i], dsDisplayObjectContainer)) {
                     arr = arr.concat(this.__children[i].getObjectsUnderPoint(point,pixel));
                 }
@@ -1663,9 +1764,10 @@
         return obj;
     };
     dsStage.prototype.__init=function(canvas){
-        this.__activeType = utils.INTERACTIVEEVENT.concat(utils.MOUSE).concat(utils.KEY);
+        this.__activeType = utils.INTERACTIVEEVENT.concat(utils.MOUSE).concat(utils.KEY).concat(utils.TOUCH);
         this.__mouseType = utils.MOUSE;
         this.__keyType = utils.KEY;
+        this.__touchType = utils.TOUCH;
         this.__globalEvent = new Object();
         //this.__mainevent=[];//监听的事件函数
         this.name = "Stage";
@@ -1704,7 +1806,15 @@
             self._mouseY = e.clientY;
         })
     };
-
+    dsStage.prototype.screenOrientation = function(direct){
+        if(direct=='h'){
+            this.rotation =90;
+            var b=this.stageHeight+this.stageWidth;
+            this._stageHeight =b-this.stageHeight;
+            this._stageWidth = b-this.stageWidth;
+            this.x=this.stageHeight;
+        }
+    }
     dsStage.prototype.displayState = function (state) {
         if (state == "full_screen" || state == "full_screen_interactive") {
             var de = this.__canvas;
@@ -1761,8 +1871,8 @@
         this._color = "#fff";
         this._focus = null;
         this._frameRate = 30;
-        this.fullScreenHeight = 0;
-        this.fullScreenWidth = 0;
+        this.fullScreenHeight = window.screen.availHeight;
+        this.fullScreenWidth = window.screen.availWidth;
         this.fullScreenSourceRect;
         this.mouseLock = false;
         this.quality = 1;
@@ -1786,19 +1896,19 @@
                 }
             }
         }
-
-        //this.__activeEvent=[];
     }
     dsStage.prototype.__render = function (ctx) {
+        ctx.save();
+        ctx.transform(this._mat.a,this._mat.b,this._mat.c,this._mat.d,this._mat.tx,this._mat.ty);
         this.__ctx2d.clearRect(0, 0, this.stageWidth, this.stageHeight);
         this.__ctx2d.fillStyle = this.color;
         this.__ctx2d.fillRect(0, 0, this.stageWidth, this.stageHeight);
-        //this.__recall("__render", [ctx], dsStage.__super);
         for (var i = 0; i < this.__children.length; i++) {
             ctx.save();
             this.__children[i].__render(ctx);
             ctx.restore();
         }
+        ctx.restore();
     }
 //显示对象
     $s[config.pre+'Sprite']=dsSprite;
@@ -1812,34 +1922,81 @@
         this.dropTarget = null;
         this.__drag = null;
     }
+
+
     dsSprite.prototype.startDrag = function (lockCenter, rectangle) {
-        this.__drag = {"lock": lockCenter, 'rect': rectangle.clone()};
+        this.__drag = {"lock": lockCenter, 'rect': rectangle,dragx:0,dragy:0,doldx:0,doldy:0};
+        var self = this;
+        this.move = function(e){
+            e.preventDefault();
+            self.__drag.dragx = e.stageX;
+            self.__drag.dragy = e.stageY;
+        }
+        if($s.platform.moblie){
+            this.start = function(e){
+                self.__drag.start = true;
+                self.__drag.doldx=self.__drag.dragx = e.stageX;
+                self.__drag.doldy=self.__drag.dragy = e.stageY;
+                $s.stage.addEventListener('touchmove',self.move);
+            }
+            this.end = function(){
+                self.__drag.start = false;
+                $s.stage.removeEventListener('touchmove',self.move);
+            }
+            this.addEventListener('touchstart',this.start)
+            $s.stage.addEventListener('touchend',this.end)
+        }else{
+            this.start = function(e){
+                self.__drag.start = true;
+                self.__drag.doldx=self.__drag.dragx = e.stageX;
+                self.__drag.doldy=self.__drag.dragy = e.stageY;
+                $s.stage.addEventListener('mousemove',self.move);
+            }
+            this.end = function(){
+                self.__drag.start = false;
+                $s.stage.removeEventListener('mousemove',self.move);
+            }
+            this.addEventListener('mousedown',this.start)
+            $s.stage.addEventListener('mouseup',this.end);
+        }
     }
-    dsSprite.prototype.stopDrag = function () {
+    dsSprite.prototype.stopDrag = function(){
         this.__drag = null;
+        if($s.platform.moblie){
+            this.removeEventListener('touchstart',this.start)
+            $s.stage.removeEventListener('touchend',this.end);
+            $s.stage.removeEventListener('touchmove',self.move);
+        }else{
+            this.removeEventListener('mousedown',this.start)
+            $s.stage.removeEventListener('mouseup',this.end);
+            $s.stage.removeEventListener('mousemove',self.move);
+        }
+
     }
-    dsSprite.prototype.__frame = function () {
+    dsSprite.prototype.__frame = function(){
         if(this.__call(dsDisplayObjectContainer,"__frame")){
-            if (this.__drag) {
+            if (this.__drag && this.__drag.start) {
                 if (this.__drag['lock']) {
-                    this.x = this.mouseX - this.width * 0.5;
-                    this.y = this.mouseY - this.height * 0.5;
+                    this.y = this.__drag.dragx - this.width * 0.5;
+                    this.x = this.__drag.dragy - this.height * 0.5;
                 } else {
-                    this.x = this.mouseX;
-                    this.y = this.mouseY;
+                    this.y +=this.__drag.doldx-this.__drag.dragx;
+                    this.x +=-this.__drag.doldy+this.__drag.dragy;
+                    this.__drag.doldx=this.__drag.dragx;
+                    this.__drag.doldy=this.__drag.dragy;
                 }
                 if (this.__drag['rect']) {
                     var r = this.__drag['rect'];
                     if (this.x < r.x)this.x = r.x;
-                    if (this.x > r.topLeft.x)this.x = r.topLeft.x;
+                    if (this.x > r.right)this.x = r.right;
                     if (this.y < r.y)this.y = r.y;
-                    if (this.y > r.bottomRight.y) this.y = r.buttonDown.y;
+                    if (this.y > r.bottom) this.y = r.bottom;
                 }
-                if (this.dropTarget) {
-                    if (this.hitTestObject(this.dropTarget)) {
-                        this.dropTarget.addChild(this);
-                    }
-                }
+                //if (this.dropTarget) {
+                //    if (this.hitTestObject(this.dropTarget)) {
+                //        this.dropTarget.addChild(this);
+                //    }
+                //}
             }
         }
     }
@@ -3138,7 +3295,7 @@
             //console.log(event);
         });
         http.addEventListener("error", function () {
-            trace("error");
+            throw "error";
             //this.dispatchEvent()
         });
         http.addEventListener("abort", function () {

@@ -8,11 +8,31 @@
 <body>
 </body>
 <script>
-trace($s.ready)
-//    $s.ready(function(){
-//        trace(new Sprite());
-//
-//    },{global:'',pre:''})
+    $s.ready(function(){
+        $s.stage.__canvas.addEventListener('touchcancel',function(e){
+            console.log('touchcancel')
+        })
+        $s.stage.__canvas.addEventListener('touchend',function(e){
+            console.log('touchend')
+        })
+        $s.stage.__canvas.addEventListener('touchmove',function(e){
+            e.preventDefault();
+            console.log('touchmove')
+        })
+        $s.stage.__canvas.addEventListener('touchstart',function(e){
+//            e.preventDefault();
+            console.log('touchstart')
+        })
+        var s = $s.dsSprite();
+        s.graphics.beginFill(0xff0000);
+        s.graphics.drawRect(0,0,800,600);
+        s.width = 800;
+        s.height = 600;
+        s.addEventListener('touchstart',function(){
+            console.log('click')
+        })
+        $s.stage.addChild(s);
+    })
 
 </script>
 </html>
