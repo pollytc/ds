@@ -20,12 +20,15 @@
         if(!config.canvas){config.canvas = document.createElement("canvas");document.body.appendChild(config.canvas);}
         if(typeof config.width =='string'){
             var w = parseFloat(config.width)/100*document.body.clientWidth;
-            var h = parseFloat(config.height)/100*document.body.clientHeight;
             config.canvas.width = w;
+        }else{
+            config.canvas.width = Math.min(config.width,document.body.clientWidth);
+        }
+        if(typeof config.height =='string'){
+            var h = parseFloat(config.height)/100*document.body.clientHeight;
             config.canvas.height = h;
         }else{
-            config.canvas.width = config.width;
-            config.canvas.height = config.height;
+            config.canvas.height = Math.min(config.height,document.body.clientHeight);
         }
         $s.platform.moblie= navigator.userAgent.match(/(iPhone|iPod|Android|ios)/i);
         $s.stage = new dsStage(config.canvas);
@@ -60,7 +63,8 @@
         node.setAttribute('content','width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no');
         document.head.appendChild(node);
         node =document.createElement('style');
-        node.innerHTML='*{margin: 0;border: 0;width: 100%;height: 100%;overflow: hidden}';
+        //node.innerHTML='html,body{margin: 0;border: 0;width: 100%;height: 100%;overflow: hidden}';
+        node.innerHTML='html,body{margin: 0;border: 0;width: 100%;height: 100%}';
         document.body.appendChild(node);
     };
     //浏览器版本
@@ -1075,13 +1079,10 @@
     }
 
     dsEventDispatcher.prototype.dispatchEvent = function (event) {
-        if (dsChildOf(event,dsEvent)) {
-            event.currentTarget = this;
-            var a = this.__events[event.type];
-
-            for (var i in a) {
-                a[i].call(this, event);
-            }
+        event.currentTarget = this;
+        var a = this.__events[event.type];
+        for (var i in a) {
+            a[i].call(this, event);
         }
     }
     dsEventDispatcher.prototype.removeEventListener = function (type, listener, useCapture) {
@@ -1117,7 +1118,7 @@
         Object.defineProperties(obj, {
             "x":{
                 set:function(v){
-                    this._x = v;
+                    this._x = v*1;
                     this._mat.translate(this._x,this._y);
                 },get:function(){
                     return this._x;
@@ -1125,7 +1126,7 @@
             },
             "y":{
                 set:function(v){
-                    this._y = v;
+                    this._y = v*1;
                     this._mat.translate(this._x,this._y);
                 },get:function(){
                     return this._y;
@@ -1279,7 +1280,8 @@
 //循环处理业务逻辑的函数
     dsDisplayObject.prototype.__frame = function () {
         if(!this.visible) return false;
-        this.dispatchEvent(new dsEvent(dsEvent.ENTER_FRAME, false, false));
+        $s.event.initEvent(dsEvent.ENTER_FRAME, false, false)
+        this.dispatchEvent($s.event);
         return true;
     }
 
@@ -1290,31 +1292,35 @@
         return new dsRectangle(rect.x, rect.y, rect.width + lw, rect.height + lw);
     }
 
-    dsDisplayObject.prototype.getRect = function (displayObject) {
+    dsDisplayObject.prototype.getRect = function (displayObject){
         //比较与getBounds ,此方法不包含linestyle的
         var p=displayObject._mat.transformPoint(new dsPoint(this.x,this.y))
         return new dsRectangle(p.x, p.y, this.width, this.height);
     }
-    dsDisplayObject.prototype.hitTestObject = function (displayObject) {
+    dsDisplayObject.prototype.hitTestObject = function(displayObject){
         var r1 = this.__AABB();
         var r2 = displayObject.__AABB();
         return r1.instersects(r2);
     }
 //point 全局坐标
-    dsDisplayObject.prototype.hitTestPoint = function (dx,dy,shapeFlag) {
+    dsDisplayObject.prototype.hitTestPoint = function(dx,dy,shapeFlag){
         var ab = this.__AABB();
         var bool = ab.contains(dx,dy);
         if(shapeFlag&&bool){
             var m= this.__ctxToData();
-            $s.stage.__ctx2d.putImageData(m,0,0);
             dx -=ab.x1,dy-=ab.y1;
+            //if(this.name=='bg'){
+            //    $s.stage.__ctx2d.clearRect(0,0,800,600);
+            //    $s.stage.__ctx2d.putImageData(m,0,0)
+            //    $s.stage.__ctx2d.rect(dx,dy,50,50);
+            //    $s.stage.__ctx2d.fill();
+            //}
             var index= (dy*m.width+dx)*4;
             return m.data[index+3];
         }
         return bool
     }
     dsDisplayObject.prototype.localToGlobal = function (point) {
-
         var p = this.parent;
         var po= this._mat.transformPoint(point);
         while (p) {
@@ -1336,11 +1342,21 @@
 
     dsDisplayObject.prototype.__ctxToData = function () {
         var ab = this.__AABB();
-        $s.fdds.width = ab.x2;
+        $s.fdds.width =ab.x2;
         $s.fdds.height = ab.y2;
         var fbc = $s.fdds.getContext("2d");
         fbc.clearRect(0,0,this.width,this.height);
+        //var xx = this.x;
+        //var yy = this.y;
+        //this.x = ab.x1;
+        //this.y = ab.y1;
         this.__render(fbc);
+        //this.x = xx;
+        //this.y = yy;
+        ab.x1 =Math.max(ab.x1,0);
+        ab.y2 =Math.max(ab.y2,0);
+        ab.x2=Math.min(ab.x2,$s.stage.stageWidth);
+        ab.y2=Math.min(ab.y2,$s.stage.stageHeight);
         return fbc.getImageData(ab.x1,ab.y1,ab.width(), ab.height());
     }
     dsDisplayObject.prototype.__AABB = function () {
@@ -1358,6 +1374,63 @@
         ab.setXY(p4.x, p4.y);
         return ab;
     }
+    $s.event=document.createEvent("HTMLEvents");
+    $s.__initEvent=function(event,sx,sy){
+        event.stopImmediatePropagation = function(){
+            event._stopImmediatePropagation = true;
+        }
+        event.stoppropagation = function(){
+            event._stoppropagation = true;
+        }
+        event.stageX = sx;
+        event.stageY = sy;
+        return event
+    }
+    $s.__globalEvent=[]
+    $s.__addEvent=function(type,pixel,useCapture){
+        if ($s.stage.__activeType.indexOf(type) != -1) {
+            var fun = null;
+            if ($s.stage.__mouseType.indexOf(type) != -1){
+                fun = function(event){
+                    event=$s.__initEvent(event,event.offsetX, event.offsetY);
+                    var child = $s.stage.getObjectsUnderPoint(new dsPoint(event.offsetX, event.offsetY),pixel);
+                    if (child.length > 0){
+                        if(dsChildOf(child[0],dsInteractiveObject))child[0].__mouseaction(event);}else{$s.stage.__mouseaction(event);
+                    }
+                }
+            }else if($s.stage.__keyType.indexOf(type) != -1){
+                fun = function(event){
+                    event=$s.__initEvent(event,0,0);
+                    if ($s.stage.focus) {
+                        if(dsChildOf($s.stage.focus,dsInteractiveObject))$s.stage.focus.__mouseaction(event);
+                    }else{
+                        $s.stage.__mouseaction(event)
+                    }
+                }
+            }else if($s.stage.__touchType.indexOf(type)!=-1){
+                fun = function(event){
+                    if(event.type='touchmove')event.preventDefault();
+                    var po = event.changedTouches[0];
+                    event=$s.__initEvent(event,po.clientX,po.clientY);
+                    var child = $s.stage.getObjectsUnderPoint(new dsPoint(po.clientX,po.clientY),pixel);
+                    if (child.length > 0) {
+                        if(dsChildOf(child[0],dsInteractiveObject))child[0].__mouseaction(event);}else{$s.stage.__mouseaction(event)}
+                }
+            }
+            if($s.__globalEvent[type]==null){
+                $s.__globalEvent[type]=[type, fun,-1];
+                $s.stage.__canvas.addEventListener(type, fun,useCapture);
+            }
+            $s.__globalEvent[type][2]++;
+        }
+    }
+    $s.__removeEvent =function(type){
+        var event=$s.__globalEvent[type];
+        if(event[2]>0){event[2]--}else{
+            delete $s.__globalEvent[type];
+            $s.stage.__canvas.removeEventListener(event[0], event[1]);
+        }
+    }
 
     $s[config.pre+'InteractiveObject']=dsInteractiveObject;
     function dsInteractiveObject() {
@@ -1368,75 +1441,21 @@
     dsInteractiveObject.prototype.__init=function(){
         this.doubleClickEnabled = false;
         this.mouseEnabled = true;
-        this._befocus = false;
-        this.__mouseEvent = new Object();
-        this.__keyEvent = new Object();
         this.__activeEvent=[];
         this.mousePixel = false;
     };
-    dsInteractiveObject.prototype.__touchaction = function(event){
-
-        event.stopImmediatePropagation = function(){
-            event._stopImmediatePropagation = true;
-        }
-        event.stoppropagation = function(){
-            event._stoppropagation = true;
-        }
+    dsInteractiveObject.prototype.__mouseaction = function (event) {
+        var evs = this.__activeEvent[event.type];
         event.currentTarget = this;
         event.target = this;
-        if(dsChildOf(this,dsDisplayObjectContainer)){
-            var c = this.getObjectsUnderPoint(new dsPoint(event.stageX, event.stageY));
-            if (c.length)event.target = c[0];
-        }
-
-        var evs = this.__activeEvent[event.type];
         if(!evs){
             this.__eventaction(true, event);
             return;
         };
         for (var i = 0; i < evs.length; i++) {
             if (event._stoppropagation) return;//取消自身的行为
-            evs[i]["fun"].call(this, event);
-            this.__eventaction(evs[i]["param"][0], event);
-        }
-    }
-    dsInteractiveObject.prototype.__mouseaction = function (event) {
-        var p = this.globalToLocal(new dsPoint(event.offsetX,event.offsetY));
-        var mev = new dsMouseEvent(event.type, 1, event.cancelable, p.x, p.y, this, event.ctrlKey, event.altKey, event.shiftKey, event.button, event.detail, false, false,1);
-        mev.stageX=event.offsetX;
-        mev.stageY=event.offsetY;
-        mev._currentTarget = this;
-        mev._target = this;
-        if(dsChildOf(this,dsDisplayObjectContainer)){
-            var c = this.getObjectsUnderPoint(new dsPoint(mev.stageX, mev.stageY));
-            if (c.length)mev._target = c[0];
-        }
-
-        var evs = this.__activeEvent[event.type];
-        if(!evs){
-            this.__eventaction(true, mev);
-            return;
-        };
-        for (var i = 0; i < evs.length; i++) {
-            if (mev._stoppropagation) return;//取消自身的行为
-            evs[i]["fun"].call(this, mev);
-            this.__eventaction(evs[i]["param"][0], mev);
-        }
-    };
-    //键盘事件
-    dsInteractiveObject.prototype.__keyaction = function (event) {
-        var evs = this.__activeEvent[event.type];
-        var mev = new dsKeyboardEvent(event.type, event.bubbles);
-        mev._currentTarget = this;
-        mev._target = this;
-        if(dsChildOf(this,dsDisplayObjectContainer)){
-            var c = this.getObjectsUnderPoint(new dsPoint(mev.stageX, mev.stageY));
-            if (c.length)mev._target = c[0];
-        }
-        for (var i = 0; i < evs.length; i++) {
-            if (mev._stoppropagation) return;//取消自身的行为
-            evs[i]["fun"].call(this, mev);
-            this.__eventaction(evs[i]["param"][0], mev);
+            evs[i][1].call(this, event);
+            this.__eventaction(evs[i][2], event);
         }
     };
     //事件的冒泡，捕抓
@@ -1448,17 +1467,16 @@
             arr.push(pare);
             pare=pare.parent;
         }
-
         if (useCapture) {
             //冒泡
             for (var i = 0; i < arr.length; i++) {
-                event._target = arr[i];
+                event.currentTarget = arr[i];
                 arr[i].dispatchEvent(event);
             }
         } else {
             //捕抓
-            for (var i = arr.length-1; i >0; i--) {
-                event._target = arr[i];
+            for (var i = arr.length-1; i >=0; i--) {
+                event.currentTarget = arr[i];
                 arr[i].dispatchEvent(event);
             }
         }
@@ -1471,64 +1489,15 @@
     dsInteractiveObject.prototype.addEventListener = function (type, listener, pixel,useCapture, priority, useWeakReference) {
         //主动触发事件的监听处理
         if ($s.stage.__activeType.indexOf(type) != -1) {
-            ////鼠标事件的监听处理
-            this.mousePixel =!!(this.mousePixel||pixel);
-            var self = this;
-            var fun = null;
-            if ($s.stage.__mouseType.indexOf(type) != -1) {
-                fun = function (event) {
-                    if(arguments.callee.uid !=self.name)return
-                    if(self ==$s.stage){
-                        return $s.stage.__mouseaction(event);
-                    }
-                    if(self.stage == null)return;
-                    var child = $s.stage.getObjectsUnderPoint(new dsPoint(event.offsetX, event.offsetY),self.mousePixel);
-                    if (child.length > 0) {
-                        child[0].__mouseaction(event);
-                    }else{
-                        self.__touchaction(event);
-                    }
-                }
-                fun.uid = this.name;
-            }else if ($s.stage.__keyType.indexOf(type) != -1){
-                fun = function (event) {
-                    if(arguments.callee.uid !=self.name)return
-                    if(self ==$s.stage){
-                        return $s.stage.__keyaction(event);
-                    }
-                    if ($s.stage.focus == self) {
-                        self.__keyaction(event);
-                    }
-                }
-                fun.uid = this.name;
-            }else if($s.stage.__touchType.indexOf(type) != -1){
-                fun=function(event){
-                    if(arguments.callee.uid !=self.name)return;
-                    var po = event.changedTouches[0];
-                    event.stageX=po.clientX;
-                    event.stageY=po.clientY;
-                    if(self ==$s.stage){
-                        return $s.stage.__touchaction(event);
-                    }
-                    if(self.stage == null)return;
-
-                    var child = $s.stage.getObjectsUnderPoint(new dsPoint(event.stageX, event.stageY),self.mousePixel);
-                    if (child.length > 0) {
-                        child[0].__touchaction(event);
-                    }else{
-                        self.__touchaction(event);
-                    }
-                }
-                fun.uid = this.name;
-            }
             if(this.__activeEvent[type] ==null){
                 this.__activeEvent[type]=[];
-                $s.stage.__canvas.addEventListener(type, fun,false);
             }
-            var obj = {"fun": listener,type:type,back:fun,"param": [useCapture, priority, useWeakReference]}
+            var arr = this.__activeEvent[type];
+            for(var i = 0;i<arr.length;i++){if(arr[i][0]==type&&arr[i][1]==listener)return}
+            var obj = [type, listener,useCapture];
             this.__activeEvent[type].push(obj);
-            this.__activeEvent[type].sort(function (e1, e2){return e1["param"][1] > e2["param"][1]});
-            $s.stage.__globalEvent[this.__uuid]=this.__activeEvent;
+            this.__activeEvent[type].sort(function (e1, e2){return e1[2] > e2[2]});
+            $s.__addEvent(type,pixel,useCapture);
         } else {
             this.__call(dsEventDispatcher,"addEventListener",[type, listener, useCapture, priority, useWeakReference]);
         }
@@ -1537,11 +1506,11 @@
         if ($s.stage.__activeType.indexOf(type) != -1) {
             var ts = this.__activeEvent[type];
             for (var i in ts) {
-                if (ts[i]['fun'] == listener) {
-                    var op =ts.splice(i,1);
+                if (ts[i][1] == listener) {
+                    ts.splice(i,1);
                     if(ts.length==0){
-                        $s.stage.__canvas.removeEventListener(op.type, op.back);
-                        delete this.__activeEvent[type]
+                        delete this.__activeEvent[type];
+                        $s.__removeEvent(type);
                     }
                     break;
                 }
@@ -1556,17 +1525,17 @@
             if (a == null)return
             event.currentTarget = this;
             for (var i in a) {
-                a[i]["fun"].call(this, event);
+                a[i][1].call(this, event);
             }
         } else {
             this.__call(dsEventDispatcher,"dispatchEvent", [event]);
         }
     };
     dsInteractiveObject.prototype.hasEventListener = function (type) {
-        if (type in $s.stage.__activeType)
-            return $s.stage.__activeEvent[type];
+        if (type in this.__activeType)
+            return this.__activeEvent[type];
         else {
-            this.__call(dsEventDispatcher,"hasEventListener", [type]);
+            return his.__call(dsEventDispatcher,"hasEventListener", [type]);
         }
         return false;
     };
@@ -1607,7 +1576,7 @@
         this.__namechildren[displayObject.name] = index;
         displayObject.parent = this;
         displayObject.stage = $s.stage;
-        displayObject.dispatchEvent(new dsEvent(dsEvent.ADDTOSTAGE));
+        //displayObject.dispatchEvent($s.event.initEvent(dsEvent.ADDED_TO_STAGE, false, false));
     };
     dsDisplayObjectContainer.prototype.addChildAt = function (displayObject, index) {
         if (this.__children[index] == null) {
@@ -1622,7 +1591,7 @@
         this.numChildren++;
         displayObject.parent = this;
         displayObject.stage = $s.stage;
-        displayObject.dispatchEvent(new dsEvent(dsEvent.REMOVE_FROM_STAGE));
+        //displayObject.dispatchEvent( $s.event.initEvent(dsEvent.REMOVE_FROM_STAGE));
     };
     dsDisplayObjectContainer.prototype.contains = function (displayObject) {
         var bool =false;
@@ -1651,12 +1620,13 @@
      */
     dsDisplayObjectContainer.prototype.getObjectsUnderPoint = function (point,pixel) {
         var arr = [];
-        for (var i = this.__children.length - 1; i >= 0; i--) {
-            if (this.__children[i].hitTestPoint(point.x,point.y,!!pixel)) {
-                if (dsChildOf(this.__children[i], dsDisplayObjectContainer)) {
-                    arr = arr.concat(this.__children[i].getObjectsUnderPoint(point,pixel));
+        for (var i = this.__children.length - 1; i >=0; i--) {
+            var child= this.__children[i];
+            if (child.hitTestPoint(point.x,point.y,pixel)) {
+                if (dsChildOf(child, dsDisplayObjectContainer)) {
+                    arr = arr.concat(child.getObjectsUnderPoint(point,pixel));
                 }
-                arr.push(this.__children[i]);
+                arr.push(child);
             }
         }
         return arr;
@@ -1764,11 +1734,12 @@
         return obj;
     };
     dsStage.prototype.__init=function(canvas){
-        this.__activeType = utils.INTERACTIVEEVENT.concat(utils.MOUSE).concat(utils.KEY).concat(utils.TOUCH);
+        this.__activeType = utils.MOUSE.concat(utils.KEY).concat(utils.TOUCH);
         this.__mouseType = utils.MOUSE;
         this.__keyType = utils.KEY;
         this.__touchType = utils.TOUCH;
-        this.__globalEvent = new Object();
+        this.__globalEvent = {};
+        this.__activeEvent = {};
         //this.__mainevent=[];//监听的事件函数
         this.name = "Stage";
         this.__fb = null;
@@ -1815,6 +1786,7 @@
             this.x=this.stageHeight;
         }
     }
+
     dsStage.prototype.displayState = function (state) {
         if (state == "full_screen" || state == "full_screen_interactive") {
             var de = this.__canvas;
@@ -1889,13 +1861,9 @@
         this.__events=[];
         for(var i in this.__globalEvent){
             var op=this.__globalEvent[i];
-            for(var j in op){
-                var oj =op[j];
-                for(var k in oj){
-                    this.__canvas.removeEventListener(oj[k].type,oj[k].back);
-                }
-            }
+            this.__canvas.removeEventListener(op[0],op[1]);
         }
+        this.__globalEvent={};
     }
     dsStage.prototype.__render = function (ctx) {
         ctx.save();
@@ -1923,7 +1891,6 @@
         this.__drag = null;
     }
 
-
     dsSprite.prototype.startDrag = function (lockCenter, rectangle) {
         this.__drag = {"lock": lockCenter, 'rect': rectangle,dragx:0,dragy:0,doldx:0,doldy:0};
         var self = this;
@@ -1932,33 +1899,20 @@
             self.__drag.dragx = e.stageX;
             self.__drag.dragy = e.stageY;
         }
-        if($s.platform.moblie){
-            this.start = function(e){
-                self.__drag.start = true;
-                self.__drag.doldx=self.__drag.dragx = e.stageX;
-                self.__drag.doldy=self.__drag.dragy = e.stageY;
-                $s.stage.addEventListener('touchmove',self.move);
-            }
-            this.end = function(){
-                self.__drag.start = false;
-                $s.stage.removeEventListener('touchmove',self.move);
-            }
-            this.addEventListener('touchstart',this.start)
-            $s.stage.addEventListener('touchend',this.end)
-        }else{
-            this.start = function(e){
-                self.__drag.start = true;
-                self.__drag.doldx=self.__drag.dragx = e.stageX;
-                self.__drag.doldy=self.__drag.dragy = e.stageY;
-                $s.stage.addEventListener('mousemove',self.move);
-            }
-            this.end = function(){
-                self.__drag.start = false;
-                $s.stage.removeEventListener('mousemove',self.move);
-            }
-            this.addEventListener('mousedown',this.start)
-            $s.stage.addEventListener('mouseup',this.end);
+        var events = $s.platform.moblie?['touchstart','touchend','touchmove']:['mousedown','mouseup','mousemove']
+        this.start = function (e) {
+            self.__drag.start = true;
+            self.__drag.doldx = self.__drag.dragx = e.stageX;
+            self.__drag.doldy = self.__drag.dragy = e.stageY;
+            $s.stage.addEventListener(events[2], self.move);
         }
+        this.end = function () {
+            self.__drag.start = false;
+            $s.stage.removeEventListener(events[2], self.move);
+        }
+        this.addEventListener(events[0], this.start)
+        $s.stage.addEventListener(events[1], this.end)
+
     }
     dsSprite.prototype.stopDrag = function(){
         this.__drag = null;
@@ -1971,7 +1925,6 @@
             $s.stage.removeEventListener('mouseup',this.end);
             $s.stage.removeEventListener('mousemove',self.move);
         }
-
     }
     dsSprite.prototype.__frame = function(){
         if(this.__call(dsDisplayObjectContainer,"__frame")){
@@ -3184,7 +3137,8 @@
                     self.height = self._sheet.height;
                     self._totalFrames = self._sheet.imgs.length;
                     $s.stage.invalidate();
-                    self.dispatchEvent(new dsEvent(dsEvent.COMPLETE));
+                    $s.event.initEvent(dsEvent.COMPLETE,false,false);
+                    self.dispatchEvent($s.event);
                 }
             }
             res.addEventListener('complete',fun);
@@ -3302,7 +3256,8 @@
             //console.log("abort");
         });
         http.addEventListener("loadend", function () {
-            self.dispatchEvent(new dsEvent(dsEvent.COMPLETE))
+            $s.event.initEvent(dsEvent.COMPLETE,false,false);
+            self.dispatchEvent($s.event);
         });
         http.addEventListener('readystatechange',function(e){
             //http.readyState;
@@ -3338,7 +3293,8 @@
             self.width = self.width == 0 ? mm.width : self.width;
             self.height = self.height == 0 ? mm.height : self.height;
             //stage.invalidate();
-            self.dispatchEvent(new dsEvent(dsEvent.COMPLETE));
+            $s.event.initEvent(dsEvent.COMPLETE,false,false)
+            self.dispatchEvent($s.event);
         }
         mm.src = url;
         return this;
@@ -3466,6 +3422,7 @@
         //}
     }
     dsGraphics.prototype.__render = function (ctx) {
+        ctx.save();
         ctx.beginPath();
         for (var i = 0; i < this._code.length; i++) {
             var code = this._code[i];
@@ -3473,7 +3430,6 @@
             var lstyle = null;
             var line = code['line'];
             lstyle = line && line[0];
-
             if (lstyle == "style") {
                 ctx.lineWidth = line[1];
                 ctx.strokeStyle = line[2];
@@ -3498,19 +3454,10 @@
                     if (fstyle&&fstyle != 'style') {
                         ctx.fillStyle = this._gradient(ctx, fill, draw[1]);
                     }
-                    //if (fstyle != 'style') ctx.strokeStyle = this._gradient(ctx, fill[1], draw[1]);
-                    //var d =draw[1];
-                    //ctx.moveTo(d[0],d[1]);
-                    //ctx.lineTo(d[0]+d[2],d[1]);
-                    //ctx.lineTo(d[0]+d[2],d[1]+d[3]);
-                    //ctx.lineTo(d[0],d[1]+d[3]);
-                    //ctx.lineTo(d[0],d[1]);
                     if (this.__drawline){
                         ctx.strokeRect.apply(ctx, draw[1]);
-                        //ctx.stroke();
                     }
                     if (this.__drawfill){
-                        //ctx.fill();
                         ctx.fillRect.apply(ctx, draw[1]);
                     }
                 } else if (type == 'circle') {
@@ -3535,6 +3482,7 @@
             if (this.__drawfill)ctx.fill();
         }
         ctx.closePath();
+        ctx.restore();
     }
     dsGraphics.prototype._gradient = function (ctx, style, draw) {
         var gradient = null;
@@ -3680,19 +3628,13 @@
         this.__aabb.setXY(x,y);
         this.__drawline = true;
         this._to.push(['lineTo',[x, y]]);
-        //console.log('lineTo',x, y);
     }
     dsGraphics.prototype.moveTo = function (x, y) {
         this.__aabb.setXY(x,y);
         this.__drawline = true;
-        //this._target.width = Math.max(this._AABB.width(), this._target.width);
-        //this._target.height = Math.max(this._AABB.height(), this._target.height);
         this._to.push(['moveTo',[x, y]]);
-        //console.log('graphics.moveTo('+ x.toFixed(2)+","+y.toFixed(2)+")");
     }
     dsGraphics.prototype.clear = function () {
-        //this._addCode("clearRect",[0,0,this._target.width,this._target.height]);
-        //this._proxy["fun"].push(['clearRect', [0, 0, this._target.width, this._target.height]])
         if(this._to==null)this._to =[];
         this._to.push(['clear',[]]);
     }
@@ -3701,8 +3643,6 @@
     };
     dsGraphics.prototype.drawCircle = function (x, y, r) {
         this.__aabb.add(new dsAABB(x-r,y-r,x+r,y+r));
-        //this._target.width = Math.max(this._AABB.width(), this._target.width);
-        //this._target.height = Math.max(this._AABB.height(), this._target.height);
         this._addCode("draw", ['circle', [x, y, r, 0, 2 * Math.PI]]);
         this._codeindex++;
     };
@@ -3710,16 +3650,11 @@
     dsGraphics.prototype.drawEllipse = function (x, y, w, h) {
         var hw = w*0.5;
         var hh = h*0.5;
-        //this._AABB.setXY(x-hw,y-hh,x+hw,y+hh);
-        //this._target.width = Math.max(this._AABB.width(), this._target.width);
-        //this._target.height = Math.max(this._AABB.height(), this._target.height);
         this._addCode("draw", ['ellipse', [x, y, w, h]]);
         this._codeindex++;
     };
     dsGraphics.prototype.drawRect = function (x, y, w, h) {
         this.__aabb.add(new dsAABB(x,y,x+w,y+h));
-        //this._target.width = Math.max(this._AABB.width(), this._target.width);
-        //this._target.height = Math.max(this._AABB.height(), this._target.height);
         this._addCode('draw', ['rect', [x, y, w, h]]);
         this._codeindex++;
     }

@@ -9,29 +9,20 @@
 </body>
 <script>
     $s.ready(function(){
-        $s.stage.__canvas.addEventListener('touchcancel',function(e){
-            console.log('touchcancel')
+        var fstage = new $s.dsSprite();
+        fstage.name ='fstage'
+        fstage.x = 200;
+        var bg = new $s.dsLoader().load('/game/img/logo.png');
+        bg.addEventListener('click',function(){
+            trace(11111)
+        },true);
+        bg.addEventListener('complete',function(){
+            $s.stage.invalidate();
         })
-        $s.stage.__canvas.addEventListener('touchend',function(e){
-            console.log('touchend')
-        })
-        $s.stage.__canvas.addEventListener('touchmove',function(e){
-            e.preventDefault();
-            console.log('touchmove')
-        })
-        $s.stage.__canvas.addEventListener('touchstart',function(e){
-//            e.preventDefault();
-            console.log('touchstart')
-        })
-        var s = $s.dsSprite();
-        s.graphics.beginFill(0xff0000);
-        s.graphics.drawRect(0,0,800,600);
-        s.width = 800;
-        s.height = 600;
-        s.addEventListener('touchstart',function(){
-            console.log('click')
-        })
-        $s.stage.addChild(s);
+        bg.name ='bg'
+        fstage.addChild(bg);
+        $s.stage.addChild(fstage);
+        $s.stage.color = 0x0000ff
     })
 
 </script>

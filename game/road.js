@@ -2,24 +2,35 @@
  * Created by Administrator on 2016/11/4.
  */
 function road(){
+    var fstage = $s.dsSprite();
+    fstage.width = 800;
+    fstage.height = 600;
+    $s.stage.addChild(fstage);
+    fstage.y = $s.stage.stageHeight-fstage.height;
     var road = new $s.dsSprite();
     road.name ='road'
     road.graphics.lineStyle(2,0x7B0000);
     road.graphics.beginFill(0xffffff);
     road.x = 1;
-    road.y = $s.stage.stageHeight-251
-    road.graphics.drawRect(0,0,$s.stage.stageWidth-2,250);
-    $s.stage.addChild(road);
+    road.y = fstage.height-251;
+    road.graphics.drawRect(0,0,fstage.width-2,250);
+    fstage.addChild(road);
+
+    var towanda = new $s.dsSprite();
+    towanda.graphics.beginFill(0xffff00);
+    towanda.graphics.drawRect(0,0,300,200);
+    towanda.x = 500;
+    towanda.y = -201;
+    road.addChild(towanda);
 
     var bg = new $s.dsLoader().load('img/jiedao.png');
-    bg.name ='bg'
-    $s.stage.addChild(bg);
+    bg.name ='bg';
+    fstage.addChild(bg);
     var person = new Person();
     person.y = 550;
     person.x = 50;
-    $s.stage.addChild(person);
+    fstage.addChild(person);
     var pos = {};
-    var timeid =0;
     bg.mousePixel =true;
     road.mousePixel =true;
     bg.addEventListener($s.dsMouseEvent.MOUSE_DOWN ,function(e){
@@ -28,12 +39,12 @@ function road(){
     },true);
     bg.addEventListener($s.dsMouseEvent.MOUSE_UP,function(){
         $s.stage.removeEventListener($s.dsMouseEvent.MOUSE_MOVE,movebg);
-    },true)
+    },true);
 
     function movebg(event){
         var v=event.stageX-pos.x;
-        if(bg.x<=$s.stage.stageWidth-bg.width && v<0){
-            bg.x=$s.stage.stageWidth-bg.width-1
+        if(bg.x<=fstage.width-bg.width && v<0){
+            bg.x=fstage.width-bg.width-1
             $s.stage.invalidate();
             return
         }else if(bg.x>0 && v>0){
@@ -48,6 +59,21 @@ function road(){
         $s.stage.invalidate();
     }
     road.addEventListener($s.dsMouseEvent.MOUSE_DOWN,function(e){
-        person.walk(e.stageX, e.stageY,1);
-    },false);
+        var p = fstage.globalToLocal(new $s.dsPoint(e.stageX, e.stageY));
+        trace(p)
+        person.walk(p.x, p.y,1);
+    },true);
+    towanda.addEventListener('click',function(){
+        person.action = 'wanda';
+        person.walk(631, 366,1);
+    })
+    person.addEventListener('walkover',function(){
+        if(person.action='wanda'){
+            changeScene('guangchang');
+        }else if(person.action='home'){
+            changeScene('room')//16, y: 557
+        }
+
+    })
+
 }
