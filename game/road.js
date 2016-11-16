@@ -64,12 +64,12 @@ function road(){
         person.walk(p.x, p.y,1);
     },true);
     towanda.addEventListener('click',function(){
-        person.action = 'wanda';
+        person.action = 'square';
         person.walk(631, 366,1);
     })
     person.addEventListener('walkover',function(){
-        if(person.action='wanda'){
-            changeScene('guangchang');
+        if(person.action='square'){
+            changeScene('square');
         }else if(person.action='home'){
             changeScene('room')//16, y: 557
         }

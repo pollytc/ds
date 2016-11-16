@@ -69,221 +69,86 @@
     };
     //浏览器版本
 
-    $s[config.pre+'Event']=dsEvent;
     /*
      bubbles:
      捕获阶段 (EventPhase.CAPTURING_PHASE)。
      目标阶段 (EventPhase.AT_TARGET)。
      冒泡阶段 (EventPhase.BUBBLING_PHASE)。
      */
-    function dsEvent(type, bubbles, cancelable) {
-        var obj = new dsEvent.prototype.__init(type, bubbles, cancelable);
-        Object.defineProperties(obj, {
-            "cancelable": {
-                set: function (v) {
-                    this._cancelable = v
-                }
-            },
-            "bubbles": {
-                set: function (v) {
-                    this._bubbles = v;
-                }
-            },
-            "currentTarget": {
-                get: function () {
-                    return this._currentTarget;
-                }
-            },
-            "target": {
-                get: function () {
-                    return this._target;
-                }
-            }
-        });
-        return obj;
-    }
 
-    dsEvent.prototype.__init=function(type, bubbles, cancelable){
-        this.type = type;
-        this._bubbles = bubbles || false;
-        this._cancelable = cancelable || false;
-        this._currentTarget = null;
-        this._target = null;
-        this.eventPhase = 0;
-        this._stopimmediatepropagation = false;
-        this._stoppropagation = false;
-    }
-    dsEvent.prototype.__init.prototype=dsEvent.prototype;
-    dsEvent.prototype.isDefaultPrevented = function () {
+    Event.ENTER_FRAME = "enter_frame";
+    Event.ADDED_TO_STAGE = "addtostage";
+    Event.REMOVE_FROM_STAGE = "removefromstage";
+    Event.ACTIVATE = "activate";
+    Event.BROWSER_ZOOM_CHANGE = "browser_zoom_change";
+    Event.CANCEL = "cancel";
+    Event.CHANGE = "change";
+    Event.CHANNELMESSAGE = "channelMessage"
+    Event.CHANNELSTATE = "channelState"
+    Event.CLEAR = "clear"
+    Event.CLOSE = "close"
+    Event.COMPLETE = "complete"
+    Event.CONNECT = "connect"
+    Event.COPY = "copy"
+    Event.DEACTIVATE = "deactivate"
+    Event.EXITFRAME = "exitFrame"
+    Event.FULLSCREEN = "fullScreen"
+    Event.INIT = "init"
+    Event.MOUSELEAVE = "mouseLeave"
+    Event.OPEN = "open"
+    Event.PASTE = "paste"
+    Event.REMOVED = "removed"
+    Event.RENDER = "render"
+    Event.RESIZE = "resize"
+    Event.SCROLL = "scroll"
+    Event.SELECT = "select"
+    Event.SELECTALL = "selectAll"
+    Event.SOUNDCOMPLETE = "soundComplete"
+    Event.TABCHILDRENCHANGE = "tabChildrenChange";
 
-    }
-//cancelable 的值为 true 则可以使用 preventDefault() 来取消事件
-    dsEvent.prototype.preventDefault = function () {
+    MouseEvent.CLICK = "click";
+    MouseEvent.DOUBLE_CLICK = "doubleclick";
+    MouseEvent.MIDDLE_CLICK = "middleclick";
+    MouseEvent.MIDDLE_MOUSE_DOWN = "middlemousedown";
+    MouseEvent.MIDDLE_MOUSE_UP = "middlemouseup";
+    MouseEvent.MOUSE_DOWN = "mousedown";
+    MouseEvent.MOUSE_MOVE = "mousemove";
+    MouseEvent.MOUSE_OUT = "mouseout";
+    MouseEvent.MOUSE_OVER = "mouseover";
+    MouseEvent.MOUSE_UP = "mouseup";
+    MouseEvent.MOUSE_WHEEL = "mousewheel";
+    MouseEvent.RELEASE_OUTSIDE = "releaseoutside";
+    MouseEvent.RIGHT_CLICK = "rightclick";
+    MouseEvent.RIGHT_MOUSE_DOWN = "rightmousedown";
+    MouseEvent.RIGHT_MOUSE_UP = "rightmouseup";
+    MouseEvent.ROLL_OUT = "rollout";
+    MouseEvent.ROLL_OVER = "rollover";
+    MouseEvent.TOUCH_START ='touchstart';
+    MouseEvent.touchmove='touchmove';
+    MouseEvent.touchend='touchend';
 
-    }
-//防止对事件流中当前节点中和所有后续节点中的事件侦听器进行处理
-    dsEvent.prototype.stopImmediatePropagation = function () {
-        this._stopimmediatepropagation = true
-    }
-//此方法不会影响当前节点 (currentTarget) 中的任何事件侦听器
-    dsEvent.prototype.stopPropagation = function () {
-        this._stoppropagation = true;
-    }
+    MouseEvent.TOUCH_BEGIN='touchstart';
+    MouseEvent.TOUCH_END='touchend';
+    MouseEvent.TOUCH_MOVE='touchmove';
+    MouseEvent.TOUCH_OUT='';
+    MouseEvent.TOUCH_OVER='';
+    MouseEvent.TOUCH_ROLL_OUT='';
+    MouseEvent.TOUCH_ROLL_OVER='';
 
-    dsEvent.ENTER_FRAME = "enter_frame";
-    dsEvent.ADDED_TO_STAGE = "addtostage";
-    dsEvent.REMOVE_FROM_STAGE = "removefromstage";
-    dsEvent.ACTIVATE = "activate";
-    dsEvent.BROWSER_ZOOM_CHANGE = "browser_zoom_change";
-    dsEvent.CANCEL = "cancel";
-    dsEvent.CHANGE = "change";
-    dsEvent.CHANNELMESSAGE = "channelMessage"
-    dsEvent.CHANNELSTATE = "channelState"
-    dsEvent.CLEAR = "clear"
-    dsEvent.CLOSE = "close"
-    dsEvent.COMPLETE = "complete"
-    dsEvent.CONNECT = "connect"
-    dsEvent.COPY = "copy"
-    dsEvent.DEACTIVATE = "deactivate"
-    dsEvent.EXITFRAME = "exitFrame"
-    dsEvent.FULLSCREEN = "fullScreen"
-    dsEvent.INIT = "init"
-    dsEvent.MOUSELEAVE = "mouseLeave"
-    dsEvent.OPEN = "open"
-    dsEvent.PASTE = "paste"
-    dsEvent.REMOVED = "removed"
-    dsEvent.RENDER = "render"
-    dsEvent.RESIZE = "resize"
-    dsEvent.SCROLL = "scroll"
-    dsEvent.SELECT = "select"
-    dsEvent.SELECTALL = "selectAll"
-    dsEvent.SOUNDCOMPLETE = "soundComplete"
-    dsEvent.TABCHILDRENCHANGE = "tabChildrenChange";
+    KeyboardEvent.KEY_DOWN = "keydown";
+    KeyboardEvent.KEY_UP = "keyup";
 
-    $s[config.pre+'MouseEvent']=dsMouseEvent
-    function dsMouseEvent(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount) {
-        dsExtend(dsMouseEvent,dsEvent);
-        return new dsMouseEvent.prototype.__init(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount)
-    }
-    dsMouseEvent.prototype.__init =function(type, bubbles, cancelable, localX, localY, relatedObject, ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, controlKey, clickCount){
-        this.type = type
-        this.bubbles = bubbles
-        this.cancelable = cancelable
-        this.altKey = altKey
-        this.buttonDown = buttonDown
-        this.ctrlKey = ctrlKey
-        this.delta = delta
-        this.isRelatedObjectInaccessible
-        this.localX = localX
-        this.localY = localY
-        this.movementX = 0;
-        this.relatedObject = relatedObject
-        this.shiftKey = shiftKey
-        this.stageX = 0
-        this.stageY = 0
-        this.clickCount = clickCount;
-        this.commandKey = commandKey
-        this.controlKey = controlKey;
-    }
-    dsMouseEvent.prototype.updateAfterEvent = function () {
-
-    }
-    dsMouseEvent.CLICK = "click";
-    dsMouseEvent.DOUBLE_CLICK = "doubleclick";
-    dsMouseEvent.MIDDLE_CLICK = "middleclick";
-    dsMouseEvent.MIDDLE_MOUSE_DOWN = "middlemousedown";
-    dsMouseEvent.MIDDLE_MOUSE_UP = "middlemouseup";
-    dsMouseEvent.MOUSE_DOWN = "mousedown";
-    dsMouseEvent.MOUSE_MOVE = "mousemove";
-    dsMouseEvent.MOUSE_OUT = "mouseout";
-    dsMouseEvent.MOUSE_OVER = "mouseover";
-    dsMouseEvent.MOUSE_UP = "mouseup";
-    dsMouseEvent.MOUSE_WHEEL = "mousewheel";
-    dsMouseEvent.RELEASE_OUTSIDE = "releaseoutside";
-    dsMouseEvent.RIGHT_CLICK = "rightclick";
-    dsMouseEvent.RIGHT_MOUSE_DOWN = "rightmousedown";
-    dsMouseEvent.RIGHT_MOUSE_UP = "rightmouseup";
-    dsMouseEvent.ROLL_OUT = "rollout";
-    dsMouseEvent.ROLL_OVER = "rollover";
-    dsMouseEvent.TOUCH_START ='touchstart';
-    dsMouseEvent.touchmove='touchmove';
-    dsMouseEvent.touchend='dsMouseEvent';
-
-    function dsTouchEvent(type, bubbles, cancelable, touchPointID, isPrimaryTouchPoint, localX, localY, sizeX, sizeY, pressure, relatedObject, ctrlKey, altKey, shiftKey, commandKey, controlKey, timestamp, touchIntent, samples, isTouchPointCanceled){
-        dsExtend(dsTouchEvent,dsEvent);
-        return new dsTouchEvent.prototype.__init(type, bubbles, cancelable, touchPointID, isPrimaryTouchPoint, localX, localY, sizeX, sizeY, pressure, relatedObject, ctrlKey, altKey, shiftKey, commandKey, controlKey, timestamp, touchIntent, samples, isTouchPointCanceled);
-    }
-    dsTouchEvent.prototype.__init=function(type, bubbles, cancelable, touchPointID, isPrimaryTouchPoint, localX, localY, sizeX, sizeY, pressure, relatedObject, ctrlKey, altKey, shiftKey, commandKey, controlKey, timestamp, touchIntent, samples, isTouchPointCanceled){
-        this.type = type
-        this.bubbles = bubbles
-        this.cancelable = cancelable
-        this.altKey = altKey;
-        this.ctrlKey = ctrlKey;
-        this.movementX = 0;
-        this.relatedObject = relatedObject;
-        this.shiftKey = shiftKey;
-        this.commandKey = commandKey
-        this.controlKey = controlKey;
-        this.timestamp=timestamp
-        this.touchIntent=touchIntent;
-        this.samples=samples;
-        this.isTouchPointCanceled=isTouchPointCanceled;
-    }
-    dsTouchEvent.TOUCH_BEGIN='touchBegin';
-    dsTouchEvent.TOUCH_END='';
-    dsTouchEvent.TOUCH_MOVE='';
-    dsTouchEvent.TOUCH_OUT='';
-    dsTouchEvent.TOUCH_OVER='';
-    dsTouchEvent.TOUCH_ROLL_OUT='';
-    dsTouchEvent.TOUCH_ROLL_OVER='';
-
-
-    $s[config.pre+'KeyboardEvent']=dsKeyboardEvent
-    function dsKeyboardEvent(type, bubbles, cancelable, charCodeValue, keyCodeValue, keyLocationValue, ctrlKeyValue, altKeyValue, shiftKeyValue, controlKeyValue, commandKeyValue) {
-        dsExtend(dsKeyboardEvent,dsEvent);
-        return new dsKeyboardEvent.prototype.__init();
-    }
-    dsKeyboardEvent.prototype.__init = function () {
-        this.type = type
-        this.bubbles = bubbles
-        this.cancelable = cancelable
-        this.altKey = altKeyValue
-        this.charCode = charCodeValue
-        this.ctrlKey = ctrlKeyValue
-        this.keyCode = keyCodeValue
-        this.keyLocation = keyLocationValue
-        this.shiftKey = shiftKeyValue
-    }
-    dsKeyboardEvent.KEY_DOWN = "keydown";
-    dsKeyboardEvent.KEY_UP = "keyup";
-
-    $s[config.pre+'FocusEvent']=dsFocusEvent;
-    dsFocusEvent.prototype =new dsEvent();
-    function dsFocusEvent(type, bubbles, cancelable, relatedObject, shiftKey, keyCode, direction) {
-        dsExtend(dsFocusEvent,dsEvent);
-        return new dsFocusEvent.prototype.__init(type, bubbles, cancelable, relatedObject, shiftKey, keyCode, direction);
-    }
-    dsFocusEvent.prototype.__init=function(){
-        this.type = type;
-        this._bubbles = bubbles || false;
-        this._cancelable = cancelable || false;
-        this._currentTarget = null;
-        this.relatedObject = relatedObject;
-        this.shiftKey = shiftKey;
-        this.keyCode = keyCode;
-        this.direction = direction;
-    }
-    dsFocusEvent.FOCUS_IN = "focusIn"
-    dsFocusEvent.FOCUS_OUT = "focusOut "
-    dsFocusEvent.KEY_FOCUS_CHANGE = "keyFocusChange"
-    dsFocusEvent.MOUSE_FOCUS_CHANGE = "mouseFocusChange"
+    FocusEvent.FOCUS_IN = "focusIn"
+    FocusEvent.FOCUS_OUT = "focusOut "
+    FocusEvent.KEY_FOCUS_CHANGE = "keyFocusChange"
+    FocusEvent.MOUSE_FOCUS_CHANGE = "mouseFocusChange"
 
     var utils= {
             uid:0,
             UUID: function (){return Math.random().toString(36).substr(2)+(this.uid++);},
-            INTERACTIVEEVENT: [dsEvent.ENTER_FRAME,],
-            MOUSE: [dsFocusEvent.FOCUS_IN, dsFocusEvent.FOCUS_OUT, dsFocusEvent.KEY_FOCUS_CHANGE, dsFocusEvent.MOUSE_FOCUS_CHANGE, dsMouseEvent.ROLL_OVER, dsMouseEvent.ROLL_OUT, dsMouseEvent.RIGHT_MOUSE_UP, dsMouseEvent.RIGHT_MOUSE_DOWN, dsMouseEvent.RIGHT_CLICK, dsMouseEvent.RELEASE_OUTSIDE, dsMouseEvent.MOUSE_WHEEL, dsMouseEvent.MOUSE_UP, dsMouseEvent.MOUSE_OVER, dsMouseEvent.CLICK, dsMouseEvent.DOUBLE_CLICK, dsMouseEvent.MIDDLE_CLICK, dsMouseEvent.MIDDLE_MOUSE_DOWN, dsMouseEvent.MIDDLE_MOUSE_UP, dsMouseEvent.MOUSE_DOWN, dsMouseEvent.MOUSE_MOVE, dsMouseEvent.MOUSE_OUT],
-            KEY: [dsKeyboardEvent.KEY_DOWN, dsKeyboardEvent.KEY_UP],
+            INTERACTIVEEVENT: [Event.ENTER_FRAME,],
+            MOUSE: [FocusEvent.FOCUS_IN, FocusEvent.FOCUS_OUT, FocusEvent.KEY_FOCUS_CHANGE, FocusEvent.MOUSE_FOCUS_CHANGE, MouseEvent.ROLL_OVER, MouseEvent.ROLL_OUT, MouseEvent.RIGHT_MOUSE_UP, MouseEvent.RIGHT_MOUSE_DOWN, MouseEvent.RIGHT_CLICK, MouseEvent.RELEASE_OUTSIDE, MouseEvent.MOUSE_WHEEL, MouseEvent.MOUSE_UP, MouseEvent.MOUSE_OVER, MouseEvent.CLICK, MouseEvent.DOUBLE_CLICK, MouseEvent.MIDDLE_CLICK, MouseEvent.MIDDLE_MOUSE_DOWN, MouseEvent.MIDDLE_MOUSE_UP, MouseEvent.MOUSE_DOWN, MouseEvent.MOUSE_MOVE, MouseEvent.MOUSE_OUT],
+            KEY: [KeyboardEvent.KEY_DOWN, KeyboardEvent.KEY_UP],
             TOUCH:['touchstart','touchmove','touchend','touchcancel']
         }
     var CompositeOperation = {
@@ -1280,7 +1145,7 @@
 //循环处理业务逻辑的函数
     dsDisplayObject.prototype.__frame = function () {
         if(!this.visible) return false;
-        $s.event.initEvent(dsEvent.ENTER_FRAME, false, false)
+        $s.event.initEvent(Event.ENTER_FRAME, false, false)
         this.dispatchEvent($s.event);
         return true;
     }
@@ -1576,7 +1441,7 @@
         this.__namechildren[displayObject.name] = index;
         displayObject.parent = this;
         displayObject.stage = $s.stage;
-        //displayObject.dispatchEvent($s.event.initEvent(dsEvent.ADDED_TO_STAGE, false, false));
+        //displayObject.dispatchEvent($s.event.initEvent(Event.ADDED_TO_STAGE, false, false));
     };
     dsDisplayObjectContainer.prototype.addChildAt = function (displayObject, index) {
         if (this.__children[index] == null) {
@@ -1591,7 +1456,7 @@
         this.numChildren++;
         displayObject.parent = this;
         displayObject.stage = $s.stage;
-        //displayObject.dispatchEvent( $s.event.initEvent(dsEvent.REMOVE_FROM_STAGE));
+        //displayObject.dispatchEvent( $s.event.initEvent(Event.REMOVE_FROM_STAGE));
     };
     dsDisplayObjectContainer.prototype.contains = function (displayObject) {
         var bool =false;
@@ -1638,7 +1503,7 @@
         this.numChildren--;
         displayObject.parent = null;
         displayObject.stage = null;
-        //displayObject.dispatchEvent(new dsEvent(dsEvent.ADDTOSTAGE));
+        //displayObject.dispatchEvent(new Event(Event.ADDTOSTAGE));
         return displayobject;
     };
     dsDisplayObjectContainer.prototype.removeChildAt = function (index) {
@@ -1648,7 +1513,7 @@
         this.numChildren--;
         displayObject.parent = null;
         displayObject.stage = null;
-        //displayObject.dispatchEvent(dsEvent.ADDTOSTAGE);
+        //displayObject.dispatchEvent(Event.ADDTOSTAGE);
         return displayObject;
     };
 
@@ -1772,7 +1637,7 @@
             window.requestAnimationFrame(frame);
         }
 
-        window.addEventListener(dsMouseEvent.MOUSE_MOVE, function (e) {
+        window.addEventListener(MouseEvent.MOUSE_MOVE, function (e) {
             self._mouseX = e.clientX;
             self._mouseY = e.clientY;
         })
@@ -2718,9 +2583,9 @@
                 set: function (v) {
                     this._type = v;
                     //if (this._type == "input") {
-                    //    this.addEventListener(dsMouseEvent.CLICK, this._sproxy)
+                    //    this.addEventListener(MouseEvent.CLICK, this._sproxy)
                     //} else {
-                    //    this.removeEventListener(dsMouseEvent.CLICK, this._sproxy);
+                    //    this.removeEventListener(MouseEvent.CLICK, this._sproxy);
                     //}
                 },
                 get: function () {
@@ -3055,9 +2920,9 @@
         this.words = this.text.split('');
     }
     $s[config.pre+'MovieClip']=dsMovieClip;
-    function dsMovieClip(source) {
+    function dsMovieClip(source,config) {
         dsExtend(dsMovieClip, dsSprite);
-        var m = new dsMovieClip.prototype.__init(source);
+        var m = new dsMovieClip.prototype.__init(source,config);
         Object.defineProperties(m, {
             "totalFrames": {
                 get: function () {
@@ -3077,6 +2942,7 @@
     }
     var p = dsMovieClip.prototype;
     p.__init=function(source){
+        this.type='sequence';
         this.__et = 0;
         this.__bt = 0;
         this._frameRate = 24;
@@ -3087,9 +2953,19 @@
         this._totalFrames = 0;
         this._sheet = null;
         if(source){
-            this.name=source?source:this.name;
-            source = config.baseURI+source+"."+config.file;
-            this.__load(source);
+            if(typeof source =='string'){
+                this.name=source?source:this.name;
+                source = config.baseURI+source+"."+config.file;
+            }else{
+                this.name=source.name?source.name:this.name;
+                source.name = config.baseURI+source.name+"."+config.file;
+                this.type = 'manifest';
+            }
+            if(this.type=="manifest"){
+                this.__loadManifest(source);
+            }else{
+                this.__loadSequence(source);
+            }
         }
     }
     p.gotoAndPlay = function (frame){
@@ -3114,14 +2990,37 @@
     p.stop = function () {
         this.isPlaying = false;
     }
-    p.__load=function(source){
+    p.__loadManifest = function(source){
+        var res=new dsURLLoader(new dsURLRequest(source.name));
+        var self = this;
+        var fun = function(e){
+            res.removeEventListener('complete',fun);
+            try{var d = JSON.parse(res.data)}catch(e){throw source.name+'is wrong ,may be format is wrong'}
+            if(!d) throw source.toString()+" content is empty";
+            self._sheet = new SpriteSheet(d);
+            for(var i =0;i< d.frames.length;i++){
+                var m = new Image();
+                m.src = config.baseURI+d.frames[i].filename+d.meta.image;
+                m.onerror = function(e){throw 'cannot find '+m.src};
+                m.onload=function(e){
+                    //self.dispatchEvent($s.event.initEvent('progress',false,false))
+                };
+                self._sheet.imgs.push(m);
+            }
+            self.width = d.meta.size.w;;
+            self.height = d.meta.size.h;
+            self._totalFrames = self._sheet.imgs.length;
+        }
+        res.addEventListener('complete',fun);
+    }
+    p.__loadSequence=function(source){
         if(typeof source == 'string'){
             var res=new dsURLLoader(new dsURLRequest(source));
             var self = this;
             var fun =function(e){
                 res.removeEventListener('complete',fun);
                 var d = JSON.parse(res.data);
-                if(!d)return
+                if(!d) throw source.toString()+" content is empty";
                 var img = new Image();
                 img.src = config.baseURI+d.meta.image;
                 img.onerror = function(e){
@@ -3137,7 +3036,7 @@
                     self.height = self._sheet.height;
                     self._totalFrames = self._sheet.imgs.length;
                     $s.stage.invalidate();
-                    $s.event.initEvent(dsEvent.COMPLETE,false,false);
+                    $s.event.initEvent(Event.COMPLETE,false,false);
                     self.dispatchEvent($s.event);
                 }
             }
@@ -3155,7 +3054,6 @@
                     if (this.currentFrame >= this._totalFrames)this.currentFrame = 0;
                     this.__bt = this.__et;
                 }
-
             }
         }
     }
@@ -3165,6 +3063,15 @@
         this.imgs = [];
         this.width =0;
         this.height =0;
+    }
+    SpriteSheet.prototype.prasearr = function(arr){
+        for(var i =0;i<arr.length;i++){
+            var m = new Image();
+            m.src = config.baseURI+arr[i].filename+this.data.meta.image;
+            m.onerror = function(e){throw 'cannot find '+m.src};
+            m.onload=function(e){};
+            this.imgs.push(m);
+        }
     }
     SpriteSheet.prototype.prase = function(ctx){
         var arr = [];
@@ -3256,7 +3163,7 @@
             //console.log("abort");
         });
         http.addEventListener("loadend", function () {
-            $s.event.initEvent(dsEvent.COMPLETE,false,false);
+            $s.event.initEvent(Event.COMPLETE,false,false);
             self.dispatchEvent($s.event);
         });
         http.addEventListener('readystatechange',function(e){
@@ -3293,8 +3200,11 @@
             self.width = self.width == 0 ? mm.width : self.width;
             self.height = self.height == 0 ? mm.height : self.height;
             //stage.invalidate();
-            $s.event.initEvent(dsEvent.COMPLETE,false,false)
+            $s.event.initEvent(Event.COMPLETE,false,false)
             self.dispatchEvent($s.event);
+        }
+        mm.onerror = function(e){
+            throw url+' cannot find';
         }
         mm.src = url;
         return this;

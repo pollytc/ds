@@ -5,8 +5,8 @@
 (function($s){
     $s.ready(function(){
         if($s.platform.moblie)$s.stage.screenOrientation('h')
-        changeScene('road');
-        //$s.stage.color=0xff0000;
+        changeScene('square');
+        $s.stage.color=0xff0000;
     },{baseURI:'movie/',canvas:'#can',width:800,height:600});
 
 })(window.$s);
@@ -25,9 +25,9 @@ function changeScene(sec){
             $s.stage.reset();
             try{login();}catch(e){throw e}
             break;
-        case 'guangchang':
+        case 'square':
             $s.stage.reset();
-
+            square();
             break;
     }
 }
