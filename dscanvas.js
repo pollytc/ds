@@ -3268,7 +3268,7 @@
     }
     $s[config.pre+'Sound']=dsSound;
     function dsSound(stream, context) {
-        dsExtend(dsSound, dsEventDispatcher, ["__render"]);
+        dsExtend(dsSound, dsEventDispatcher);
         return new dsSound.prototype.__init(stream, context);
     }
     /*
@@ -3291,9 +3291,35 @@
         //	[只读] 当前声音的长度（以毫秒为单位）。
         //url : String
         //	[只读] 从中加载此声音的 URL。
+        this.__audio = new Audio();
+        var self = this;
+        var fun = function(e){
+            self.dispatchEvent(e);
+        };
+        this.__audio.addEventListener('loadstart',fun);
+        this.__audio.addEventListener('progress',fun);
+        this.__audio.addEventListener('suspend',fun);
+        this.__audio.addEventListener('abort',fun);
+        this.__audio.addEventListener('error',fun);
+        this.__audio.addEventListener('stalled',fun);
+        this.__audio.addEventListener('play',fun);
+        this.__audio.addEventListener('pause',fun);
+        this.__audio.addEventListener('loadedmetadata',fun);
+        this.__audio.addEventListener('loadeddata',fun);
+        this.__audio.addEventListener('waiting',fun);
+        this.__audio.addEventListener('playing',fun);
+        this.__audio.addEventListener('canplaythrough',fun);
+        this.__audio.addEventListener('seeking',fun);
+        this.__audio.addEventListener('seeked',fun);
+        this.__audio.addEventListener('timeupdate',fun);
+        this.__audio.addEventListener('ended',fun);
+        this.__audio.addEventListener('ratechange',fun);
+        this.__audio.addEventListener('durationchange',fun);
+        this.__audio.addEventListener('volumechange',fun);
     }
-    dsSound.prototype.close = function () {
 
+    dsSound.prototype.close = function () {
+        this.__audio.stop();
     }
     /*
      target:ByteArray, length:Number, startPosition:Number = -1
@@ -3305,7 +3331,8 @@
      stream:URLRequest, context:SoundLoaderContext = null
      */
     dsSound.prototype.load = function (stream, context) {
-
+        if(typeof stream=='string')
+            this.__audio.src=stream;
     }
     /*
      bytes:ByteArray, bytesLength:uint
@@ -3324,7 +3351,7 @@
      startTime:Number = 0, loops:int = 0, sndTransform:flash.media:SoundTransform = null
      */
     dsSound.prototype.play = function (startTime, loops, sndTransform) {
-
+        this.__audio.play();
     }
     //exports('dsGraphics',function(global){
     //
