@@ -20,12 +20,6 @@ function square(){
     person.x = 50;
     fstage.addChild(person);
 
-    var pollice = new $s.dsMovieClip('xiaobing');
-    pollice.x = 700;
-    pollice.y = 200;
-    pollice.stop();
-    fstage.addChild(pollice);
-
     var guanggao = new $s.dsLoader().load('img/guangao.png');
     guanggao.x= 500;
     guanggao.y = 40;
@@ -35,18 +29,23 @@ function square(){
     pingmu.x= 150;
     pingmu.y= 90;
     fstage.addChild(pingmu);
-
+    var pollice = new $s.dsMovieClip('xiaobing');
+    pollice.x = 700;
+    pollice.y = 200;
+    pollice.stop();
+    fstage.addChild(pollice);
     var gaoshi = new $s.dsLoader().load('img/gaoshi.png');
     gaoshi.x = 700;
     gaoshi.y = 450;
     fstage.addChild(gaoshi);
-
     bg.addEventListener('click',function(e){
         var p = fstage.globalToLocal(new $s.dsPoint(e.stageX, e.stageY));
         person.walk(p.x, p.y,1);
     });
 
-    $s.stage.addEventListener(Event.ENTER_FRAME,function(e){
+    setInterval(function(){
+        if(pollice.y+pollice.height<person.y)fstage.addChild(person);
+        else fstage.addChild(pollice);
 
-    })
+    },1000)
 }

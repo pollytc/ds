@@ -68,7 +68,11 @@
         document.body.appendChild(node);
     };
     //浏览器版本
-
+    $s.dsEvent=dsEvent;
+    function dsEvent(type,bubbles,cancle){
+        $s.event.initEvent(type,bubbles,cancle);
+        return $s.event;
+    }
     /*
      bubbles:
      捕获阶段 (EventPhase.CAPTURING_PHASE)。
@@ -1252,13 +1256,13 @@
         return event
     }
     $s.__globalEvent=[]
-    $s.__addEvent=function(type,pixel,useCapture){
+    $s.__addEvent=function(type,useCapture){
         if ($s.stage.__activeType.indexOf(type) != -1) {
             var fun = null;
             if ($s.stage.__mouseType.indexOf(type) != -1){
                 fun = function(event){
                     event=$s.__initEvent(event,event.offsetX, event.offsetY);
-                    var child = $s.stage.getObjectsUnderPoint(new dsPoint(event.offsetX, event.offsetY),pixel);
+                    var child = $s.stage.getObjectsUnderPoint(new dsPoint(event.offsetX, event.offsetY));
                     if (child.length > 0){
                         if(dsChildOf(child[0],dsInteractiveObject))child[0].__mouseaction(event);}else{$s.stage.__mouseaction(event);
                     }
@@ -1277,7 +1281,7 @@
                     if(event.type='touchmove')event.preventDefault();
                     var po = event.changedTouches[0];
                     event=$s.__initEvent(event,po.clientX,po.clientY);
-                    var child = $s.stage.getObjectsUnderPoint(new dsPoint(po.clientX,po.clientY),pixel);
+                    var child = $s.stage.getObjectsUnderPoint(new dsPoint(po.clientX,po.clientY));
                     if (child.length > 0) {
                         if(dsChildOf(child[0],dsInteractiveObject))child[0].__mouseaction(event);}else{$s.stage.__mouseaction(event)}
                 }
@@ -1351,7 +1355,7 @@
      useCapture == true 冒泡 false 捕抓 默认 false
      priority 优选级
      */
-    dsInteractiveObject.prototype.addEventListener = function (type, listener, pixel,useCapture, priority, useWeakReference) {
+    dsInteractiveObject.prototype.addEventListener = function (type, listener,useCapture, priority, useWeakReference) {
         //主动触发事件的监听处理
         if ($s.stage.__activeType.indexOf(type) != -1) {
             if(this.__activeEvent[type] ==null){
@@ -1362,7 +1366,7 @@
             var obj = [type, listener,useCapture];
             this.__activeEvent[type].push(obj);
             this.__activeEvent[type].sort(function (e1, e2){return e1[2] > e2[2]});
-            $s.__addEvent(type,pixel,useCapture);
+            $s.__addEvent(type,useCapture);
         } else {
             this.__call(dsEventDispatcher,"addEventListener",[type, listener, useCapture, priority, useWeakReference]);
         }
@@ -1413,7 +1417,6 @@
         this.mouseChildren = true;
         this.numChildren = 0;
         this.__children = Array();//放置子对象
-        this.__namechildren = Array();//放置子对象名称，每个对象的名称是唯一值。
     }
     dsDisplayObjectContainer.prototype.__frame = function(){
         if(this.__call(dsDisplayObject,"__frame")){
@@ -1436,9 +1439,11 @@
         return false;
     }
     dsDisplayObjectContainer.prototype.addChild = function (displayObject) {
+        if(displayObject.parent){
+            displayObject.parent.removeChild(displayObject);
+        }
         var index = this.__children.push(displayObject);
         this.numChildren++;
-        this.__namechildren[displayObject.name] = index;
         displayObject.parent = this;
         displayObject.stage = $s.stage;
         //displayObject.dispatchEvent($s.event.initEvent(Event.ADDED_TO_STAGE, false, false));
@@ -1452,44 +1457,53 @@
             s1.push(displayObject);
             this.__children = s1.concat(s2);
         }
-        this.__namechildren[displayObject.name] = index;
         this.numChildren++;
         displayObject.parent = this;
         displayObject.stage = $s.stage;
         //displayObject.dispatchEvent( $s.event.initEvent(Event.REMOVE_FROM_STAGE));
     };
     dsDisplayObjectContainer.prototype.contains = function (displayObject) {
-        var bool =false;
+        var bool =-1;
         for(var i = 0;i<this.__children;i++){
             var d =  this.__children[i];
             if(dsChildOf(d,dsDisplayObjectContainer)){
                 bool = d.contains(displayObject);
             }else{
-                bool= d ==displayObject;
+                if(d ==displayObject)return i;
             }
-            if(bool)return bool;
+            if(bool != -1)return bool;
         }
-        return this.__children[this.__namechildren[displayObject.name]-1];
+        return bool;
     };
     dsDisplayObjectContainer.prototype.getChildAt = function (index) {
         return this.__children[index];
     };
     dsDisplayObjectContainer.prototype.getChildByName = function (name) {
-        return this.__children[this.__namechildren[name]-1];
+        for(var i = 0;i<this.__children;i++){
+            var d =  this.__children[i];
+            if(d.name==name)return d;
+        }
+        return null;
     };
     dsDisplayObjectContainer.prototype.getChildIndex = function (displayobject) {
-        return this.__namechildren[displayobject.name]-1;
+        var bool =-1;
+        for(var i = 0;i<this.__children.length;i++){
+            var d =  this.__children[i];
+            bool= d==displayobject?i:-1;
+           if(bool != -1) break;
+        }
+        return bool;
     };
     /*
      该方法只返回 displayobject 对象
      */
-    dsDisplayObjectContainer.prototype.getObjectsUnderPoint = function (point,pixel) {
+    dsDisplayObjectContainer.prototype.getObjectsUnderPoint = function (point) {
         var arr = [];
         for (var i = this.__children.length - 1; i >=0; i--) {
             var child= this.__children[i];
-            if (child.hitTestPoint(point.x,point.y,pixel)) {
+            if (child.hitTestPoint(point.x,point.y,true)) {
                 if (dsChildOf(child, dsDisplayObjectContainer)) {
-                    arr = arr.concat(child.getObjectsUnderPoint(point,pixel));
+                    arr = arr.concat(child.getObjectsUnderPoint(point));
                 }
                 arr.push(child);
             }
@@ -1497,19 +1511,17 @@
         return arr;
     };
     dsDisplayObjectContainer.prototype.removeChild = function (displayobject) {
-        var index = this.__namechildren[displayobject.name];
-        delete this.__namechildren[displayobject.name];
-        delete this.__children[index];
+        var index = this.getChildIndex(displayobject);
+        this.__children.splice(index,1);
         this.numChildren--;
-        displayObject.parent = null;
-        displayObject.stage = null;
+        displayobject.parent = null;
+        displayobject.stage = null;
         //displayObject.dispatchEvent(new Event(Event.ADDTOSTAGE));
         return displayobject;
     };
     dsDisplayObjectContainer.prototype.removeChildAt = function (index) {
         var displayObject = this.__children[index];
-        delete this.__children[index];
-        delete this.__namechildren[dis.name];
+        this.__children.splice(index,1);
         this.numChildren--;
         displayObject.parent = null;
         displayObject.stage = null;
@@ -1524,18 +1536,23 @@
     };
 
     dsDisplayObjectContainer.prototype.swapChildren = function (displayobject1, displayobject2) {
-        var t = this.__namechildren[displayobject1.name];
-        this.__namechildren[displayobject1.name] = this.__namechildren[displayobject2.name];
-        this.__namechildren[displayobject2.name] = t;
-        this.__children[this.__namechildren[displayobject1.name]] = displayobject1;
-        this.__children[this.__namechildren[displayobject2.name]] = displayobject2;
+        if(displayobject1.parent != this || displayobject2.parent != this)return;
+        var index = 0;
+        for(var i = 0;i<this.__children.length;i++){
+            if(this.__children[i]==displayobject1){
+                this.__children[i]=displayobject2;index++;
+            }
+            if(this.__children[i]==displayobject2){
+                this.__children[i]=displayobject1;index++
+            }
+            if(index>=2)break;
+        }
     }
     dsDisplayObjectContainer.prototype.swapChildrenAt = function (index1, index2) {
-        var dis = this.__children[index1];
-        this.__children[index1] = this.__children[index2];
-        this.__children[index2] = dis;
-        this.__namechildren[this.__children[index1].name] = index1;
-        this.__namechildren[this.__children[index2].name] = index2;
+        var d1 =this.__children[index1];
+        var d2 =this.__children[index2];
+        this.__children[index1]=d2;
+        this.__children[index2]=d1;
     };
     dsDisplayObjectContainer.prototype.__AABB = function () {
         var ab  =this.__call(dsDisplayObject,"__AABB");
