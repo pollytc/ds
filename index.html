@@ -9,34 +9,17 @@
 </body>
 <script>
     $s.ready(function(){
-        var fstage = new $s.dsSprite();
-        fstage.name ='fstage'
-        fstage.x = 250;
-        var bg1 = new $s.dsLoader().load('/game/img/logo.png');
-        bg1.name ='bg1'
-        fstage.addChild(bg1);
-        var bg2 = new $s.dsLoader().load('/game/img/men.png');
-        bg2.x = 280;
-        bg2.name ='bg2';
-        fstage.addChild(bg2);
+        var cir = new $s.dsSprite();
+        cir.graphics.lineStyle(1,0xff00000);
 
-        var bg3 = new $s.dsLoader().load('/game/img/men.png');
-        bg3.x = 180;
-        bg3.y = 200;
-        bg3.name ='bg3';
-        fstage.addChild(bg3);
-
-        $s.stage.addChild(fstage);
-        $s.stage.color = 0x0000ff;
-        trace(fstage.getChildIndex(bg1))
-        trace(fstage.getChildIndex(bg2))
-        trace(fstage.getChildIndex(bg3))
-        setTimeout(function(){
-            fstage.addChild(bg1);
-            trace(fstage.getChildIndex(bg1))
-            trace(fstage.getChildIndex(bg2))
-            trace(fstage.getChildIndex(bg3))
-        },2000)
+        cir.graphics.drawEllipse(0,0,100,50);
+        cir.graphics.endFill();
+        cir.graphics.drawCircle(200,200,50);
+        cir.graphics.endFill();
+        cir.graphics.drawCircle(300,200,50);
+        cir.x=200;
+        cir.y =200
+        $s.stage.addChild(cir);
     })
 
 </script>

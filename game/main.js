@@ -5,7 +5,7 @@
 (function($s){
     $s.ready(function(){
         if($s.platform.moblie)$s.stage.screenOrientation('h')
-        changeScene('square');
+        changeScene('sport');
         $s.stage.color=0xff0000;
     },{baseURI:'movie/',canvas:'#can',width:800,height:600});
 

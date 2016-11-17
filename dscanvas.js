@@ -3379,8 +3379,8 @@
         ctx.save();
         ctx.beginPath();
         for (var i = 0; i < this._code.length; i++) {
-            var code = this._code[i];
 
+            var code = this._code[i];
             var lstyle = null;
             var line = code['line'];
             lstyle = line && line[0];
@@ -3423,7 +3423,14 @@
                     if (this.__drawline)ctx.stroke();
                     if (this.__drawfill)ctx.fill();
                 } else if (type == 'ellipse') {
-
+                    ctx.save();
+                    ctx.scale(1,draw[2])
+                    ctx.arc.apply(ctx,draw[1]);
+                    if (this.__drawline)ctx.stroke();
+                    if (this.__drawfill)ctx.fill();
+                    ctx.restore();
+                }else if(type=='end'){
+                    ctx.beginPath();
                 }
             }
         }
@@ -3469,6 +3476,7 @@
     dsGraphics.prototype.beginGradientFill = function (type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio) {
         this._addCode("fill", ['gradient', type, colors, alphas, ratios, matrix, spreadMethod, interpolationMethod, focalPointRatio]);
         this.__drawfill = true;
+
     };
     dsGraphics.prototype.beginBitmapFill = function (bitmapdata, matrix, repeat, smooth) {
         this._addCode('fill', ['bitmap', bitmapdata, matrix, repeat, smooth]);
@@ -3593,7 +3601,8 @@
         this._to.push(['clear',[]]);
     }
     dsGraphics.prototype.endFill = function () {
-
+        this._addCode("draw", ['end']);
+        this._codeindex++;
     };
     dsGraphics.prototype.drawCircle = function (x, y, r) {
         this.__aabb.add(new dsAABB(x-r,y-r,x+r,y+r));
@@ -3604,7 +3613,7 @@
     dsGraphics.prototype.drawEllipse = function (x, y, w, h) {
         var hw = w*0.5;
         var hh = h*0.5;
-        this._addCode("draw", ['ellipse', [x, y, w, h]]);
+        this._addCode("draw", ['ellipse', [x, y, w,0, 2 * Math.PI],h/w]);
         this._codeindex++;
     };
     dsGraphics.prototype.drawRect = function (x, y, w, h) {
