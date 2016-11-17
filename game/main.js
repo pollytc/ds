@@ -29,6 +29,9 @@ function changeScene(sec){
             $s.stage.reset();
             square();
             break;
+        case 'sport':
+            sport();
+            break;
     }
 }
 
