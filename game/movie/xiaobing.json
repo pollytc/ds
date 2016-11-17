@@ -1,0 +1,91 @@
+﻿{"frames": [
+
+{
+	"filename": "xiaobing0000",
+	"frame": {"x":0,"y":0,"w":67,"h":109},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":67,"h":109},
+	"sourceSize": {"w":67,"h":109}
+}
+,{
+	"filename": "xiaobing0001",
+	"frame": {"x":67,"y":0,"w":67,"h":109},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":67,"h":109},
+	"sourceSize": {"w":67,"h":109}
+}
+,{
+	"filename": "xiaobing0002",
+	"frame": {"x":134,"y":0,"w":67,"h":109},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":67,"h":109},
+	"sourceSize": {"w":67,"h":109}
+}
+,{
+	"filename": "xiaobing0003",
+	"frame": {"x":201,"y":0,"w":67,"h":109},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":67,"h":109},
+	"sourceSize": {"w":67,"h":109}
+}
+,{
+	"filename": "xiaobing0004",
+	"frame": {"x":268,"y":0,"w":67,"h":109},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":67,"h":109},
+	"sourceSize": {"w":67,"h":109}
+}
+,{
+	"filename": "xiaobing0005",
+	"frame": {"x":335,"y":0,"w":67,"h":109},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":67,"h":109},
+	"sourceSize": {"w":67,"h":109}
+}
+,{
+	"filename": "xiaobing0006",
+	"frame": {"x":402,"y":0,"w":67,"h":109},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":67,"h":109},
+	"sourceSize": {"w":67,"h":109}
+}
+,{
+	"filename": "xiaobing0007",
+	"frame": {"x":469,"y":0,"w":67,"h":109},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":67,"h":109},
+	"sourceSize": {"w":67,"h":109}
+}
+,{
+	"filename": "xiaobing0008",
+	"frame": {"x":536,"y":0,"w":67,"h":109},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":67,"h":109},
+	"sourceSize": {"w":67,"h":109}
+}
+,{
+	"filename": "xiaobing0009",
+	"frame": {"x":603,"y":0,"w":67,"h":109},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":67,"h":109},
+	"sourceSize": {"w":67,"h":109}
+}],
+"meta": {
+	"app": "Adobe Flash Professional",
+	"version": "15.0.0.173",
+	"image": "xiaobing.png",
+	"format": "RGBA8888",
+	"size": {"w":676,"h":108},
+	"scale": "1"
+}
+}
