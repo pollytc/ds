@@ -1,0 +1,29 @@
+
+.uiPanel{
+    position: absolute;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    top: 0px;
+    background: #ffffff;
+    box-sizing: border-box;
+    overflow:hidden;
+    overflow-y:auto;
+}
+.uiPanel header{
+    font-size: 1.1em;
+    text-align: center;
+    background: #bbbbbb;
+    padding: 5px;
+}
+.uiPanel .button-sp-area{
+    margin: 10px auto;
+    width: 60%;
+}
+.uiPanel .button-sp-area a{
+    line-height: 2;
+}
+.uiPanel .close{
+    cursor: pointer;
+    float: right;
+    color: #0d0d0d;
+}

@@ -1,26 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title></title>
-    <script src="dscanvas.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <title>FrozenUI Demo</title>
+    <link rel="stylesheet" href="ui/style.css">
+    <link rel="stylesheet" href="ui/weui.css">
 </head>
-<body>
-</body>
+<body ontouchstart="">
+<div id="stage"></div>
+<script src="ui/zepto.min.js"></script>
+<script src="game/dsui.js"></script>
 <script>
-    $s.ready(function(){
-        var cir = new $s.dsSprite();
-        cir.graphics.lineStyle(1,0xff00000);
-
-        cir.graphics.drawEllipse(0,0,100,50);
-        cir.graphics.endFill();
-        cir.graphics.drawCircle(200,200,50);
-        cir.graphics.endFill();
-        cir.graphics.drawCircle(300,200,50);
-        cir.x=200;
-        cir.y =200
-        $s.stage.addChild(cir);
-    })
-
+    $.uistage= new $.uiPanel('#stage');
+//    var l = new $.uiLogin();
+//    $.uistage.addChild(l);
+//    l.addEventListener('login',function(e){console.log(e.type)})
+    console.log($.uistage.ele);
 </script>
+</body>
+
 </html>

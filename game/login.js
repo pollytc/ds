@@ -19,8 +19,16 @@ function login(){
     var btn = new $s.dsLoader().load('img/btn.png');
     btn.x = $s.stage.stageWidth*0.7;
     btn.y = 100;
+    var panel = null
     btn.addEventListener('mousedown',function(){
-        changeScene('room');
+        if(!panel)panel = new uiLogin();
+        uistage.addChild(panel);
+        panel.x = ($s.stage.stageWidth-panel.width)*0.5;
+        panel.y = ($s.stage.stageHeight-panel.height)*0.5;
+        panel.addEventListener('submit',function(){
+
+        })
+
     })
     $s.stage.addChild(btn);
     var btn1 = new $s.dsLoader().load('img/shuoming.png');
