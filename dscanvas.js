@@ -14,7 +14,7 @@
     var trace =window.trace=$s.trace = console.log;
     $s.export = function(fun){$s[fun.prototype.constructor.name] =fun;};
     $s.platform={};
-    window.addEventListener('load',function(){
+    window.addEventListener('DOMContentLoaded',function(){
         $s.Head();
         if(config.canvas){config.canvas = document.querySelector(config.canvas);}
         if(!config.canvas){config.canvas = document.createElement("canvas");document.body.appendChild(config.canvas);}
@@ -151,7 +151,7 @@
             uid:0,
             UUID: function (){return Math.random().toString(36).substr(2)+(this.uid++);},
             INTERACTIVEEVENT: [Event.ENTER_FRAME,],
-            MOUSE: [FocusEvent.FOCUS_IN, FocusEvent.FOCUS_OUT, FocusEvent.KEY_FOCUS_CHANGE, FocusEvent.MOUSE_FOCUS_CHANGE, MouseEvent.ROLL_OVER, MouseEvent.ROLL_OUT, MouseEvent.RIGHT_MOUSE_UP, MouseEvent.RIGHT_MOUSE_DOWN, MouseEvent.RIGHT_CLICK, MouseEvent.RELEASE_OUTSIDE, MouseEvent.MOUSE_WHEEL, MouseEvent.MOUSE_UP, MouseEvent.MOUSE_OVER, MouseEvent.CLICK, MouseEvent.DOUBLE_CLICK, MouseEvent.MIDDLE_CLICK, MouseEvent.MIDDLE_MOUSE_DOWN, MouseEvent.MIDDLE_MOUSE_UP, MouseEvent.MOUSE_DOWN, MouseEvent.MOUSE_MOVE, MouseEvent.MOUSE_OUT],
+            MOUSE: [FocusEvent.FOCUS_IN, FocusEvent.FOCUS_OUT, FocusEvent.KEY_FOCUS_CHANGE, FocusEvent.MOUSE_FOCUS_CHANGE, MouseEvent.ROLL_OVER, MouseEvent.ROLL_OUT, MouseEvent.RIGHT_MOUSE_UP, MouseEvent.RIGHT_MOUSE_DOWN, MouseEvent.RIGHT_CLICK, MouseEvent.RELEASE_OUTSIDE, MouseEvent.MOUSE_WHEEL, MouseEvent.MOUSE_UP, MouseEvent.MOUSE_OVER,'click', MouseEvent.DOUBLE_CLICK, MouseEvent.MIDDLE_CLICK, MouseEvent.MIDDLE_MOUSE_DOWN, MouseEvent.MIDDLE_MOUSE_UP, MouseEvent.MOUSE_DOWN, MouseEvent.MOUSE_MOVE, MouseEvent.MOUSE_OUT],
             KEY: [KeyboardEvent.KEY_DOWN, KeyboardEvent.KEY_UP],
             TOUCH:['touchstart','touchmove','touchend','touchcancel']
         }
@@ -1178,13 +1178,7 @@
         if(shapeFlag&&bool){
             var m= this.__ctxToData();
             dx -=ab.x1,dy-=ab.y1;
-            //if(this.name=='bg'){
-            //    $s.stage.__ctx2d.clearRect(0,0,800,600);
-            //    $s.stage.__ctx2d.putImageData(m,0,0)
-            //    $s.stage.__ctx2d.rect(dx,dy,50,50);
-            //    $s.stage.__ctx2d.fill();
-            //}
-            var index= (dy*m.width+dx)*4;
+            var index= parseInt((dy*m.width+dx)*4);
             return m.data[index+3];
         }
         return bool
@@ -1229,6 +1223,7 @@
         return fbc.getImageData(ab.x1,ab.y1,ab.width(), ab.height());
     }
     dsDisplayObject.prototype.__AABB = function () {
+
         var a = new dsPoint(0,0);
         if(this._graphics)
             a = new dsPoint(this._graphics.__aabb.x1,this._graphics.__aabb.y1);
@@ -1237,11 +1232,16 @@
         var p3=this.localToGlobal(new dsPoint(this.width+ a.x,this.height+ a.y));
         var p4=this.localToGlobal(new dsPoint(a.x,this.height+ a.y));
         var ab = this.__aabb.clone();
+
         ab.setXY(p1.x, p1.y);
         ab.setXY(p2.x, p2.y);
         ab.setXY(p3.x, p3.y);
         ab.setXY(p4.x, p4.y);
         return ab;
+    }
+    $s.Event = function(type){
+        $s.event.initEvent(type,false,false);
+        return $s.__initEvent($s.event,0,0);
     }
     $s.event=document.createEvent("HTMLEvents");
     $s.__initEvent=function(event,sx,sy){
@@ -1479,7 +1479,7 @@
         return this.__children[index];
     };
     dsDisplayObjectContainer.prototype.getChildByName = function (name) {
-        for(var i = 0;i<this.__children;i++){
+        for(var i = 0;i<this.__children.length;i++){
             var d =  this.__children[i];
             if(d.name==name)return d;
         }
@@ -2798,7 +2798,7 @@
     dsTextField.prototype.setTextFormat = function (format, beginIndex, endIndex) {
     }
     dsTextField.prototype.__render = function (ctx) {
-        this.__call(dsInteractiveObject,'__render',[ctx]);
+        this.__call(dsDisplayObject,'__render',[ctx]);
         if (this.background) {
             ctx.fillStyle = this.backgroundColor;
             ctx.fillRect(0, 0, this.width+4, this.height+4);//左右,上下各2像素的宽度
@@ -3662,4 +3662,67 @@
         return this;
     };
 
+    $s[config.pre+'SharedObject']=dsSharedObject;
+    dsSharedObject.save = false;
+    function dsSharedObject(){
+        this.name ='';
+        this.data={};
+    }
+    dsSharedObject.prototype.flush = function(){
+        var store = dsSharedObject.save?window.sessionStorage:window.localStorage;
+        var s = JSON.stringify(this.data);
+        store?store.setItem(this.name,s):setCookie(this.name,s,0);
+    }
+    dsSharedObject.prototype.clear = function(){
+        var store = dsSharedObject.save?window.sessionStorage:window.localStorage;
+        store?store.removeItem(this.name):delCookie(this.name);
+    }
+    dsSharedObject.getLocal = function(key){
+        var store = dsSharedObject.save?window.sessionStorage:window.localStorage;
+        var p = store?store.getItem(key):getCookie(key);
+        var s = new dsSharedObject();
+        s.data=JSON.parse(p)
+        s.name = key;
+        return s;
+    }
+    function setCookie(name,value,time)
+    {
+        var strsec = getsec(time);
+        var exp = new Date();
+        exp.setTime(exp.getTime() + strsec*1);
+        document.cookie = name + "="+ escape (value) + ";expires=" + exp.toGMTString();
+    }
+    function getsec(str)
+    {
+        var str1=str.substring(1,str.length)*1;
+        var str2=str.substring(0,1);
+        if (str2=="s")
+        {
+            return str1*1000;
+        }
+        else if (str2=="h")
+        {
+            return str1*60*60*1000;
+        }
+        else if (str2=="d")
+        {
+            return str1*24*60*60*1000;
+        }
+    }
+    function delCookie(name)
+    {
+        var exp = new Date();
+        exp.setTime(exp.getTime() - 1);
+        var cval=getCookie(name);
+        if(cval!=null)
+            document.cookie= name + "="+cval+";expires="+exp.toGMTString();
+    }
+    function getCookie(name)
+    {
+        var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");
+        if(arr=document.cookie.match(reg))
+            return unescape(arr[2]);
+        else
+            return null;
+    }
 });

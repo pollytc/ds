@@ -4,18 +4,25 @@
 
 function Person(){
     $s.dsExtend(Person,$s.dsDisplayObjectContainer);
-    return new Person.prototype.__init();
+    var per =new Person.prototype.__init();
+    Object.defineProperties(per,
+        {'action':
+        {set:function(v){this._action=v;$s.stage.dispatchEvent($s.Event('action'))},
+            get:function(){return this._action}}}
+    )
+    return per;
 }
 Person.prototype.__init =function() {
     this.head = new $s.dsLoader();
     this.head.name = "head";
-    this.body = new $s.dsDisplayObject();
-    this.hand = new $s.dsSprite();
+    this.body = new $s.dsLoader()
+    this.hand = new $s.dsMovieClip('hand');
+    this.hand.gotoAndStop(3)
     this.foot = new $s.dsMovieClip('jiao');
-    this.foot.gotoAndStop(1);
+    this.foot.gotoAndStop(2);
     this.speed = 5;
     this.timeid =0;
-    this.action = '';
+    this._action = '';
     this.addChild(this.head);
     this.addChild(this.body);
     this.addChild(this.hand);
@@ -23,32 +30,18 @@ Person.prototype.__init =function() {
     this.init();
 }
 Person.prototype.init=function(){
-    this.body.x = 20;
-    this.body.y = -163;
-    this.foot.y =-60;
-    this.foot.x = -25;
-    this.hand.y=-200;
-    this.hand.x = 10;
-    this.head.y = -360;
-    this.head.x =-15;
-    this.hand.graphics.lineStyle(2);
-    this.hand.graphics.moveTo(0,0);
-    this.hand.graphics.lineTo(0,100);
-    this.body.graphics.beginFill(0xffffff,1);
-    this.body.graphics.decodePath('AhpQUQghgXgZkZQgakyAAmyQAAmvAakyQAbkyAlAAQAlAAAaEyQAaEyCDITQCEITh6ChQh6Cig1AqQg4ArgFAFg');
-    this.head.load('img/head1.png');
-    //this.foot.__load('http://test.com/ds/movie/zai.json');
-    this.scaleX=this.scaleY = 0.5;
+    var per=$s.dsSharedObject.getLocal('person');
+    this.body.x =-8;
+    this.body.y = -107;
+    this.foot.y =-25;
+    this.hand.y=-80;
+    this.hand.x = 5;
+    this.head.y =-150;
+    this.head.load('img/head'+per.data.sex+'.png');
+    this.body.load('img/body0005.png');
 };
 
-//var s = new $s.dsSprite();
-//s.graphics.beginFill(0xffff00);
-//s.graphics.drawCircle(0,0,5);
-//$s.stage.addChild(s);
-//var ap = new $s.dsSprite();
-//ap.graphics.beginFill(0x00ff00);
-//ap.graphics.drawCircle(0,0,5);
-//$s.stage.addChild(ap);
+
 Person.prototype.walk = function(dx,dy,face){
     this.foot.play();
     var r = new $s.dsRectangle(dx - 10, dy -10, 20, 20);
@@ -72,7 +65,7 @@ Person.prototype.walk = function(dx,dy,face){
 }
 Person.prototype.stand = function(face){
     clearInterval(this.timeid);
-    this.foot.gotoAndStop(1);
+    this.foot.gotoAndStop(2);
 }
 
 

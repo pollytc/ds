@@ -2,34 +2,50 @@
 
 {
 	"filename": "tui0000",
-	"frame": {"x":0,"y":0,"w":68,"h":66},
+	"frame": {"x":0,"y":0,"w":36,"h":29},
 	"rotated": false,
 	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":68,"h":66},
-	"sourceSize": {"w":68,"h":66}
+	"spriteSourceSize": {"x":0,"y":0,"w":36,"h":29},
+	"sourceSize": {"w":36,"h":29}
 }
 ,{
 	"filename": "tui0001",
-	"frame": {"x":68,"y":0,"w":68,"h":66},
+	"frame": {"x":36,"y":0,"w":36,"h":29},
 	"rotated": false,
 	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":68,"h":66},
-	"sourceSize": {"w":68,"h":66}
+	"spriteSourceSize": {"x":0,"y":0,"w":36,"h":29},
+	"sourceSize": {"w":36,"h":29}
 }
 ,{
 	"filename": "tui0002",
-	"frame": {"x":136,"y":0,"w":68,"h":66},
+	"frame": {"x":72,"y":0,"w":36,"h":29},
 	"rotated": false,
 	"trimmed": false,
-	"spriteSourceSize": {"x":0,"y":0,"w":68,"h":66},
-	"sourceSize": {"w":68,"h":66}
+	"spriteSourceSize": {"x":0,"y":0,"w":36,"h":29},
+	"sourceSize": {"w":36,"h":29}
+}
+,{
+	"filename": "tui0003",
+	"frame": {"x":108,"y":0,"w":36,"h":29},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":36,"h":29},
+	"sourceSize": {"w":36,"h":29}
+}
+,{
+	"filename": "tui0004",
+	"frame": {"x":144,"y":0,"w":36,"h":29},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":36,"h":29},
+	"sourceSize": {"w":36,"h":29}
 }],
 "meta": {
 	"app": "Adobe Flash Professional",
 	"version": "15.0.0.173",
 	"image": "jiao.png",
 	"format": "RGBA8888",
-	"size": {"w":204,"h":69},
+	"size": {"w":182,"h":29},
 	"scale": "1"
 }
 }

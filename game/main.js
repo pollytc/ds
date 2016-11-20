@@ -6,8 +6,8 @@
     $s.ready(function(){
         if($s.platform.moblie)$s.stage.screenOrientation('h')
         changeScene('login');
-    },{baseURI:'movie/',canvas:'#can',width:800,height:600});
 
+    },{baseURI:'movie/',canvas:'#can',width:800,height:600});
 })(window.$s);
 
 function changeScene(sec){
@@ -32,14 +32,12 @@ function changeScene(sec){
             sport();
             break;
     }
-}
-
-function gEvent(type, data){
-    $s.dsExtend(gEvent,$s.dsEvent);
-    return new gEvent.prototype.__init(type,data);
-}
-gEvent.prototype.__init=function(type,data){
-    this.type = type;
-    this.data = data;
+    if(sec != 'login'){
+        var pa = new figure();
+        pa.name ='figure';
+        pa.x= $s.stage.stageWidth-200;
+        $s.stage.addChild(pa);
+    }
+    $s.stage.dispatchEvent($s.Event('scene'))
 }
 

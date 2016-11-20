@@ -63,26 +63,39 @@
         }})
         return obj;
     }
-    uiPanel.prototype.__init=function(){};
-    uiPanel.prototype.addChild=function(obj){
+    uiPanel.prototype.__init=function(){
+        this.ele.addClass('uiPanel');
+    };
+    uiPanel.prototype.show=function(obj){
         this.ele.append(obj.ele);
+        this.ele.show();
     }
     uiPanel.prototype.title = function(t){
         $(this.ele,'header').html(t);
     }
-    uiPanel.prototype.removeChild=function(obj){
+    uiPanel.prototype.hide=function(obj){
         obj.ele.remove();
+        this.ele.hide();
     }
 
     function uiLogin(){
-        var html ='<div id="login" class="uiPanel"> <header>登录</header> <div class="weui-cell"> <div class="weui-cell__hd"><label class="weui-label">身份</label></div> <div class="weui-cell__bd"> <input class="weui-input" pattern="[0-9][a-z][A-Z]" placeholder="唯一识别号" type="text"> </div> </div> <div class="weui-cell"> <div class="weui-cell__hd"><label class="weui-label">身高</label></div> <div class="weui-cell__bd"> <input class="weui-input" pattern="[0-9]" placeholder="身高" type="number"> </div> </div> <div class="weui-cell"> <div class="weui-cell__hd"><label class="weui-label">体重</label></div> <div class="weui-cell__bd"> <input class="weui-input" pattern="[0-9]" placeholder="体重" type="number"> </div> </div> <div class="weui-cell"> <div class="weui-cell__hd"><label class="weui-label">性别</label></div> <div class="weui-cell__bd"> <select class="weui-select" name="select2"> <option value="1" selected="selected">男</option> <option value="2">女</option> </select> </div> </div> <div class="button-sp-area"> <a class="weui-btn weui-btn_plain-default">确定</a> </div> </div>';
         uiExtend(uiLogin,uiPanel);
         return new uiLogin.prototype.__init();
     }
     uiLogin.prototype.__init = function(){
-        this.ele.append('<div class="weui-cell"> <div class="weui-cell__hd"><label class="weui-label">身份</label></div> <div class="weui-cell__bd"> <input class="weui-input" pattern="[0-9][a-z][A-Z]" placeholder="唯一识别号" type="text"> </div> </div> <div class="weui-cell"> <div class="weui-cell__hd"><label class="weui-label">身高</label></div> <div class="weui-cell__bd"> <input class="weui-input" pattern="[0-9]" placeholder="身高" type="number"> </div> </div> <div class="weui-cell"> <div class="weui-cell__hd"><label class="weui-label">体重</label></div> <div class="weui-cell__bd"> <input class="weui-input" pattern="[0-9]" placeholder="体重" type="number"> </div> </div> <div class="weui-cell"> <div class="weui-cell__hd"><label class="weui-label">性别</label></div> <div class="weui-cell__bd"> <select class="weui-select" name="select2"> <option value="1" selected="selected">男</option> <option value="2">女</option> </select> </div> </div> <div class="button-sp-area"> <a class="weui-btn weui-btn_plain-default">确定</a> </div>');
+        var self = this;
+        this.ele.append('<div class="weui-cell"> <div class="weui-cell__hd"><label class="weui-label">身份</label></div> <div class="weui-cell__bd"> <input class="weui-input" placeholder="唯一识别号" name="ID" type="text"> </div> </div> <div class="weui-cell"> <div class="weui-cell__hd"><label class="weui-label">身高</label></div> <div class="weui-cell__bd"> <input class="weui-input" pattern="[0-9]" placeholder="身高" name="length" type="number"> </div> </div> <div class="weui-cell"> <div class="weui-cell__hd"><label class="weui-label">体重</label></div> <div class="weui-cell__bd"> <input class="weui-input" pattern="[0-9]" placeholder="体重" name="weight" type="number"> </div> </div> <div class="weui-cell"> <div class="weui-cell__hd"><label class="weui-label">性别</label></div> <div class="weui-cell__bd"> <select class="weui-select" name="select"> <option value="1" selected="selected">男</option> <option value="2">女</option> </select> </div> </div> <div class="button-sp-area"> <a class="weui-btn weui-btn_plain-default">确定</a> </div>');
         this.ele.on('click','.button-sp-area',function(e){
-            this.dispatchEvent($.Event('login',false));
+            var param ={};
+            self.ele.find('input').each(function(i,e){
+                param[e.name]= e.value;
+            })
+            param['zhai']=0;
+            param['sex']=self.ele.find('select').val();
+            var sd =$s.dsSharedObject.getLocal('person');
+            sd.data =param;
+            sd.flush();
+            this.dispatchEvent($.Event('submit',false));
         })
     }
 
@@ -112,12 +125,18 @@
         }
         this.ele.append(itstr);
     }
+    $(function(){
+        $.uistage = new uiPanel('#stage');
+        $.uistage.width = '100%';
+        $.uistage.height= '100%';
+        $.uistage.ele.hide();
 
-    var list = [uiEventDispatcher,uiLogin,movieList,uiPanel];
-    list.forEach(function(e){
-        $[e.prototype.constructor.name]=e;
+        var list = [uiEventDispatcher,uiLogin,movieList,uiPanel];
+        list.forEach(function(e){
+            $[e.prototype.constructor.name]=e;
+        });
     })
-    $.uistage = new uiPanel('body');
+
 })(Zepto);
 
 

@@ -1,6 +1,8 @@
 /**
  * created by administrator on 2016/11/2.
  */
+
+var roomtime = 0;
 function room() {
     var fstage = new $s.dsSprite();
     fstage.width = 800;
@@ -27,7 +29,7 @@ function room() {
     men.x = 10;
     men.name = "men"
     fstage.addChild(men);
-    men.addEventListener($s.dsMouseEvent.CLICK, function () {
+    men.addEventListener('click', function () {
         addCode('chumen', men.x+20,men.y+200);
     })
 
@@ -42,7 +44,7 @@ function room() {
     biji.y = 180;
     biji.name = 'biji';
     fstage.addChild(biji);
-    biji.addEventListener($s.dsMouseEvent.CLICK, function () {
+    biji.addEventListener('click', function () {
         addCode('kandianying', zhouzi.x+100, zhouzi.y+200)
     })
 
@@ -51,7 +53,7 @@ function room() {
     taiji.y = 120;
     taiji.name = 'taiji';
     fstage.addChild(taiji);
-    taiji.addEventListener($s.dsMouseEvent.CLICK, function () {
+    taiji.addEventListener('click', function () {
         addCode('wanyouxi', zhouzi.x+100, zhouzi.y+200);
     });
 
@@ -66,7 +68,7 @@ function room() {
     cesuo.y = 145;
     cesuo.name = 'cesuo'
     fstage.addChild(cesuo);
-    cesuo.addEventListener($s.dsMouseEvent.CLICK, function(){
+    cesuo.addEventListener('click', function(){
         addCode('shangcesou', cesuo.x+100, cesuo.y+300);
     })
 
@@ -83,11 +85,11 @@ function room() {
     beizi.x = 393;
     beizi.y = 460;
     fstage.addChild(beizi);
-    beizi.addEventListener($s.dsMouseEvent.CLICK, function () {
+    beizi.addEventListener('click', function () {
         addCode('diebeizi', beizi.x+200,beizi.y);
     })
 
-    bgclick.addEventListener($s.dsMouseEvent.CLICK, goto);
+    bgclick.addEventListener('click', goto);
     function goto(event) {
         var po =fstage.globalToLocal(new $s.dsPoint(event.stageX, event.stageY));
         addCode('',po.x,po.y);
@@ -99,7 +101,7 @@ function room() {
             reset(p.action);
             p.action = type;
         }
-        person.walk(dx, dy,1);
+        person.walk(dx, dy);
     }
 
     function doCode(type) {
@@ -109,6 +111,8 @@ function room() {
                 mc.gotoAndStop(0);
                 break;
             case "shangcesou":
+                person.action = 'incesou';
+                person.gowalk(person.x, person.y-50,1);
                 break;
             case "wanyouxi":
             case "kandianying":
