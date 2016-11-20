@@ -125,6 +125,14 @@
         }
         this.ele.append(itstr);
     }
+    movieList.prototype.addlist = function(list){
+        var self = this;
+        list.forEach(function(e,i){
+            trace(e);
+            self.addItem(e);
+        })
+    }
+
     $(function(){
         $.uistage = new uiPanel('#stage');
         $.uistage.width = '100%';

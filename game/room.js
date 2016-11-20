@@ -92,35 +92,45 @@ function room() {
     bgclick.addEventListener('click', goto);
     function goto(event) {
         var po =fstage.globalToLocal(new $s.dsPoint(event.stageX, event.stageY));
-        addCode('',po.x,po.y);
+        addCode('onlywalk',po.x,po.y);
     }
     function addCode(type, dx, dy) {
-        var p = fstage.getChildByName('person');
-        p.alpha = 1;
-        if (p.action != type) {
-            reset(p.action);
-            p.action = type;
-        }
-        person.walk(dx, dy);
-    }
 
+        person.visible = true;
+        if(type=='shangcesou'){
+            person.push(dx,dy,'cesou',true);
+            person.push(dx,dy-50,'cesou',false);
+            person.gowalk('cesou');
+        }else{
+            if(person.action=='shangcesou')
+                person.push(cesuo.x+100, cesuo.y+300,type,true);
+            person.push(dx,dy,type,false);
+            person.gowalk(type);
+        }
+        if (person.action != type) {
+            reset(person.action);
+            person.action = type;
+        }
+    }
+    var panel = null;
     function doCode(type) {
         switch (type) {
             case 'diebeizi':
-                var mc = fstage.getChildByName('beizi');
-                mc.gotoAndStop(0);
+                beizi.gotoAndStop(0);
                 break;
             case "shangcesou":
-                person.action = 'incesou';
-                person.gowalk(person.x, person.y-50,1);
                 break;
             case "wanyouxi":
             case "kandianying":
             case "shangwang":
-                var p = fstage.getChildByName('person');
-                p.visible = false;
-                var mc = fstage.getChildByName('zuoyi');
-                mc.gotoAndStop(1);
+                person.visible = false;
+                zuoyi.gotoAndStop(1);
+                if(panel==null)panel = new $.movieList();
+                $.uistage.show(panel);
+                panel.addlist([{title:'title',content:"content"},{title:'title',content:"content"},{title:'title',content:"content"}])
+                panel.x = ($s.stage.stageWidth-panel.width)*0.5;
+                panel.y = ($s.stage.stageHeight-panel.height)*0.5;
+
                 break;
             case "chumen":
                 changeScene('road');
@@ -139,10 +149,8 @@ function room() {
             case "wanyouxi":
             case "kandianying":
             case "shangwang":
-                var p = fstage.getChildByName('person');
-                p.visible = true;
-                var mc = fstage.getChildByName('zuoyi');
-                mc.gotoAndStop(0);
+                person.visible = true;
+                zuoyi.gotoAndStop(0);
                 break;
             case "chumen":
                 break;

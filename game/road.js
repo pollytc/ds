@@ -33,12 +33,12 @@ function road(){
     var pos = {};
     bg.mousePixel =true;
     road.mousePixel =true;
-    bg.addEventListener($s.dsMouseEvent.MOUSE_DOWN ,function(e){
+    bg.addEventListener('mousedown' ,function(e){
         pos.x = e.stageX;
-       $s.stage.addEventListener($s.dsMouseEvent.MOUSE_MOVE,movebg)
+       $s.stage.addEventListener('mousemove',movebg)
     },true);
-    bg.addEventListener($s.dsMouseEvent.MOUSE_UP,function(){
-        $s.stage.removeEventListener($s.dsMouseEvent.MOUSE_MOVE,movebg);
+    bg.addEventListener('mouseup',function(){
+        $s.stage.removeEventListener('mousemove',movebg);
     },true);
 
     function movebg(event){
@@ -58,22 +58,23 @@ function road(){
         pos.x = event.stageX;
         $s.stage.invalidate();
     }
-    road.addEventListener($s.dsMouseEvent.MOUSE_DOWN,function(e){
+    road.addEventListener('mousedown',function(e){
         var p = fstage.globalToLocal(new $s.dsPoint(e.stageX, e.stageY));
-        trace(p)
         person.walk(p.x, p.y,1);
+        trace(p)
     },true);
     towanda.addEventListener('click',function(){
         person.action = 'square';
+        //731,480
+
         person.walk(631, 366,1);
     })
     person.addEventListener('walkover',function(){
-        if(person.action='square'){
+        if(person.action=='square'){
             changeScene('square');
-        }else if(person.action='home'){
+        }else if(person.action=='home'){
             changeScene('room')//16, y: 557
         }
-
     })
 
 }

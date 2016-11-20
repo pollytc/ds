@@ -1239,10 +1239,6 @@
         ab.setXY(p4.x, p4.y);
         return ab;
     }
-    $s.Event = function(type){
-        $s.event.initEvent(type,false,false);
-        return $s.__initEvent($s.event,0,0);
-    }
     $s.event=document.createEvent("HTMLEvents");
     $s.__initEvent=function(event,sx,sy){
         event.stopImmediatePropagation = function(){

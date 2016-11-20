@@ -38,6 +38,6 @@ function changeScene(sec){
         pa.x= $s.stage.stageWidth-200;
         $s.stage.addChild(pa);
     }
-    $s.stage.dispatchEvent($s.Event('scene'))
+    $s.stage.dispatchEvent($s.dsEvent('scene'))
 }
 
