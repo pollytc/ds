@@ -2,13 +2,7 @@
  * Created by Administrator on 2016/11/4.
  */
 
-function login(){
-    //var bg = new $s.dsDisplayObject();
-    //bg.graphics.lineStyle(2,0x780000);
-    //bg.graphics.beginFill(0xffffff);
-    //bg.graphics.drawRect(1,1,$s.stage.stageWidth-2,$s.stage.stageHeight-2);
-    //$s.stage.addChild(bg);
-
+function login(bool){
     var logo = new $s.dsLoader().load('img/logo.png');
     logo.addEventListener('complete',function(){
         logo.x = $s.stage.stageWidth*0.1;
@@ -22,19 +16,30 @@ function login(){
     btn.y = 100;
     var panel = null
     btn.addEventListener('mousedown',function(){
-        var sd = $s.dsSharedObject.getLocal('person');
-        if(sd.data){
-            changeScene('room');
-            return;
+        //var sd = $s.dsSharedObject.getLocal('person');
+        //if(sd.data){
+        //    changeScene('room');
+        //    return;
+        //}
+        //if(!panel)panel = new $.uiLogin();
+        //$.uibody.show(panel);
+        //panel.x = ($s.stage.stageWidth-panel.width)*0.5;
+        //panel.y = ($s.stage.stageHeight-panel.height)*0.5;
+        //panel.addEventListener('submit',function(){
+        //    $.uibody.hide(panel);
+        //    changeScene('room');
+        //})
+        if(!panel){
+            var panel = new $.uiTabPanel();
+            $.uibody.addChild(panel);
+            $.uibody.ele.show();
+            panel.model();
+            panel.ele.css('position','inherit')
+            panel.addtab('login', new $.uiLogin());
+            panel.addtab('Resitger', new $.uiResitger());
+            panel.x = ($.uibody.width-panel.width)*0.5;
+            panel.y = ($.uibody.height-panel.height)*0.5;
         }
-        if(!panel)panel = new $.uiLogin();
-        $.uistage.show(panel);
-        panel.x = ($s.stage.stageWidth-panel.width)*0.5;
-        panel.y = ($s.stage.stageHeight-panel.height)*0.5;
-        panel.addEventListener('submit',function(){
-            $.uistage.hide(panel);
-            changeScene('room');
-        })
     })
     $s.stage.addChild(btn);
     var btn1 = new $s.dsLoader().load('img/shuoming.png');

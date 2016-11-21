@@ -877,10 +877,15 @@
         return this;
     }
     dsMatrix.prototype.scale = function (sx, sy) {
-        this.a *= sx;
-        this.b *= sx;
-        this.c *= sy;
-        this.d *= sy;
+        //this.a *= sx;
+        //this.b *= sx;
+        //this.c *= sy;
+        //this.d *= sy;
+        this.a = sx;
+        //this.b *= sx;
+        //this.c *= sy;
+        this.d = sy;
+
         //this.tx/=sx;
         //this.ty/=sy;
         return this;
@@ -2557,7 +2562,7 @@
         Object.defineProperties(text, {
             "text": {
                 set: function (v) {
-                    this._text = this.maxChars ? v.substr(0, this.maxChars) : v;
+                    this._text = this.maxChars ? v.substr(0, this.maxChars) : v.toString();
                     this._length = this._text.length;
                     this._chapters = [];
                     if (this.displayAsPassword) {
@@ -3117,7 +3122,7 @@
     $s.dsURLRequest=dsURLRequest;
     function dsURLRequest(url){
         this.contentType ='application/x-www-form-urlencoded';// multipart/form-data
-        this.data=null;
+        this.data={};
         this.digest='';
         this.method ='get';//post
         this.requestHeaders=[];//HTTP 请求标头的数组 键值对
@@ -3126,6 +3131,15 @@
         //Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en) AppleWebKit/526.9+ (KHTML, like Gecko) AdobeAIR/1.5"
         //"Mozilla/5.0 (Windows; U; en) AppleWebKit/526.9+ (KHTML, like Gecko) AdobeAIR/1.5"
         //"Mozilla/5.0 (X11; U; Linux i686; en-US) AppleWebKit/526.9+ (KHTML, like Gecko) AdobeAIR/1.5"
+    }
+    if (!XMLHttpRequest.prototype.sendAsBinary) {
+        XMLHttpRequest.prototype.sendAsBinary = function(sData) {
+            var nBytes = sData.length, ui8Data = new Uint8Array(nBytes);
+            for (var nIdx = 0; nIdx < nBytes; nIdx++) {
+                ui8Data[nIdx] = sData.charCodeAt(nIdx) & 0xff;
+            }
+            this.send(ui8Data);
+        };
     }
     $s[config.pre+'URLLoader']=dsURLLoader;
     function dsURLLoader(request){
@@ -3157,7 +3171,12 @@
         this.bytesLoaded = 0;
         this.bytesTotal = 0;
         var self = this;
-        var http = new XMLHttpRequest();
+        var http;
+        if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+            http = new XMLHttpRequest();
+        } else {// code for IE6, IE5
+            http = new ActiveXObject("Microsoft.XMLHTTP");
+        }
         http.addEventListener("progress", function (event) {
             //console.log(event);
             //this.dispatchEvent()

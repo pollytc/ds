@@ -5,14 +5,6 @@
 function Person(){
     $s.dsExtend(Person,$s.dsDisplayObjectContainer);
     var per =new Person.prototype.__init();
-    Object.defineProperties(per,
-        {'action':
-        {set:function(v){
-            this._action=v;
-            $s.stage.dispatchEvent($s.dsEvent('action'));},
-         get:function(){return this._action}}
-        }
-    )
     return per;
 }
 Person.prototype.__init =function() {
@@ -25,7 +17,7 @@ Person.prototype.__init =function() {
     this.foot.gotoAndStop(2);
     this.speed = 5;
     this.timeid =0;
-    this._action = '';
+    this.action = '';
     this.addChild(this.head);
     this.addChild(this.body);
     this.addChild(this.hand);
@@ -41,7 +33,7 @@ Person.prototype.init=function(){
     this.hand.x = 5;
     this.head.y =-150;
     this.head.load('img/head'+per.data.sex+'.png');
-    this.body.load('img/body0005.png');
+    this.body.load('img/body'+cupBody(per.data.weight)+'.png');
     this.__code = {};
     this.__curkey = '';
     this.__cur= {};
@@ -51,19 +43,48 @@ Person.prototype.push = function(dx,dy,key,bestop){
     this.__code[key].push({x:dx,y:dy,stop:bestop});
 }
 Person.prototype.gowalk = function(key){
-    this.__curkey=key;
+    if(this.__curkey != key){
+        if(this.__cur.stop){
+            delete this.__code[this.__curkey];
+            this.__cur={};
+        }
+    }
     var cc = this.__code[key];
+    trace(cc);
     if(cc.length<=0)return false;
     if(this.__cur.stop)return;
     this.__cur=cc.shift();
+    trace(this.__cur)
+    this.__curkey=key;
     this.walk(this.__cur.x, this.__cur.y);
     return true;
 
 }
+function cupBody(b){
+    var m =(b-75)*0.5+3;
+    if(m<=0)m=1;
+    else if(m>20)m = 20;
+    var n = 4-m.toString().length;
+    for(var i=0;i<n;i++){
+        m='0'+ m.toString();
+    }
+    return m;
+}
+function BMItoimg(h,l){
+    var m = parseInt(h/(l*l));
+    if(m<=16)m= 1
+    else if(m>35)m= 20;
+    else m=m -16;
+    var n = 4-m.toString().length;
+    for(var i=0;i<n;i++){
+        m='0'+ m.toString();
+    }
+    return m;
+}
 
 Person.prototype.walk = function(dx,dy,face){
         if(dx<this.x) {this.scaleX = -1;}
-    else if(this.scaleX==-1)this.scaleX = -1;
+    else this.scaleX = 1;
 
     this.foot.play();
     var r = new $s.dsRectangle(dx - 10, dy -10, 20, 20);
@@ -83,6 +104,9 @@ Person.prototype.walk = function(dx,dy,face){
                 }
                 self.stand(1);
                 self.dispatchEvent(new $s.dsEvent('walkover'));
+                var e = $s.dsEvent('action');
+                e.action = self.action;
+                $s.stage.dispatchEvent(e);
             }
         }, 100);
     }

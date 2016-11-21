@@ -13,8 +13,11 @@
 <script src="ui/zepto.min.js"></script>
 <script src="game/dsui.js"></script>
 <script>
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function(e){console.log(e)};
 
+    xhr.open('GET','http://flashds.com/server/wp-admin/admin-ajax.php?action=ds',true);
+    xhr.send();
 </script>
 </body>
-
 </html>

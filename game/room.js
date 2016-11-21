@@ -45,7 +45,7 @@ function room() {
     biji.name = 'biji';
     fstage.addChild(biji);
     biji.addEventListener('click', function () {
-        addCode('kandianying', zhouzi.x+100, zhouzi.y+200)
+        addCode('shangwang', zhouzi.x+100, zhouzi.y+200)
     })
 
     var taiji = new $s.dsLoader().load('img/taishiji.png');
@@ -54,7 +54,7 @@ function room() {
     taiji.name = 'taiji';
     fstage.addChild(taiji);
     taiji.addEventListener('click', function () {
-        addCode('wanyouxi', zhouzi.x+100, zhouzi.y+200);
+        addCode('shangwang', zhouzi.x+100, zhouzi.y+200);
     });
 
     var zuoyi = new $s.dsMovieClip('zuoyi');
@@ -95,7 +95,6 @@ function room() {
         addCode('onlywalk',po.x,po.y);
     }
     function addCode(type, dx, dy) {
-
         person.visible = true;
         if(type=='shangcesou'){
             person.push(dx,dy,'cesou',true);
@@ -120,17 +119,12 @@ function room() {
                 break;
             case "shangcesou":
                 break;
-            case "wanyouxi":
-            case "kandianying":
             case "shangwang":
                 person.visible = false;
                 zuoyi.gotoAndStop(1);
-                if(panel==null)panel = new $.movieList();
+                if(panel==null)panel = new $.MovieList();
                 $.uistage.show(panel);
                 panel.addlist([{title:'title',content:"content"},{title:'title',content:"content"},{title:'title',content:"content"}])
-                panel.x = ($s.stage.stageWidth-panel.width)*0.5;
-                panel.y = ($s.stage.stageHeight-panel.height)*0.5;
-
                 break;
             case "chumen":
                 changeScene('road');
@@ -146,8 +140,6 @@ function room() {
                 break;
             case "shangcesou":
                 break;
-            case "wanyouxi":
-            case "kandianying":
             case "shangwang":
                 person.visible = true;
                 zuoyi.gotoAndStop(0);
