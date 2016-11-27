@@ -153,7 +153,14 @@
             INTERACTIVEEVENT: [Event.ENTER_FRAME,],
             MOUSE: [FocusEvent.FOCUS_IN, FocusEvent.FOCUS_OUT, FocusEvent.KEY_FOCUS_CHANGE, FocusEvent.MOUSE_FOCUS_CHANGE, MouseEvent.ROLL_OVER, MouseEvent.ROLL_OUT, MouseEvent.RIGHT_MOUSE_UP, MouseEvent.RIGHT_MOUSE_DOWN, MouseEvent.RIGHT_CLICK, MouseEvent.RELEASE_OUTSIDE, MouseEvent.MOUSE_WHEEL, MouseEvent.MOUSE_UP, MouseEvent.MOUSE_OVER,'click', MouseEvent.DOUBLE_CLICK, MouseEvent.MIDDLE_CLICK, MouseEvent.MIDDLE_MOUSE_DOWN, MouseEvent.MIDDLE_MOUSE_UP, MouseEvent.MOUSE_DOWN, MouseEvent.MOUSE_MOVE, MouseEvent.MOUSE_OUT],
             KEY: [KeyboardEvent.KEY_DOWN, KeyboardEvent.KEY_UP],
-            TOUCH:['touchstart','touchmove','touchend','touchcancel']
+            TOUCH:['touchstart','touchmove','touchend','touchcancel'],
+            accepts: {
+                script: 'text/javascript, application/javascript, application/x-javascript',
+                json:   'application/json',
+                xml:    'application/xml, text/xml',
+                html:   'text/html',
+                text:   'text/plain'
+            },
         }
     var CompositeOperation = {
         SOURCE_OVER: "source-over",
@@ -955,8 +962,24 @@
     dsEventDispatcher.prototype.dispatchEvent = function (event) {
         event.currentTarget = this;
         var a = this.__events[event.type];
+        var ps = [];
+        var p = this.parent;
+        ps.push(this);
+        while(p){
+            ps.push(p);
+            p = p.parent;
+        }
+
         for (var i in a) {
-            a[i].call(this, event);
+            if(event.bubbles){
+                for(var j = 0;j<ps.length;j++){
+                    a[i].call(ps[j], event);
+                }
+            }else{
+                for(var j = ps.length-1;j>=0;j--){
+                    a[i].call(ps[j], event);
+                }
+            }
         }
     }
     dsEventDispatcher.prototype.removeEventListener = function (type, listener, useCapture) {
@@ -1312,9 +1335,10 @@
         this.doubleClickEnabled = false;
         this.mouseEnabled = true;
         this.__activeEvent=[];
-        this.mousePixel = false;
+        this.mousePixel = true;
     };
     dsInteractiveObject.prototype.__mouseaction = function (event) {
+        if(!this.mouseEnabled)return
         var evs = this.__activeEvent[event.type];
         event.currentTarget = this;
         event.target = this;
@@ -1502,7 +1526,7 @@
         var arr = [];
         for (var i = this.__children.length - 1; i >=0; i--) {
             var child= this.__children[i];
-            if (child.hitTestPoint(point.x,point.y,true)) {
+            if (child.hitTestPoint(point.x,point.y,child.mousePixel)) {
                 if (dsChildOf(child, dsDisplayObjectContainer)) {
                     arr = arr.concat(child.getObjectsUnderPoint(point));
                 }
@@ -3122,12 +3146,13 @@
     $s.dsURLRequest=dsURLRequest;
     function dsURLRequest(url){
         this.contentType ='application/x-www-form-urlencoded';// multipart/form-data
-        this.data={};
+        this.data={};//"arraybuffer""blob""document""json""text"
         this.digest='';
         this.method ='get';//post
         this.requestHeaders=[];//HTTP 请求标头的数组 键值对
         this.url = url;
         this.userAgent=navigator.userAgent;
+        this.dataType ='text';
         //Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en) AppleWebKit/526.9+ (KHTML, like Gecko) AdobeAIR/1.5"
         //"Mozilla/5.0 (Windows; U; en) AppleWebKit/526.9+ (KHTML, like Gecko) AdobeAIR/1.5"
         //"Mozilla/5.0 (X11; U; Linux i686; en-US) AppleWebKit/526.9+ (KHTML, like Gecko) AdobeAIR/1.5"
@@ -3147,18 +3172,21 @@
         return new dsURLLoader.prototype.__init(request);
     }
     dsURLLoader.prototype.load = function (request) {
-        this.request = typeof request =='string'?new dsURLRequest(request):request
-        this.http.open(this.request.method, this.request.url, true);
-        //this.http.responseType = this.request.contentType;
+        var res =this.request = typeof request =='string'?new dsURLRequest(request):request
+
+        this.http.open(this.request.method, this.request.url+objtoquery(res.data), true);
         for(var i = 0;i<this.request.requestHeaders.length;i++){
             var h = this.request.requestHeaders[i];
             this.http.setRequestHeader(h.head.h.value);
         }
+        var mime= utils.accepts[res.dataType];
+        this.http.setRequestHeader('Accept', mime || '*/*');
+        this.http.setRequestHeader('Content-Type',res.contentType);
         var self = this;
         this.http.onload = function (event){
             self.data = event.target.response;
         }
-        this.http.send(null);
+        this.http.send(res.data);
     }
     dsURLLoader.prototype.close = function(){
         this.http.abort();
@@ -3189,22 +3217,26 @@
         });
         http.addEventListener("error", function () {
             throw "error";
-            //this.dispatchEvent()
         });
         http.addEventListener("abort", function () {
             //console.log("abort");
         });
-        http.addEventListener("loadend", function () {
-            $s.event.initEvent(Event.COMPLETE,false,false);
-            self.dispatchEvent($s.event);
+        http.addEventListener("loadend", function (e) {
+            //trace('end',e)
         });
         http.addEventListener('readystatechange',function(e){
             //http.readyState;
             //http.status;
-            //console.log(http.readyState,http.status);
+            //self.data = e.target.response;
+            //console.log(http.readyState,http.status,e);
+            if(http.readyState==4){
+                self.data = http.response;
+                $s.event.initEvent(Event.COMPLETE,false,false);
+                self.dispatchEvent($s.event);
+            }
         })
         this.http=http;
-        this.http.timeout = 2000;
+        //this.http.timeout = 5000;
         if(this.request) this.load(this.request);
     }
 
@@ -3739,5 +3771,34 @@
             return unescape(arr[2]);
         else
             return null;
+    }
+
+    function objtoquery(obj){
+        var res ="?"
+        for(var s in obj){res+=s+"="+obj[s]+"&"};
+        if(res.length>1){
+            res= res.substr(0,res.length-1);
+            return res;
+        }
+        return '';
+
+    }
+    function dsRequire(src){
+        if (Array.isArray(src)) {
+            for (var j = 0; j < src.length; j++) {
+                dsRequire(src[j]);
+            }
+            return;
+        }
+        var srcs = document.querySelectorAll('script');
+        for (var i = 0; i < srcs.length; i++) {
+            if (srcs[i].src == src)return;
+        }
+        var s = document.createElement('script')
+        s.src = src;
+        document.head.appendChild(s);
+        s.onload = function (e) {
+            console.log(e)
+        }
     }
 });

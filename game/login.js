@@ -16,30 +16,7 @@ function login(bool){
     btn.y = 100;
     var panel = null
     btn.addEventListener('mousedown',function(){
-        //var sd = $s.dsSharedObject.getLocal('person');
-        //if(sd.data){
-        //    changeScene('room');
-        //    return;
-        //}
-        //if(!panel)panel = new $.uiLogin();
-        //$.uibody.show(panel);
-        //panel.x = ($s.stage.stageWidth-panel.width)*0.5;
-        //panel.y = ($s.stage.stageHeight-panel.height)*0.5;
-        //panel.addEventListener('submit',function(){
-        //    $.uibody.hide(panel);
-        //    changeScene('room');
-        //})
-        if(!panel){
-            var panel = new $.uiTabPanel();
-            $.uibody.addChild(panel);
-            $.uibody.ele.show();
-            panel.model();
-            panel.ele.css('position','inherit')
-            panel.addtab('login', new $.uiLogin());
-            panel.addtab('Resitger', new $.uiResitger());
-            panel.x = ($.uibody.width-panel.width)*0.5;
-            panel.y = ($.uibody.height-panel.height)*0.5;
-        }
+        if(!panel)panel = loginPanel();
     })
     $s.stage.addChild(btn);
     var btn1 = new $s.dsLoader().load('img/shuoming.png');
@@ -50,4 +27,44 @@ function login(bool){
     })
     $s.stage.addChild(btn1);
 
+    function loginPanel(){
+        var loginhtml = '<form class="userform">\
+            <h2>Login</h2>\
+            <label for="name">Username:</label>\
+        <div class="ui-input-text ui-body-inherit ui-corner-all ui-mini ui-shadow-inset ui-input-has-clear"><input type="text" name="name" id="name" value="" data-clear-btn="true" data-mini="true"><a href="#" tabindex="-1" aria-hidden="true" class="ui-input-clear ui-btn ui-icon-delete ui-btn-icon-notext ui-corner-all ui-input-clear-hidden" title="Clear text">Clear text</a></div>\
+        <label for="password">Password:</label>\
+        <div class="ui-input-text ui-body-inherit ui-corner-all ui-mini ui-shadow-inset ui-input-has-clear"><input type="password" name="password" id="password" value="" data-clear-btn="true" autocomplete="off" data-mini="true"><a href="#" tabindex="-1" aria-hidden="true" class="ui-input-clear ui-btn ui-icon-delete ui-btn-icon-notext ui-corner-all ui-input-clear-hidden" title="Clear text">Clear text</a></div>\
+        <div class="ui-grid-a">\
+            <div class="ui-block-a"><a href="#" data-rel="close" class="ui-btn ui-shadow ui-corner-all ui-btn-b ui-mini">NONE</a></div>\
+        <div class="ui-block-b"><a href="#" data-rel="close" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-mini">YES</a></div>\
+        </div>\
+        </form>'
+
+        var panel = $s.uiPanel();
+        panel.addChild(loginhtml)
+        $s.uistage.addChild(panel);
+        panel.css({'position': 'absolute'});
+        panel.x = ($s.uistage.width - panel.width) * 0.5 + "px";
+        panel.y = ($s.uistage.height - panel.height) * 0.5 + "px";
+        panel.tojquery().find('.ui-grid-a').click(function(e){
+            var pa =panel.tojquery();
+            if(e.target.innerHTML=="YES"){
+                var n =pa.find('#name').val();
+                var p =pa.find('#password').val();
+                if(!p ||!n)return alert('账号或密码为空');
+                dsserver({act:'login',user:n,pass:p},function(d){
+                    if(d.success){
+                        $s.uistage.empty();
+                        changeScene('room');
+                    }
+                })
+            }else if(e.target.innerHTML=='NONE'){
+                pa.find('#name').val('');
+                pa.find('#password').val('');
+            }
+        })
+        return panel;
+    }
 }
+
+

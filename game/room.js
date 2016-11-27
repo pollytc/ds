@@ -122,9 +122,10 @@ function room() {
             case "shangwang":
                 person.visible = false;
                 zuoyi.gotoAndStop(1);
-                if(panel==null)panel = new $.MovieList();
-                $.uistage.show(panel);
-                panel.addlist([{title:'title',content:"content"},{title:'title',content:"content"},{title:'title',content:"content"}])
+                panel=movielist(panel);
+                panel.x = ($s.stage.stageWidth-panel.width)*0.5;
+                panel.y = ($s.stage.stageHeight-panel.height)*0.5;
+
                 break;
             case "chumen":
                 changeScene('road');
@@ -147,6 +148,26 @@ function room() {
             case "chumen":
                 break;
         }
+    }
+
+    function movielist(p){
+        if(p){
+            $s.uistage.addChild(p);
+            return p;
+        }
+        var panel = new $s.uiDialog();
+        panel.css({'position': 'absolute'});
+        $s.uistage.addChild(panel);
+        panel.x = ($s.uistage.width - panel.width) * 0.5 + "px";
+        //panel.y = ($s.uistage.height - panel.height) * 0.5 + "px";
+        var list = new $s.uiList();
+        list.css({'max-height':'400px'})
+        panel.addChild(list);
+        dsserver({act:'movielist'},function(d){
+            list.addlist(d.data);
+
+        })
+        return panel;
     }
 }
 

@@ -24,6 +24,7 @@ figure.prototype.__init = function(){
     //房间内行为改变
     $s.stage.addEventListener('action',function(e){
         if(e.action=='shangwang'){
+            clearInterval(self.actionid)
             self.actionid = setInterval(function(){
                 var t = new $s.dsTextField();
                 t.text =1;

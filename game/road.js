@@ -18,9 +18,9 @@ function road(){
 
     var towanda = new $s.dsSprite();
     towanda.graphics.beginFill(0xffff00);
-    towanda.graphics.drawRect(0,0,300,200);
+    towanda.graphics.drawRect(0,0,300,100);
     towanda.x = 500;
-    towanda.y = -201;
+    towanda.y = -101;
     road.addChild(towanda);
 
     var bg = new $s.dsLoader().load('img/jiedao.png');
@@ -31,9 +31,21 @@ function road(){
     person.x = 50;
     fstage.addChild(person);
     var pos = {};
-    bg.mousePixel =true;
-    road.mousePixel =true;
+    var bghot = [
+        {key:1,r:new $s.dsRectangle(0,404,53,109)},
+        {key:2,r:new $s.dsRectangle(372,420,50,100)},
+        {key:3,r:new $s.dsRectangle(572,368,50,83)},
+        {key:4,r:new $s.dsRectangle(744,361,55,107)},
+        {key:5,r:new $s.dsRectangle(910,368,42,86)}
+    ]
+
     bg.addEventListener('mousedown' ,function(e){
+        for(var i = 0;i<bghot.length;i++){
+            if(bghot[i].r.contains(e.stageX, e.stageY)){
+                showMenu(bghot[i].key);
+                return;
+            }
+        }
         pos.x = e.stageX;
        $s.stage.addEventListener('mousemove',movebg)
     },true);
@@ -58,15 +70,15 @@ function road(){
         pos.x = event.stageX;
         $s.stage.invalidate();
     }
+
     road.addEventListener('mousedown',function(e){
+
         var p = fstage.globalToLocal(new $s.dsPoint(e.stageX, e.stageY));
         person.walk(p.x, p.y,1);
         trace(p)
     },true);
     towanda.addEventListener('click',function(){
         person.action = 'square';
-        //731,480
-
         person.walk(631, 366,1);
     })
     person.addEventListener('walkover',function(){
@@ -76,5 +88,21 @@ function road(){
             changeScene('room')//16, y: 557
         }
     })
-
+    var menu  = null;
+    function showMenu(key){
+        if(menu){
+            $s.uistage.addChild(menu);
+        }
+        var menu = new $s.uiDialog();
+        menu.css({'position': 'absolute'});
+        $s.uistage.addChild(menu);
+        menu.x = ($s.uistage.width - menu.width) * 0.5 + "px";
+        //panel.y = ($s.uistage.height - panel.height) * 0.5 + "px";
+        var list = new $s.uiList();
+        list.css({'max-height':'400px'});
+        menu.addChild(list);
+        dsserver({act:'menulist'},function(d){
+            list.addlist(d.data);
+        })
+    }
 }

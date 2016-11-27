@@ -50,11 +50,9 @@ Person.prototype.gowalk = function(key){
         }
     }
     var cc = this.__code[key];
-    trace(cc);
     if(cc.length<=0)return false;
     if(this.__cur.stop)return;
     this.__cur=cc.shift();
-    trace(this.__cur)
     this.__curkey=key;
     this.walk(this.__cur.x, this.__cur.y);
     return true;
