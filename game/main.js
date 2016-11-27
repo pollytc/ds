@@ -13,7 +13,7 @@ var _static ={
         //    changeScene('resigter');
         //}else{
 
-        changeScene('road');
+        changeScene('login');
 
 
         //}
@@ -63,6 +63,18 @@ function dsserver(param,back){
     var url = new $s.dsURLRequest(_static.ser);
     url.method ='get';
     param.action = 'ds';
+    url.data = param;
+    var load = $s.dsURLLoader(url);
+    load.addEventListener('complete',function(){
+        var d = load.data?JSON.parse(load.data):'';
+        if(back)back.call(null,d);
+    })
+}
+
+function saveserver(param,back){
+    var url = new $s.dsURLRequest(_static.ser);
+    url.method ='post';
+    param.action = 'dssave';
     url.data = param;
     var load = $s.dsURLLoader(url);
     load.addEventListener('complete',function(){

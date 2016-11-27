@@ -54,8 +54,14 @@ function login(bool){
                 if(!p ||!n)return alert('账号或密码为空');
                 dsserver({act:'login',user:n,pass:p},function(d){
                     if(d.success){
+                        var  per =$s.dsSharedObject.getLocal('user');
+                        if(!per.data){
+                            per.data={};
+                            per.data.user =n;
+                            per.flush();
+                        }
                         $s.uistage.empty();
-                        changeScene('room');
+                        changeScene(d.data.scene);
                     }
                 })
             }else if(e.target.innerHTML=='NONE'){

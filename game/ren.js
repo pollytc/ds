@@ -26,14 +26,30 @@ Person.prototype.__init =function() {
 }
 Person.prototype.init=function(){
     var per=$s.dsSharedObject.getLocal('person');
+    if(!per.data){
+        var user =$s.dsSharedObject.getLocal('user');
+        var self = this;
+        dsserver({act:'person',id:user.data.user},function(d){
+            if(d.success){
+                per.data= d.data;
+                per.flush();
+                self.head.load('img/head'+per.data.sex+'.png');
+                self.body.load('img/body'+cupBody(per.data.weight)+'.png');
+                $s.stage.dispatchEvent($s.dsEvent('updatefigure'));
+            }else{
+                console.log(d)
+            }
+        });
+    }else{
+        this.head.load('img/head'+per.data.sex+'.png');
+        this.body.load('img/body'+cupBody(per.data.weight)+'.png');
+    }
     this.body.x =-8;
     this.body.y = -107;
     this.foot.y =-25;
     this.hand.y=-80;
     this.hand.x = 5;
     this.head.y =-150;
-    this.head.load('img/head'+per.data.sex+'.png');
-    this.body.load('img/body'+cupBody(per.data.weight)+'.png');
     this.__code = {};
     this.__curkey = '';
     this.__cur= {};

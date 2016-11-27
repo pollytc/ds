@@ -2823,6 +2823,7 @@
     dsTextField.prototype.setTextFormat = function (format, beginIndex, endIndex) {
     }
     dsTextField.prototype.__render = function (ctx) {
+        if(!this._text)return
         this.__call(dsDisplayObject,'__render',[ctx]);
         if (this.background) {
             ctx.fillStyle = this.backgroundColor;

@@ -12,12 +12,15 @@ function dsAjax(){
     if(!empty($_REQUEST['act']))
     {
         $_REQUEST['act']();
-//        @call_user_func($_REQUEST['act']);
     }
 }
 
 function login(){
-    if($_GET['user']=='123') wp_send_json_success();
+    if($_GET['user']=='123' || $_GET['user']=='456')
+    {
+        $result = array(scene=>'room');
+        wp_send_json_success($result);
+    }
      wp_send_json_error('id 不匹配');
 }
 
@@ -26,7 +29,21 @@ function register(){
 }
 
 function person(){
-
+    $per =array();
+    if($_REQUEST['id']=='123'){
+        $per['sex']='1';
+        $per['weight']=75;
+        $per['height']=160;
+        $per['zhai']=0;
+    }else if($_REQUEST['id']=='456'){
+        $per['sex']='0';
+        $per['weight']=60;
+        $per['height']=140;
+        $per['zhai']=0;
+    }else{
+        return wp_send_json_error();
+    }
+    wp_send_json_success($per);
 }
 
 function movielist(){
@@ -50,4 +67,14 @@ function menulist(){
     $list[]=array(name=>'tilte5',content=>"content5",price=>2,id=>'5',img=>'');
     $list[]=array(name=>'tilte6',content=>"content6",price=>1,id=>'6',img=>'');
     wp_send_json_success($list);
+}
+
+add_action('wp_ajax_nopriv_dssave',saveAjax);
+add_action('wp_ajax_dssave',saveAjax);
+
+function saveAjax(){
+    if(!empty($_REQUEST['act']))
+    {
+        $_REQUEST['act']();
+    }
 }

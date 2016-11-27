@@ -3,7 +3,6 @@
  */
 function figure(){
     $s.dsExtend(figure,$s.dsDisplayObjectContainer)
-
     return new figure.prototype.__init()
 }
 figure.prototype.__init = function(){
@@ -17,9 +16,10 @@ figure.prototype.__init = function(){
     this.zhishu.x = 200;
     this.addChild(this.zhishu);
     var self = this;
-    //$s.stage.addEventListener('updatefigure',function(){
-    //    self.update();
-    //});
+    $s.stage.addEventListener('updatefigure',function(){
+        self.param=$s.dsSharedObject.getLocal('person');
+        self.update();
+    });
     this.list = new PushList();
     //房间内行为改变
     $s.stage.addEventListener('action',function(e){
@@ -39,6 +39,7 @@ figure.prototype.__init = function(){
     });
     //场景变化
     $s.stage.addEventListener('scene',function(e){
+        if(!self.data)return
         self.param.data.scene = e.scene;
         self.update();
     });
@@ -48,9 +49,10 @@ figure.prototype.__init = function(){
 
 figure.prototype.update = function(){
     var param = this.param;
+    if(!param.data)return;
     this.zhai.text = '宅指数:'+param.data.zhai;
     this.weight.text = '体重:'+param.data.weight;
-    this.zhishu.text = '健康指数:'+(param.data.weight/(param.data.length*param.data.length)).toFixed(2);
+    this.zhishu.text = '健康指数:'+(param.data.weight/(param.data.height*param.data.height)).toFixed(2);
     param.flush();
 }
 
