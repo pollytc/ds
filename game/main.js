@@ -83,7 +83,22 @@ function localData(data){
     var local = $s.dsSharedObject.getLocal('person');
     if(data)
     {
-        local.data  =data;
+        function ins(sour,dest){
+            for(var s in sour){
+                if(typeof sour[s] =='object')
+                {
+                    dest[s]={};
+                    ins(sour[s],dest[s])
+                }else{
+                    dest[s] = sour[s];
+                }
+            }
+        }
+        if(local.data){
+            ins(data,local.data);
+        }else{
+            local.data  =data;
+        }
         local.flush();
     }
     return local.data;

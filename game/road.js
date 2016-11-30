@@ -4,7 +4,7 @@
 function road(){
     var fstage = $s.dsSprite();
     fstage.name ='fstage'
-    fstage.x = -30;
+    fstage.x = -350;
     $s.stage.addChild(fstage);
     var road = new $s.dsSprite();
     road.name ='road';
@@ -20,7 +20,7 @@ function road(){
     var c2 = new $s.dsMovieClip('chukou');
     c2.name='c2';
     c2.y=570;
-    c2.x = 450;
+    c2.x = 650;
     fstage.addChild(c2);
     var c1 = new $s.dsMovieClip('chukou');
     c1.name='c1';
@@ -45,14 +45,20 @@ function road(){
         {key:4,r:new $s.dsRectangle(744,361,55,107)},
         {key:5,r:new $s.dsRectangle(910,368,42,86)}
     ]
-    c1.addEventListener('mousedown',function(event){
-        trace(event.dsTarget.name)
+    c1.addEventListener('mousedown',function(e){
+        var p = fstage.globalToLocal(new $s.dsPoint(e.stageX, e.stageY));
+        person.action='sport';
+        person.walk(p.x, p.y,1);
     })
     c2.addEventListener('mousedown',function(event){
-        trace(event.dsTarget.name)
+        var p = fstage.globalToLocal(new $s.dsPoint(e.stageX, e.stageY));
+        person.action='room';
+        person.walk(p.x, p.y,1);
     })
     c3.addEventListener('mousedown',function(event){
-        trace(event.dsTarget.name)
+        var p = fstage.globalToLocal(new $s.dsPoint(e.stageX, e.stageY));
+        person.action='square';
+        person.walk(p.x, p.y,1);
     })
     bg.addEventListener('mousedown' ,function(e){
         for(var i = 0;i<bghot.length;i++){
@@ -80,7 +86,7 @@ function road(){
             $s.stage.invalidate();
             return
         }
-        //person.stand(1);
+        person.stand(1);
         fstage.x+=v;
         pos.x = event.stageX;
         $s.stage.invalidate();
@@ -91,10 +97,16 @@ function road(){
         person.walk(p.x, p.y,1);
     });
     person.addEventListener('walkover',function(){
-        if(person.action=='square'){
-            changeScene('square');
-        }else if(person.action=='home'){
-            changeScene('room')//16, y: 557
+        switch(person.action){
+            case 'square':
+                changeScene('square');
+                break;
+            case "room":
+                changeScene('room')
+                break;
+            case 'sport':
+                changeScene('sport');
+                break;
         }
     })
     var menu  = null;

@@ -32,7 +32,7 @@ figure.prototype.__init = function(){
                 var t = new $s.dsTextField();
                 t.text =1;
                 var param = localData();
-                param.zhai++;
+                param.person.zhai++;
                 self.list.push(t);
                 $s.stage.addChild(t);
                 self.update();
@@ -57,9 +57,9 @@ figure.prototype.__init = function(){
 figure.prototype.update = function(){
     var param = localData();
     if(!param)return;
-    this.zhai.text = '宅指数:'+param.zhai;
-    this.weight.text = '体重:'+param.weight;
-    this.zhishu.text = '健康指数:'+(param.weight/(param.height*param.height)).toFixed(2);
+    this.zhai.text = '宅指数:'+param.person.zhai;
+    this.weight.text = '体重:'+param.person.weight;
+    this.zhishu.text = '健康指数:'+(param.person.weight/(param.person.height*param.person.height)).toFixed(2);
     localData(param);
 }
 
