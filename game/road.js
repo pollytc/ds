@@ -3,32 +3,39 @@
  */
 function road(){
     var fstage = $s.dsSprite();
-    fstage.width = 800;
-    fstage.height = 600;
+    fstage.name ='fstage'
+    fstage.x = -30;
     $s.stage.addChild(fstage);
-    fstage.y = $s.stage.stageHeight-fstage.height;
     var road = new $s.dsSprite();
-    road.name ='road'
+    road.name ='road';
     road.graphics.lineStyle(2,0x7B0000);
-    road.graphics.beginFill(0xffffff);
-    road.x = 1;
-    road.y = fstage.height-251;
-    road.graphics.drawRect(0,0,fstage.width-2,250);
+    road.graphics.beginFill(0xffff00);
+    road.graphics.drawRect(0,450,1600,250);
     fstage.addChild(road);
-
-    var towanda = new $s.dsSprite();
-    towanda.graphics.beginFill(0xffff00);
-    towanda.graphics.drawRect(0,0,300,100);
-    towanda.x = 500;
-    towanda.y = -101;
-    road.addChild(towanda);
 
     var bg = new $s.dsLoader().load('img/jiedao.png');
     bg.name ='bg';
     fstage.addChild(bg);
+
+    var c2 = new $s.dsMovieClip('chukou');
+    c2.name='c2';
+    c2.y=570;
+    c2.x = 450;
+    fstage.addChild(c2);
+    var c1 = new $s.dsMovieClip('chukou');
+    c1.name='c1';
+    c1.y=570
+    fstage.addChild(c1);
+    ////
+    var c3 = new $s.dsMovieClip('chukou');
+    c3.name = 'c3'
+    c3.x = 1400;
+    c3.y =380
+    fstage.addChild(c3);
+
     var person = new Person();
     person.y = 550;
-    person.x = 50;
+    person.x = 650;
     fstage.addChild(person);
     var pos = {};
     var bghot = [
@@ -38,7 +45,15 @@ function road(){
         {key:4,r:new $s.dsRectangle(744,361,55,107)},
         {key:5,r:new $s.dsRectangle(910,368,42,86)}
     ]
-
+    c1.addEventListener('mousedown',function(event){
+        trace(event.dsTarget.name)
+    })
+    c2.addEventListener('mousedown',function(event){
+        trace(event.dsTarget.name)
+    })
+    c3.addEventListener('mousedown',function(event){
+        trace(event.dsTarget.name)
+    })
     bg.addEventListener('mousedown' ,function(e){
         for(var i = 0;i<bghot.length;i++){
             if(bghot[i].r.contains(e.stageX, e.stageY)){
@@ -48,39 +63,33 @@ function road(){
         }
         pos.x = e.stageX;
        $s.stage.addEventListener('mousemove',movebg)
-    },true);
+    });
     bg.addEventListener('mouseup',function(){
         $s.stage.removeEventListener('mousemove',movebg);
-    },true);
+    });
 
     function movebg(event){
         var v=event.stageX-pos.x;
-        if(bg.x<=fstage.width-bg.width && v<0){
-            bg.x=fstage.width-bg.width-1
+
+        if(fstage.x<=$s.stage.stageWidth-fstage.width && v<0){
+            fstage.x=$s.stage.stageWidth-fstage.width-1
             $s.stage.invalidate();
             return
-        }else if(bg.x>0 && v>0){
-            bg.x=1;
+        }else if(fstage.x>0 && v>0){
+            fstage.x=1;
             $s.stage.invalidate();
             return
         }
-        person.stand(1);
-        bg.x+=v;
-        person.x+=v;
+        //person.stand(1);
+        fstage.x+=v;
         pos.x = event.stageX;
         $s.stage.invalidate();
     }
 
     road.addEventListener('mousedown',function(e){
-
         var p = fstage.globalToLocal(new $s.dsPoint(e.stageX, e.stageY));
         person.walk(p.x, p.y,1);
-        trace(p)
-    },true);
-    towanda.addEventListener('click',function(){
-        person.action = 'square';
-        person.walk(631, 366,1);
-    })
+    });
     person.addEventListener('walkover',function(){
         if(person.action=='square'){
             changeScene('square');

@@ -25,9 +25,8 @@ Person.prototype.__init =function() {
     this.init();
 }
 Person.prototype.init=function(){
-    var per=$s.dsSharedObject.getLocal('person');
+    var per =localData();
     if(!per.data){
-        var user =$s.dsSharedObject.getLocal('user');
         var self = this;
         dsserver({act:'person',id:user.data.user},function(d){
             if(d.success){

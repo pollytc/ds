@@ -7,20 +7,9 @@ var _static ={
 (function($s){
     $s.ready(function(){
         if($s.platform.moblie)$s.stage.screenOrientation('h');
-        //var per=$s.dsSharedObject.getLocal('person');
-        //if(!per)
-        //{
-        //    changeScene('resigter');
-        //}else{
-
         changeScene('login');
-
-
-        //}
-
-
+        $s.stage.color=0x00ff00;
     },{baseURI:'movie/',canvas:'#can',width:800,height:600});
-
 })(window.$s);
 
 function changeScene(sec){
@@ -60,27 +49,43 @@ function changeScene(sec){
 }
 
 function dsserver(param,back){
+    $s.busy.tojquery().show();
     var url = new $s.dsURLRequest(_static.ser);
     url.method ='get';
     param.action = 'ds';
     url.data = param;
     var load = $s.dsURLLoader(url);
     load.addEventListener('complete',function(){
+        $s.busy.tojquery().hide();
         var d = load.data?JSON.parse(load.data):'';
         if(back)back.call(null,d);
+
     })
 }
 
 function saveserver(param,back){
+    $s.busy.tojquery().show();
     var url = new $s.dsURLRequest(_static.ser);
     url.method ='post';
     param.action = 'dssave';
     url.data = param;
     var load = $s.dsURLLoader(url);
     load.addEventListener('complete',function(){
+        $s.busy.tojquery().hide();
         var d = load.data?JSON.parse(load.data):'';
         if(back)back.call(null,d);
+
     })
 }
 
+
+function localData(data){
+    var local = $s.dsSharedObject.getLocal('person');
+    if(data)
+    {
+        local.data  =data;
+        local.flush();
+    }
+    return local.data;
+}
 

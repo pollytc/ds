@@ -6,18 +6,21 @@ function figure(){
     return new figure.prototype.__init()
 }
 figure.prototype.__init = function(){
-    this.param=$s.dsSharedObject.getLocal('person');
+    var tsize = new $s.dsTextFormat();
+    tsize.size='15';
     this.zhai = new $s.dsTextField();
+    this.zhai.defaultTextFormat = tsize;
     this.addChild(this.zhai);
     this.weight = new $s.dsTextField();
+    this.weight.defaultTextFormat = tsize;
     this.weight.x = 100;
     this.addChild(this.weight);
     this.zhishu = new $s.dsTextField();
+    this.zhishu.defaultTextFormat = tsize;
     this.zhishu.x = 200;
     this.addChild(this.zhishu);
     var self = this;
     $s.stage.addEventListener('updatefigure',function(){
-        self.param=$s.dsSharedObject.getLocal('person');
         self.update();
     });
     this.list = new PushList();
@@ -28,7 +31,8 @@ figure.prototype.__init = function(){
             self.actionid = setInterval(function(){
                 var t = new $s.dsTextField();
                 t.text =1;
-                self.param.data.zhai++;
+                var param = localData();
+                param.zhai++;
                 self.list.push(t);
                 $s.stage.addChild(t);
                 self.update();
@@ -36,24 +40,27 @@ figure.prototype.__init = function(){
         }else{
             clearInterval(self.actionid)
         }
+        saveserver({act:'behavior',beha:e.action});
     });
     //场景变化
     $s.stage.addEventListener('scene',function(e){
-        if(!self.data)return
-        self.param.data.scene = e.scene;
-        self.update();
+        var param = localData();
+        if(!param)return;
+        param.scene = e.scene;
+        localData(param);
+        saveserver({act:'scene',sce:e.scene});
     });
     this.update();
 }
 
 
 figure.prototype.update = function(){
-    var param = this.param;
-    if(!param.data)return;
-    this.zhai.text = '宅指数:'+param.data.zhai;
-    this.weight.text = '体重:'+param.data.weight;
-    this.zhishu.text = '健康指数:'+(param.data.weight/(param.data.height*param.data.height)).toFixed(2);
-    param.flush();
+    var param = localData();
+    if(!param)return;
+    this.zhai.text = '宅指数:'+param.zhai;
+    this.weight.text = '体重:'+param.weight;
+    this.zhishu.text = '健康指数:'+(param.weight/(param.height*param.height)).toFixed(2);
+    localData(param);
 }
 
 function PushList(){
