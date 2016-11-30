@@ -706,11 +706,23 @@
         this.y2 = Math.max(this.y2,y);
         return this;
     }
+    dsAABB.prototype.setMIN=function(x,y){
+        this.x1=Math.min(x,this.x1);
+        this.y1=Math.min(y,this.y1);
+    }
+    dsAABB.prototype.setMAX=function(x,y){
+        this.x2=Math.max(x,this.x2);
+        this.y2=Math.max(y,this.y2);
+    }
     dsAABB.prototype.inflate=function(x,y){
         this.x1 +=x;
         this.y1 +=y;
         this.x2 +=x;
         this.y2 +=y;
+        return this;
+    }
+    dsAABB.prototype.isEmpty=function(){
+        return this.x1==this.x2 && this.y1==this.y2 || this.x1>this.x2 ||this.y1>this.y2;
     }
     dsAABB.prototype.clone = function(){
         var ab = new dsAABB();
@@ -726,6 +738,7 @@
     dsAABB.prototype.height = function(){
         return Math.abs(this.y2-this.y1);
     }
+    $s[config.pre+'AABB']=dsAABB;
     $s[config.pre+'Point']=dsPoint;
     function dsPoint(x, y) {
         this.x = x | 0;
@@ -962,23 +975,25 @@
     dsEventDispatcher.prototype.dispatchEvent = function (event) {
         event.currentTarget = this;
         var a = this.__events[event.type];
+        if(!a)return;
         var ps = [];
         var p = this.parent;
-        ps.push(this);
+
         while(p){
             ps.push(p);
             p = p.parent;
         }
-
         for (var i in a) {
             if(event.bubbles){
+                a[i].call(this,event)
                 for(var j = 0;j<ps.length;j++){
-                    a[i].call(ps[j], event);
+                    ps[j].dispatchEvent(event)
                 }
             }else{
                 for(var j = ps.length-1;j>=0;j--){
-                    a[i].call(ps[j], event);
+                    ps[j].dispatchEvent(event)
                 }
+                a[i].call(this,event)
             }
         }
     }
@@ -1034,24 +1049,14 @@
                     this._width=v;
                 },
                 get:function(){
-                    if(this._graphics)
-                    {
-                        var w=this._graphics.__aabb.width();
-                        this._width = this._width>=w?this._width:w;
-                    }
-                    return this._width;
+                    return Math.max(this._width,this.__AABB().width());
                 }
             },
             'height':{
                 set:function(v){
                     this._height =v;
                 },get:function(){
-                    if(this._graphics)
-                    {
-                        var w=this._graphics.__aabb.height();
-                        this._height = this._height>=w?this._height:w;
-                    }
-                    return this._height;
+                    return Math.max(this._height,this.__AABB().height());
                 }
             },
             "graphics": {
@@ -1112,6 +1117,7 @@
         })
         return obj;
     }
+
     dsDisplayObject.prototype.__init=function (){
         this.__events = [];
         this._x = 0;
@@ -1136,7 +1142,6 @@
         this._graphics = null;
         this.filters = [];
         this._mat = new dsMatrix().identity();
-        this.__aabb = new dsAABB();
     }
     dsDisplayObject.prototype.__init.prototype = new dsEventDispatcher;
 //循环图形渲染函数
@@ -1205,6 +1210,8 @@
         var bool = ab.contains(dx,dy);
         if(shapeFlag&&bool){
             var m= this.__ctxToData();
+            //if(this.name=='c2')
+            //    this.stage.__ctx2d.putImageData(m,100,0);
             dx -=ab.x1,dy-=ab.y1;
             var index= parseInt((dy*m.width+dx)*4);
             return m.data[index+3];
@@ -1233,39 +1240,45 @@
 
     dsDisplayObject.prototype.__ctxToData = function () {
         var ab = this.__AABB();
-        $s.fdds.width =ab.x2;
-        $s.fdds.height = ab.y2;
-        var fbc = $s.fdds.getContext("2d");
-        fbc.clearRect(0,0,this.width,this.height);
-        //var xx = this.x;
-        //var yy = this.y;
-        //this.x = ab.x1;
-        //this.y = ab.y1;
-        this.__render(fbc);
-        //this.x = xx;
-        //this.y = yy;
+        //舞台限制
         ab.x1 =Math.max(ab.x1,0);
         ab.y2 =Math.max(ab.y2,0);
         ab.x2=Math.min(ab.x2,$s.stage.stageWidth);
         ab.y2=Math.min(ab.y2,$s.stage.stageHeight);
+        //对象的全局左边，副本坐标应该和主程序一致。
+        var oldpos = new dsPoint(this.x,this.y);
+        var gpos = this.parent?this.parent.localToGlobal(oldpos):this.localToGlobal(oldpos);
+        this.x = gpos.x;
+        this.y = gpos.y;
+        //舞台副本设置
+        $s.fdds.width =ab.x2;
+        $s.fdds.height =ab.y2;
+        var fbc = $s.fdds.getContext("2d");
+        fbc.clearRect(0,0,$s.fdds.width,$s.fdds.height);
+        fbc.save();
+        this.__render(fbc);
+        fbc.restore();
+        //坐标还原
+        this.x = oldpos.x;
+        this.y = oldpos.y;
+        //var off =this.parent?this.parent.localToGlobal(new dsPoint(0,0)):new dsPoint(0,0);
+        //fbc.strokeStyle='#ff0000';
+        //fbc.rect(ab.x1,ab.y1,ab.width(), ab.height());
+        //fbc.strokeStyle="green";
+        //fbc.stroke();
         return fbc.getImageData(ab.x1,ab.y1,ab.width(), ab.height());
     }
-    dsDisplayObject.prototype.__AABB = function () {
-
-        var a = new dsPoint(0,0);
-        if(this._graphics)
-            a = new dsPoint(this._graphics.__aabb.x1,this._graphics.__aabb.y1);
-        var p1 = this.localToGlobal(a);
-        var p2=this.localToGlobal(new dsPoint(this.width+ a.x, a.y));
-        var p3=this.localToGlobal(new dsPoint(this.width+ a.x,this.height+ a.y));
-        var p4=this.localToGlobal(new dsPoint(a.x,this.height+ a.y));
-        var ab = this.__aabb.clone();
-
-        ab.setXY(p1.x, p1.y);
-        ab.setXY(p2.x, p2.y);
-        ab.setXY(p3.x, p3.y);
-        ab.setXY(p4.x, p4.y);
-        return ab;
+    dsDisplayObject.prototype.__AABB = function (self) {
+        var ab = this._graphics?this._graphics.__aabb:new dsAABB(0,0,0,0);
+        if(ab.width()<this._width)ab.x2 = ab.x1+this._width;
+        if(ab.height()<this._height)ab.y2 = ab.y1+this._height;
+        if(self){
+            return ab;
+        }
+        //var pp = this.localToGlobal(new dsPoint(this.x,this.y));
+        var p1 = this.localToGlobal(new dsPoint(ab.x1,ab.y1));
+        var p2 = this.localToGlobal(new dsPoint(ab.x2,ab.y2));
+        return new dsAABB(p1.x,p1.y,p2.x,p2.y)//.inflate(pp.x,pp.y);
     }
     $s.event=document.createEvent("HTMLEvents");
     $s.__initEvent=function(event,sx,sy){
@@ -1340,8 +1353,8 @@
     dsInteractiveObject.prototype.__mouseaction = function (event) {
         if(!this.mouseEnabled)return
         var evs = this.__activeEvent[event.type];
-        event.currentTarget = this;
-        event.target = this;
+        event.dsCurrentTarget = this;
+        event.dsTarget = this;
         if(!evs){
             this.__eventaction(true, event);
             return;
@@ -1364,13 +1377,13 @@
         if (useCapture) {
             //冒泡
             for (var i = 0; i < arr.length; i++) {
-                event.currentTarget = arr[i];
+                event.dsCurrentTarget = arr[i];
                 arr[i].dispatchEvent(event);
             }
         } else {
             //捕抓
             for (var i = arr.length-1; i >=0; i--) {
-                event.currentTarget = arr[i];
+                event.dsCurrentTarget = arr[i];
                 arr[i].dispatchEvent(event);
             }
         }
@@ -1438,6 +1451,7 @@
         dsExtend(dsDisplayObjectContainer, dsInteractiveObject);
         return new dsDisplayObjectContainer.prototype.__init();
     }
+
     dsDisplayObjectContainer.prototype.__init= function(){
         this.mouseChildren = true;
         this.numChildren = 0;
@@ -1471,7 +1485,6 @@
         this.numChildren++;
         displayObject.parent = this;
         displayObject.stage = $s.stage;
-        //displayObject.dispatchEvent($s.event.initEvent(Event.ADDED_TO_STAGE, false, false));
     };
     dsDisplayObjectContainer.prototype.addChildAt = function (displayObject, index) {
         if (this.__children[index] == null) {
@@ -1485,7 +1498,7 @@
         this.numChildren++;
         displayObject.parent = this;
         displayObject.stage = $s.stage;
-        //displayObject.dispatchEvent( $s.event.initEvent(Event.REMOVE_FROM_STAGE));
+
     };
     dsDisplayObjectContainer.prototype.contains = function (displayObject) {
         var bool =-1;
@@ -1527,6 +1540,7 @@
         for (var i = this.__children.length - 1; i >=0; i--) {
             var child= this.__children[i];
             if (child.hitTestPoint(point.x,point.y,child.mousePixel)) {
+
                 if (dsChildOf(child, dsDisplayObjectContainer)) {
                     arr = arr.concat(child.getObjectsUnderPoint(point));
                 }
@@ -1536,6 +1550,7 @@
         return arr;
     };
     dsDisplayObjectContainer.prototype.removeChild = function (displayobject) {
+        if(displayobject.parent != this) return;
         var index = this.getChildIndex(displayobject);
         this.__children.splice(index,1);
         this.numChildren--;
@@ -1546,6 +1561,7 @@
     };
     dsDisplayObjectContainer.prototype.removeChildAt = function (index) {
         var displayObject = this.__children[index];
+        if(!displayObject)return null;
         this.__children.splice(index,1);
         this.numChildren--;
         displayObject.parent = null;
@@ -1719,6 +1735,7 @@
         this.__render(this.__ctx2d);
     }
     dsStage.prototype.__renderfb = function (displayobject) {
+
         $s.fdds.width = this.stageWidth;
         $s.fdds.height = this.stageHeight;
         var fbc = $s.fdds.getContext("2d");
@@ -1865,6 +1882,10 @@
         dsExtend(dsBitmap, dsDisplayObject);
         return new dsBitmap.prototype.__init(bitmapData, pixelSnapping, smoothing);
     }
+    dsBitmap.prototype.__AABB=function(){
+        var p = this.localToGlobal(new dsPoint(this.x,this.y));
+        return new dsAABB(0,0,this.bitmapData.width,this.bitmapData.height).inflate(p.x, p.y);
+    }
     dsBitmap.prototype.__init=function dsBitmap(bitmapData, pixelSnapping, smoothing) {
         this.bitmapData = bitmapData;
         this.pixelSnapping = pixelSnapping;
@@ -1877,6 +1898,7 @@
             ctx.putImageData(this.bitmapData._imgdata, this.x, this.y);
         }
     }
+
     $s[config.pre+'BitmapData']=dsBitmapData;
     function BitmapData(w, h, transparent, fillcolor) {
         var obj = new dsBitmapData(w, h, transparent, fillcolor);
@@ -2963,9 +2985,9 @@
         this.words = this.text.split('');
     }
     $s[config.pre+'MovieClip']=dsMovieClip;
-    function dsMovieClip(source,config) {
+    function dsMovieClip(source) {
         dsExtend(dsMovieClip, dsSprite);
-        var m = new dsMovieClip.prototype.__init(source,config);
+        var m = new dsMovieClip.prototype.__init(source);
         Object.defineProperties(m, {
             "totalFrames": {
                 get: function () {
@@ -2995,21 +3017,26 @@
         this.isPlaying = true;
         this._totalFrames = 0;
         this._sheet = null;
+        if(!source)return;
+        if(typeof source =='string'){
+            this.name=source?source:this.name;
+            source = config.baseURI+source+"."+config.file;
+        }else{
+            this.name=source.name?source.name:this.name;
+            source.name = config.baseURI+source.name+"."+config.file;
+            this.type = 'manifest';
+        }
+        this.load(source);
+    }
+    p.load = function(source){
         if(source){
-            if(typeof source =='string'){
-                this.name=source?source:this.name;
-                source = config.baseURI+source+"."+config.file;
-            }else{
-                this.name=source.name?source.name:this.name;
-                source.name = config.baseURI+source.name+"."+config.file;
-                this.type = 'manifest';
-            }
             if(this.type=="manifest"){
                 this.__loadManifest(source);
             }else{
                 this.__loadSequence(source);
             }
         }
+        return this;
     }
     p.gotoAndPlay = function (frame){
         this.isPlaying = true;
@@ -3033,6 +3060,7 @@
     p.stop = function () {
         this.isPlaying = false;
     }
+    // png 序列帧
     p.__loadManifest = function(source){
         var res=new dsURLLoader(new dsURLRequest(source.name));
         var self = this;
@@ -3041,21 +3069,33 @@
             try{var d = JSON.parse(res.data)}catch(e){throw source.name+'is wrong ,may be format is wrong'}
             if(!d) throw source.toString()+" content is empty";
             self._sheet = new SpriteSheet(d);
+            var al = 0;
             for(var i =0;i< d.frames.length;i++){
                 var m = new Image();
                 m.src = config.baseURI+d.frames[i].filename+d.meta.image;
                 m.onerror = function(e){throw 'cannot find '+m.src};
                 m.onload=function(e){
-                    //self.dispatchEvent($s.event.initEvent('progress',false,false))
+                    al++;
+                    if(al== d.frames.length-1)
+                      self.dispatchEvent($s.dsEvent('complete',false,false))
+                    else
+                    {
+                        var ev=$s.dsEvent('progress');
+                        ev.beload = al;
+                        ev.alload = d.frames.length-1;
+                        self.dispatchEvent(ev);
+                    }
                 };
                 self._sheet.imgs.push(m);
             }
-            self.width = d.meta.size.w;;
+            self.width = d.meta.size.w;
             self.height = d.meta.size.h;
+
             self._totalFrames = self._sheet.imgs.length;
         }
         res.addEventListener('complete',fun);
     }
+    //sprite 序列帧
     p.__loadSequence=function(source){
         if(typeof source == 'string'){
             var res=new dsURLLoader(new dsURLRequest(source));
@@ -3079,10 +3119,9 @@
                     self.height = self._sheet.height;
                     self._totalFrames = self._sheet.imgs.length;
                     $s.stage.invalidate();
-                    $s.event.initEvent(Event.COMPLETE,false,false);
-                    self.dispatchEvent($s.event);
+                    self.dispatchEvent($s.dsEvent('complete'));
                 }
-            }
+            };
             res.addEventListener('complete',fun);
         }
     }
@@ -3260,13 +3299,11 @@
         var self = this;
         var mm = new Image();
         mm.onload = function () {
-            mm.onload = null;
             self.data = mm;
-            self.width = self.width == 0 ? mm.width : self.width;
-            self.height = self.height == 0 ? mm.height : self.height;
-            //stage.invalidate();
-            $s.event.initEvent(Event.COMPLETE,false,false)
-            self.dispatchEvent($s.event);
+            self.width = mm.width
+            self.height =mm.height;
+            //self.stage.invalidate()
+            self.dispatchEvent( $s.dsEvent(Event.COMPLETE,false,false));
         }
         mm.onerror = function(e){
             throw url+' cannot find';
@@ -3276,6 +3313,7 @@
     }
     dsLoader.prototype.__render = function (ctx) {
         if (this.data == null)return;
+
         ctx.transform(this._mat.a,this._mat.b,this._mat.c,this._mat.d,this._mat.tx,this._mat.ty);
         ctx.drawImage(this.data, 0, 0, this.width, this.height, 0, 0, this.width, this.height);
     }
@@ -3411,18 +3449,9 @@
         this._codeindex = 0;
         this.__drawline = false;
         this.__drawfill = false;
-        this._AABB = new dsAABB();
         this._to=[];
     }
-    dsGraphics.prototype.settarget = function (v) {
-        //if (v == null) {
-        //    this._target = {width: this._target.width, height: this._target.height};
-        //} else {
-        //    v.width = this._target.width;
-        //    v.height = this._target.height;
-        //    this._target = v;
-        //}
-    }
+
     dsGraphics.prototype.__render = function (ctx) {
         ctx.save();
         ctx.beginPath();
