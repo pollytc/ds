@@ -5,27 +5,49 @@
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="format-detection" content="telephone=no">
     <title>jquery</title>
-    <link rel="stylesheet" href="ui/css/jquery.mobile-1.4.5.min.css">
-    <script src="ui/js/jquery.js"></script>
-    <script src="ui/js/jquery.mobile-1.4.5.js"></script>
+    <script src="dscanvas.js"></script>
 </head>
 <body ontouchstart="">
 
 </body>
 <script>
+    $s.ready(function(){
+        $s.stage.color=0x00ff00;
+        var c3 = new $s.dsMovieClip('chukou');
+        c3.name = 'c3';
+//        c3.rotation = 30;
+        c3.x = 130;
+//        c3.scaleX = 2;
+        c3.addEventListener('complete',function(){
+//            var ab = c3.__AABB();
+//            var s = new $s.dsSprite();
+//            s.graphics.beginFill(0xff0032);
+//            s.graphics.drawRect(ab.x1,ab.y1,ab.width(),ab.height());
+//            $s.stage.addChild(s);
+//
+//            var pp = c3.globalToLocal(new $s.dsPoint(ab.x1,ab.y1));
+//
+//            var aabb = new $s.dsAABB(pp.x,pp.y,pp.x+ab.width(),pp.y+ab.height());
+//
+//            var ss = new $s.dsSprite();
+//            ss.graphics.beginFill(0xff00ff);
+//            ss.graphics.drawRect(aabb.x1,aabb.y1,aabb.width(),aabb.height());
+//            c3.addChild(ss)
 
-    window.addEventListener('load',function(){
-//        var d = new $s.uiDialog();
-//        d.title('xinhao');
-//        var l =new $s.uiList();
-//        l.additem({name:'fd',content:"fggd"},1)
-//        l.additem({name:'fd',content:"fggd"},2)
-//        l.additem({name:'fd',content:"fggd"},3)
-//        d.addChild(l);
-//        $s.uistage.addChild(d);
-    })
+        })
+        c3.addEventListener('click',function(){
+            trace('click')
+        })
 
-
+        var er = new $s.dsSprite();
+        er.addChild(c3);
+//        er.y = 200;
+        er.x = -10;
+        var e3 = new $s.dsSprite();
+        e3.x=300
+        e3.addChild(er);
+        $s.stage.addChild(e3);
+    },{baseURI:'game/movie/'})
 
 </script>
 </html>

@@ -35,11 +35,13 @@ function person(){
         $per['weight']=75;
         $per['height']=160;
         $per['zhai']=0;
+        $per['scene']='room';
     }else if($_REQUEST['id']=='456'){
         $per['sex']='0';
         $per['weight']=60;
         $per['height']=140;
         $per['zhai']=0;
+        $per['scene']='room';
     }else{
         return wp_send_json_error();
     }
@@ -75,6 +77,26 @@ add_action('wp_ajax_dssave',saveAjax);
 function saveAjax(){
     if(!empty($_REQUEST['act']))
     {
-        $_REQUEST['act']();
+        $act = ucfirst($_REQUEST['act']);
+        $act='save'.$act;
+        call_user_func($act);
     }
 }
+//场景变化
+function saveScene(){
+    $sce = $_REQUEST['sce'];
+    wp_send_json_success(array(sce=>$sce));
+}
+//角色行为变化
+function saveBehavior(){
+    $_REQUEST['beha'];
+}
+//菜单选择
+function saveMenu(){
+
+}
+//观看电影游戏
+function saveMovie(){
+
+}
+

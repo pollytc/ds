@@ -348,6 +348,7 @@
         var self =this;
         this.ele.querySelector('a.ui-icon-delete').onclick=function(e){
             if(self.parent)self.parent.removeChild(self);
+            return false;
         }
     }
     uiDialog.prototype.title = function(v){
@@ -406,9 +407,9 @@
         uiExtend(hotTip,uiDisplayObject,e);
     }
     hotTip.prototype.__init=function(){};
+
     function uiStage(){
         var html = document.querySelectorAll('div[data-role=page]')[0];
-
         uiExtend(uiStage,uiObject,html);
         return new uiStage.prototype.__init();
     }
@@ -444,6 +445,8 @@
 
     window.onload = function(){
         $s.uistage = new uiStage();
+        var ele= document.querySelector('.ui-loader');
+        $s.busy = new uiObject(ele);
     }
 
 
