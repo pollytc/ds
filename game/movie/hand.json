@@ -1,0 +1,51 @@
+﻿{"frames": [
+
+{
+	"filename": "手0000",
+	"frame": {"x":0,"y":0,"w":22,"h":39},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":22,"h":39},
+	"sourceSize": {"w":22,"h":39}
+}
+,{
+	"filename": "手0001",
+	"frame": {"x":22,"y":0,"w":22,"h":39},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":22,"h":39},
+	"sourceSize": {"w":22,"h":39}
+}
+,{
+	"filename": "手0002",
+	"frame": {"x":44,"y":0,"w":22,"h":39},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":22,"h":39},
+	"sourceSize": {"w":22,"h":39}
+}
+,{
+	"filename": "手0003",
+	"frame": {"x":66,"y":0,"w":22,"h":39},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":22,"h":39},
+	"sourceSize": {"w":22,"h":39}
+}
+,{
+	"filename": "手0004",
+	"frame": {"x":88,"y":0,"w":22,"h":39},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":22,"h":39},
+	"sourceSize": {"w":22,"h":39}
+}],
+"meta": {
+	"app": "Adobe Flash Professional",
+	"version": "15.0.0.173",
+	"image": "hand.png",
+	"format": "RGBA8888",
+	"size": {"w":112,"h":40},
+	"scale": "1"
+}
+}

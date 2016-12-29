@@ -1,0 +1,7 @@
+.ui-content{
+    margin: 0;
+    padding: 0;
+}
+.ui-content .ui-listview-inset{
+    margin: 0;
+}
