@@ -65,7 +65,7 @@
         }
 
         $s.mains.push({fun:main,fig:result});
-        if (document.readyState == "complete") {
+        if (document.readyState == "complete" || document.readyState=='interactive') {
             initCanvas();
         } else {
             window.addEventListener('DOMContentLoaded', initCanvas);
